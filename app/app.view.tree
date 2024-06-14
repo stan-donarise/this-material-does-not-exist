@@ -1,1 +1,21 @@
 $mpds_tmdne_app $mol_view
+	title \This material does not exist
+	number? 1
+	auto /
+		<= update
+	sub /
+		<= Head $mol_paragraph
+			title \Does this material exist?
+		<= Name $mol_paragraph
+			title <= name \
+		<= Player $mpds_cifplayer_player
+			data <= json null
+			Fullscreen null
+		<= Question $mol_paragraph
+			title \Do you think it's synthesizable?
+		<= Answer $mol_row
+			sub /
+				<= Yes $mol_button_major
+					click? <=> update? null
+				<= No $mol_button_major
+					click? <=> update?
