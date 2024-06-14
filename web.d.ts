@@ -555,7 +555,7 @@ declare namespace $ {
         static scale(zoom: number): $mol_style_func<"scale", number[]>;
         static linear(...breakpoints: Array<number | [number, number | $mol_style_unit_str<'%'>]>): $mol_style_func<"linear", string[]>;
         static cubic_bezier(x1: number, y1: number, x2: number, y2: number): $mol_style_func<"cubic-bezier", number[]>;
-        static steps(value: number, step_position: 'jump-start' | 'jump-end' | 'jump-none' | 'jump-both' | 'start' | 'end'): $mol_style_func<"steps", (number | "jump-start" | "jump-end" | "jump-none" | "jump-both" | "start" | "end")[]>;
+        static steps(value: number, step_position: 'jump-start' | 'jump-end' | 'jump-none' | 'jump-both' | 'start' | 'end'): $mol_style_func<"steps", (number | "end" | "start" | "jump-start" | "jump-end" | "jump-none" | "jump-both")[]>;
         static blur(value?: $mol_style_unit_str<$mol_style_unit_length>): $mol_style_func<"blur", string>;
         static brightness(value?: number | $mol_style_unit_str<'%'>): $mol_style_func<"brightness", string | number>;
         static contrast(value?: number | $mol_style_unit_str<'%'>): $mol_style_func<"contrast", string | number>;
@@ -739,7 +739,7 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    let $mol_gap: Record<"text" | "blur" | "block" | "space" | "round", $mol_style_func<"var", unknown>>;
+    let $mol_gap: Record<"text" | "space" | "blur" | "block" | "round", $mol_style_func<"var", unknown>>;
 }
 
 declare namespace $ {
@@ -759,8 +759,8 @@ declare namespace $ {
         state_key(suffix?: string): string;
         dom_name(): string;
         dom_name_space(): string;
-        sub(): readonly (string | number | boolean | Node | $mol_view)[];
-        sub_visible(): readonly (string | number | boolean | Node | $mol_view)[];
+        sub(): readonly (string | number | boolean | $mol_view | Node)[];
+        sub_visible(): readonly (string | number | boolean | $mol_view | Node)[];
         minimal_width(): number;
         maximal_width(): number;
         minimal_height(): number;
@@ -826,6 +826,750 @@ declare namespace $ {
 }
 
 declare namespace $ {
+
+	export class $mol_paragraph extends $mol_view {
+		line_height( ): number
+		letter_width( ): number
+		width_limit( ): number
+		row_width( ): number
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=paragraph.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_paragraph extends $.$mol_paragraph {
+        maximal_width(): number;
+        width_limit(): number;
+        minimal_width(): number;
+        row_width(): number;
+        minimal_height(): number;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    const $mpds_cifplayer_lib_three: typeof import("./_three");
+}
+
+declare namespace $ {
+    type $mol_style_pseudo_class = ':active' | ':any' | ':any-link' | ':checked' | ':default' | ':defined' | ':dir(rtl)' | ':dir(ltr)' | ':disabled' | ':empty' | ':enabled' | ':first' | ':first-child' | ':first-of-type' | ':fullscreen' | ':focus' | ':focus-visible' | ':focus-within' | ':hover' | ':indeterminate' | ':in-range' | ':invalid' | ':last-child' | ':last-of-type' | ':left' | ':link' | ':not()' | ':nth-child(even)' | ':nth-child(odd)' | ':nth-last-child(even)' | ':nth-last-child(odd)' | ':nth-of-type(even)' | ':nth-of-type(odd)' | ':nth-last-of-type(even)' | ':nth-last-of-type(odd)' | ':only-child' | ':only-of-type' | ':optional' | ':out-of-range' | ':placeholder-shown' | ':read-only' | ':read-write' | ':required' | ':right' | ':root' | ':scope' | ':target' | ':valid' | ':visited';
+}
+
+declare namespace $ {
+    type $mol_style_pseudo_element = '::after' | '::before' | '::cue' | '::first-letter' | '::first-line' | '::selection' | '::slotted' | '::backdrop' | '::placeholder' | '::marker' | '::spelling-error' | '::grammar-error' | '::-webkit-calendar-picker-indicator' | '::-webkit-color-swatch' | '::-webkit-color-swatch-wrapper' | '::-webkit-details-marker' | '::-webkit-file-upload-button' | '::-webkit-image-inner-element' | '::-webkit-inner-spin-button' | '::-webkit-input-placeholder' | '::-webkit-input-speech-button' | '::-webkit-keygen-select' | '::-webkit-media-controls-panel' | '::-webkit-media-controls-timeline-container' | '::-webkit-media-slider-container' | '::-webkit-meter-bar' | '::-webkit-meter-even-less-good-value' | '::-webkit-meter-optimum-value' | '::-webkit-meter-suboptimal-value' | '::-webkit-progress-bar' | '::-webkit-progress-value' | '::-webkit-resizer' | '::-webkit-resizer:window-inactive' | '::-webkit-scrollbar' | '::-webkit-scrollbar-button' | '::-webkit-scrollbar-button:disabled' | '::-webkit-scrollbar-button:double-button:horizontal:end:decrement' | '::-webkit-scrollbar-button:double-button:horizontal:end:increment' | '::-webkit-scrollbar-button:double-button:horizontal:end:increment:corner-present' | '::-webkit-scrollbar-button:double-button:horizontal:start:decrement' | '::-webkit-scrollbar-button:double-button:horizontal:start:increment' | '::-webkit-scrollbar-button:double-button:vertical:end:decrement' | '::-webkit-scrollbar-button:double-button:vertical:end:increment' | '::-webkit-scrollbar-button:double-button:vertical:end:increment:corner-present' | '::-webkit-scrollbar-button:double-button:vertical:start:decrement' | '::-webkit-scrollbar-button:double-button:vertical:start:increment' | '::-webkit-scrollbar-button:end' | '::-webkit-scrollbar-button:end:decrement' | '::-webkit-scrollbar-button:end:increment' | '::-webkit-scrollbar-button:horizontal' | '::-webkit-scrollbar-button:horizontal:decrement' | '::-webkit-scrollbar-button:horizontal:decrement:active' | '::-webkit-scrollbar-button:horizontal:decrement:hover' | '::-webkit-scrollbar-button:horizontal:decrement:window-inactive' | '::-webkit-scrollbar-button:horizontal:end' | '::-webkit-scrollbar-button:horizontal:end:decrement' | '::-webkit-scrollbar-button:horizontal:end:increment' | '::-webkit-scrollbar-button:horizontal:end:increment:corner-present' | '::-webkit-scrollbar-button:horizontal:increment' | '::-webkit-scrollbar-button:horizontal:increment:active' | '::-webkit-scrollbar-button:horizontal:increment:hover' | '::-webkit-scrollbar-button:horizontal:increment:window-inactive' | '::-webkit-scrollbar-button:horizontal:start' | '::-webkit-scrollbar-button:horizontal:start:decrement' | '::-webkit-scrollbar-button:horizontal:start:increment' | '::-webkit-scrollbar-button:start' | '::-webkit-scrollbar-button:start:decrement' | '::-webkit-scrollbar-button:start:increment' | '::-webkit-scrollbar-button:vertical' | '::-webkit-scrollbar-button:vertical:decrement' | '::-webkit-scrollbar-button:vertical:decrement:active' | '::-webkit-scrollbar-button:vertical:decrement:hover' | '::-webkit-scrollbar-button:vertical:decrement:window-inactive' | '::-webkit-scrollbar-button:vertical:end' | '::-webkit-scrollbar-button:vertical:end:decrement' | '::-webkit-scrollbar-button:vertical:end:increment' | '::-webkit-scrollbar-button:vertical:end:increment:corner-present' | '::-webkit-scrollbar-button:vertical:increment' | '::-webkit-scrollbar-button:vertical:increment:active' | '::-webkit-scrollbar-button:vertical:increment:hover' | '::-webkit-scrollbar-button:vertical:increment:window-inactive' | '::-webkit-scrollbar-button:vertical:start' | '::-webkit-scrollbar-button:vertical:start:decrement' | '::-webkit-scrollbar-button:vertical:start:increment' | '::-webkit-scrollbar-corner' | '::-webkit-scrollbar-corner:window-inactive' | '::-webkit-scrollbar-thumb' | '::-webkit-scrollbar-thumb:horizontal' | '::-webkit-scrollbar-thumb:horizontal:active' | '::-webkit-scrollbar-thumb:horizontal:hover' | '::-webkit-scrollbar-thumb:horizontal:window-inactive' | '::-webkit-scrollbar-thumb:vertical' | '::-webkit-scrollbar-thumb:vertical:active' | '::-webkit-scrollbar-thumb:vertical:hover' | '::-webkit-scrollbar-thumb:vertical:window-inactive' | '::-webkit-scrollbar-track' | '::-webkit-scrollbar-track-piece' | '::-webkit-scrollbar-track-piece:disabled' | '::-webkit-scrollbar-track-piece:end' | '::-webkit-scrollbar-track-piece:horizontal:decrement' | '::-webkit-scrollbar-track-piece:horizontal:decrement:active' | '::-webkit-scrollbar-track-piece:horizontal:decrement:hover' | '::-webkit-scrollbar-track-piece:horizontal:end' | '::-webkit-scrollbar-track-piece:horizontal:end:corner-present' | '::-webkit-scrollbar-track-piece:horizontal:end:double-button' | '::-webkit-scrollbar-track-piece:horizontal:end:no-button' | '::-webkit-scrollbar-track-piece:horizontal:end:no-button:corner-present' | '::-webkit-scrollbar-track-piece:horizontal:end:single-button' | '::-webkit-scrollbar-track-piece:horizontal:increment' | '::-webkit-scrollbar-track-piece:horizontal:increment:active' | '::-webkit-scrollbar-track-piece:horizontal:increment:hover' | '::-webkit-scrollbar-track-piece:horizontal:start' | '::-webkit-scrollbar-track-piece:horizontal:start:double-button' | '::-webkit-scrollbar-track-piece:horizontal:start:no-button' | '::-webkit-scrollbar-track-piece:horizontal:start:single-button' | '::-webkit-scrollbar-track-piece:start' | '::-webkit-scrollbar-track-piece:vertical:decrement' | '::-webkit-scrollbar-track-piece:vertical:decrement:active' | '::-webkit-scrollbar-track-piece:vertical:decrement:hover' | '::-webkit-scrollbar-track-piece:vertical:end' | '::-webkit-scrollbar-track-piece:vertical:end:corner-present' | '::-webkit-scrollbar-track-piece:vertical:end:double-button' | '::-webkit-scrollbar-track-piece:vertical:end:no-button' | '::-webkit-scrollbar-track-piece:vertical:end:no-button:corner-present' | '::-webkit-scrollbar-track-piece:vertical:end:single-button' | '::-webkit-scrollbar-track-piece:vertical:increment' | '::-webkit-scrollbar-track-piece:vertical:increment:active' | '::-webkit-scrollbar-track-piece:vertical:increment:hover' | '::-webkit-scrollbar-track-piece:vertical:start' | '::-webkit-scrollbar-track-piece:vertical:start:double-button' | '::-webkit-scrollbar-track-piece:vertical:start:no-button' | '::-webkit-scrollbar-track-piece:vertical:start:single-button' | '::-webkit-scrollbar-track:disabled' | '::-webkit-scrollbar-track:horizontal' | '::-webkit-scrollbar-track:horizontal:disabled' | '::-webkit-scrollbar-track:horizontal:disabled:corner-present' | '::-webkit-scrollbar-track:vertical:disabled' | '::-webkit-scrollbar-track:vertical:disabled:corner-present' | '::-webkit-scrollbar:horizontal' | '::-webkit-scrollbar:horizontal:corner-present' | '::-webkit-scrollbar:horizontal:window-inactive' | '::-webkit-scrollbar:vertical' | '::-webkit-scrollbar:vertical:corner-present' | '::-webkit-scrollbar:vertical:window-inactive' | '::-webkit-search-cancel-button' | '::-webkit-search-decoration' | '::-webkit-search-results-button' | '::-webkit-search-results-decoration' | '::-webkit-slider-container' | '::-webkit-slider-runnable-track' | '::-webkit-slider-thumb' | '::-webkit-slider-thumb:disabled' | '::-webkit-slider-thumb:hover' | '::-webkit-textfield-decoration-container' | '::-webkit-validation-bubble' | '::-webkit-validation-bubble-arrow' | '::-webkit-validation-bubble-arrow-clipper' | '::-webkit-validation-bubble-heading' | '::-webkit-validation-bubble-message' | '::-webkit-validation-bubble-text-block';
+}
+
+declare namespace $ {
+    type $mol_type_error<Message, Info = {}> = Message & {
+        $mol_type_error: Info;
+    };
+}
+
+declare namespace $ {
+    type Attrs<View extends $mol_view, Config, Attrs = ReturnType<View['attr']>> = {
+        [name in keyof Attrs]?: {
+            [val in keyof Config[Extract<name, keyof Config>]]: $mol_style_guard<View, Config[Extract<name, keyof Config>][val]>;
+        };
+    };
+    type Medias<View extends $mol_view, Config> = {
+        [query in keyof Config]: $mol_style_guard<View, Config[query]>;
+    };
+    type Keys<View extends $mol_view> = '>' | '@' | keyof $mol_style_properties | $mol_style_pseudo_element | $mol_style_pseudo_class | $mol_type_keys_extract<View, () => $mol_view> | `$${string}`;
+    export type $mol_style_guard<View extends $mol_view, Config> = {
+        [key in Keys<View>]?: unknown;
+    } & $mol_style_properties & {
+        [key in keyof Config]: key extends keyof $mol_style_properties ? $mol_style_properties[key] : key extends '>' | $mol_style_pseudo_class | $mol_style_pseudo_element ? $mol_style_guard<View, Config[key]> : key extends '@' ? Attrs<View, Config[key]> : key extends '@media' ? Medias<View, Config[key]> : key extends `[${string}]` ? {
+            [val in keyof Config[key]]: $mol_style_guard<View, Config[key][val]>;
+        } : key extends `--${string}` ? any : key extends keyof $ ? $mol_style_guard<InstanceType<Extract<$[key], typeof $mol_view>>, Config[key]> : key extends keyof View ? View[key] extends (id?: any) => infer Sub ? Sub extends $mol_view ? $mol_style_guard<Sub, Config[key]> : $mol_type_error<'Property returns non $mol_view', {
+            Returns: Sub;
+        }> : $mol_type_error<'Field is not a Property'> : key extends `$${string}` ? $mol_type_error<'Unknown View Class'> : $mol_type_error<'Unknown CSS Property'>;
+    };
+    export {};
+}
+
+declare namespace $ {
+    function $mol_style_sheet<Component extends $mol_view, Config extends $mol_style_guard<Component, Config>>(Component: new () => Component, config0: Config): string;
+}
+
+declare namespace $ {
+    function $mol_style_define<Component extends $mol_view, Config extends $mol_style_guard<Component, Config>>(Component: new () => Component, config: Config): HTMLStyleElement | null;
+}
+
+declare namespace $ {
+
+	export class $mpds_cifplayer_lib_three_view extends $mol_view {
+		canvas( ): any
+		controls_target_changed( ): any
+		resize( ): any
+		start_render_loop( ): any
+		sub( ): readonly(any)[]
+		scene( ): any
+		camera( ): any
+		controls( ): any
+		controls_target( ): any
+		on_render( ): any
+		new_object( id: any, next?: any ): any
+		object( id: any, next?: any ): any
+		auto( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=view.view.tree.d.ts.map
+declare namespace $.$$ {
+}
+
+declare namespace $.$$ {
+    const THREE: typeof import("../_three");
+    type THREE = typeof THREE;
+    export class $mpds_cifplayer_lib_three_view extends $.$mpds_cifplayer_lib_three_view {
+        start_render_loop(): void;
+        object<T extends InstanceType<THREE["Object3D"]>>(name: string, make: () => T): T;
+        new_object<T extends InstanceType<THREE["Object3D"]>>(name: string, make: () => T): T;
+        remove_object(obj: any): void;
+        scene(): any;
+        camera(): any;
+        controls_target(): any;
+        controls_target_changed(): any;
+        controls(): any;
+        renderer(): any;
+        canvas(): any;
+        rerender(): void;
+        size(): {
+            width: number;
+            height: number;
+        } | undefined;
+        resize(): void;
+        destructor(): void;
+    }
+    export function $mpds_cifplayer_lib_three_view_dispose_deep(object: InstanceType<THREE["Object3D"]> | InstanceType<THREE["BufferGeometry"]> | InstanceType<THREE["Material"]> | InstanceType<THREE["Texture"]>): void;
+    export {};
+}
+
+declare namespace $ {
+    class $mol_state_time extends $mol_object {
+        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
+        static now(precision: number): number;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg extends $mol_view {
+		dom_name( ): string
+		dom_name_space( ): string
+		font_size( ): number
+		font_family( ): string
+		style_size( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=svg.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_svg extends $.$mol_svg {
+        computed_style(): Record<string, any>;
+        font_size(): number;
+        font_family(): any;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_svg_root extends $mol_svg {
+		view_box( ): string
+		aspect( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
+			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=root.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_svg_path extends $mol_svg {
+		geometry( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'd': ReturnType< $mol_svg_path['geometry'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=path.view.tree.d.ts.map
+declare namespace $ {
+    type $mol_type_enforce<Actual extends Expected, Expected> = Actual;
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_svg_path__geometry__QDFRBUQ4 = $mol_type_enforce<
+		ReturnType< $mol_icon['path'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	export class $mol_icon extends $mol_svg_root {
+		path( ): string
+		Path( ): $mol_svg_path
+		view_box( ): string
+		minimal_width( ): number
+		minimal_height( ): number
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=icon.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_eye extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=eye.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_eye_check extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=check.view.tree.d.ts.map
+declare namespace $ {
+    let $mol_layer: Record<string, $mol_style_func<"var", unknown>>;
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_speck extends $mol_view {
+		theme( ): string
+		value( ): any
+		attr( ): ({ 
+			'mol_theme': ReturnType< $mol_speck['theme'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		style( ): ({ 
+			'minHeight': string,
+		})  & ReturnType< $mol_view['style'] >
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=speck.view.tree.d.ts.map
+declare namespace $ {
+    enum $mol_keyboard_code {
+        backspace = 8,
+        tab = 9,
+        enter = 13,
+        shift = 16,
+        ctrl = 17,
+        alt = 18,
+        pause = 19,
+        capsLock = 20,
+        escape = 27,
+        space = 32,
+        pageUp = 33,
+        pageDown = 34,
+        end = 35,
+        home = 36,
+        left = 37,
+        up = 38,
+        right = 39,
+        down = 40,
+        insert = 45,
+        delete = 46,
+        key0 = 48,
+        key1 = 49,
+        key2 = 50,
+        key3 = 51,
+        key4 = 52,
+        key5 = 53,
+        key6 = 54,
+        key7 = 55,
+        key8 = 56,
+        key9 = 57,
+        A = 65,
+        B = 66,
+        C = 67,
+        D = 68,
+        E = 69,
+        F = 70,
+        G = 71,
+        H = 72,
+        I = 73,
+        J = 74,
+        K = 75,
+        L = 76,
+        M = 77,
+        N = 78,
+        O = 79,
+        P = 80,
+        Q = 81,
+        R = 82,
+        S = 83,
+        T = 84,
+        U = 85,
+        V = 86,
+        W = 87,
+        X = 88,
+        Y = 89,
+        Z = 90,
+        metaLeft = 91,
+        metaRight = 92,
+        select = 93,
+        numpad0 = 96,
+        numpad1 = 97,
+        numpad2 = 98,
+        numpad3 = 99,
+        numpad4 = 100,
+        numpad5 = 101,
+        numpad6 = 102,
+        numpad7 = 103,
+        numpad8 = 104,
+        numpad9 = 105,
+        multiply = 106,
+        add = 107,
+        subtract = 109,
+        decimal = 110,
+        divide = 111,
+        F1 = 112,
+        F2 = 113,
+        F3 = 114,
+        F4 = 115,
+        F5 = 116,
+        F6 = 117,
+        F7 = 118,
+        F8 = 119,
+        F9 = 120,
+        F10 = 121,
+        F11 = 122,
+        F12 = 123,
+        numLock = 144,
+        scrollLock = 145,
+        semicolon = 186,
+        equals = 187,
+        comma = 188,
+        dash = 189,
+        period = 190,
+        forwardSlash = 191,
+        graveAccent = 192,
+        bracketOpen = 219,
+        slashBack = 220,
+        slashBackLeft = 226,
+        bracketClose = 221,
+        quoteSingle = 222
+    }
+}
+
+declare namespace $ {
+
+	type $mol_speck__value__18MHTVEC = $mol_type_enforce<
+		ReturnType< $mol_button['error'] >
+		,
+		ReturnType< $mol_speck['value'] >
+	>
+	export class $mol_button extends $mol_view {
+		event_activate( next?: any ): any
+		clicks( next?: any ): any
+		event_key_press( next?: any ): any
+		disabled( ): boolean
+		tab_index( ): number
+		hint( ): string
+		hint_safe( ): ReturnType< $mol_button['hint'] >
+		error( ): string
+		enabled( ): boolean
+		click( next?: any ): any
+		event_click( next?: any ): any
+		event( ): ({ 
+			click( next?: ReturnType< $mol_button['event_activate'] > ): ReturnType< $mol_button['event_activate'] >,
+			dblclick( next?: ReturnType< $mol_button['clicks'] > ): ReturnType< $mol_button['clicks'] >,
+			keydown( next?: ReturnType< $mol_button['event_key_press'] > ): ReturnType< $mol_button['event_key_press'] >,
+		})  & ReturnType< $mol_view['event'] >
+		attr( ): ({ 
+			'disabled': ReturnType< $mol_button['disabled'] >,
+			'role': string,
+			'tabindex': ReturnType< $mol_button['tab_index'] >,
+			'title': ReturnType< $mol_button['hint_safe'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		sub( ): readonly($mol_view_content)[]
+		Speck( ): $mol_speck
+	}
+	
+}
+
+//# sourceMappingURL=button.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_button extends $.$mol_button {
+        status(next?: any[]): any[];
+        disabled(): boolean;
+        event_activate(next: Event): void;
+        event_key_press(event: KeyboardEvent): void;
+        tab_index(): number;
+        error(): string;
+        hint_safe(): string;
+        sub_visible(): ($mol_speck | $mol_view_content)[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_button_typed extends $mol_button {
+		minimal_height( ): number
+		minimal_width( ): number
+	}
+	
+}
+
+//# sourceMappingURL=typed.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_button_minor extends $mol_button_typed {
+	}
+	
+}
+
+//# sourceMappingURL=minor.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_view__sub__NDDWP0RA = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $mol_check extends $mol_button_minor {
+		checked( next?: boolean ): boolean
+		aria_checked( ): string
+		aria_role( ): string
+		Icon( ): any
+		title( ): string
+		Title( ): $mol_view
+		label( ): readonly(any)[]
+		attr( ): ({ 
+			'mol_check_checked': ReturnType< $mol_check['checked'] >,
+			'aria-checked': ReturnType< $mol_check['aria_checked'] >,
+			'role': ReturnType< $mol_check['aria_role'] >,
+		})  & ReturnType< $mol_button_minor['attr'] >
+		sub( ): readonly($mol_view_content)[]
+	}
+	
+}
+
+//# sourceMappingURL=check.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_check extends $.$mol_check {
+        click(next?: Event): void;
+        sub(): readonly $mol_view_content[];
+        label(): readonly any[];
+        aria_checked(): string;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_icon_tick extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=tick.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_check_box extends $mol_check {
+		Icon( ): $mol_icon_tick
+	}
+	
+}
+
+//# sourceMappingURL=box.view.tree.d.ts.map
+declare namespace $ {
+    function $mol_support_css_overflow_anchor(this: $): boolean;
+}
+
+declare namespace $ {
+    class $mol_dom_listener extends $mol_object {
+        _node: any;
+        _event: string;
+        _handler: (event: any) => any;
+        _config: boolean | {
+            passive: boolean;
+        };
+        constructor(_node: any, _event: string, _handler: (event: any) => any, _config?: boolean | {
+            passive: boolean;
+        });
+        destructor(): void;
+    }
+}
+
+declare namespace $ {
+    class $mol_print extends $mol_object {
+        static before(): $mol_dom_listener;
+        static after(): $mol_dom_listener;
+        static active(next?: boolean): boolean;
+    }
+}
+
+declare namespace $ {
+    let $mol_mem_cached: typeof $mol_wire_probe;
+}
+
+declare namespace $ {
+
+	type $mol_view__style__SDET3U2Q = $mol_type_enforce<
+		({ 
+			'paddingTop': ReturnType< $mol_list['gap_before'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	type $mol_view__style__N2A47D97 = $mol_type_enforce<
+		({ 
+			'paddingTop': ReturnType< $mol_list['gap_after'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	export class $mol_list extends $mol_view {
+		rows( ): readonly($mol_view)[]
+		gap_before( ): number
+		gap_after( ): number
+		render_visible_only( ): boolean
+		render_over( ): number
+		sub( ): ReturnType< $mol_list['rows'] >
+		Empty( ): $mol_view
+		Gap_before( ): $mol_view
+		Gap_after( ): $mol_view
+		view_window( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=list.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_list extends $.$mol_list {
+        sub(): readonly $mol_view[];
+        render_visible_only(): boolean;
+        view_window(next?: [number, number]): [number, number];
+        gap_before(): number;
+        gap_after(): number;
+        sub_visible(): $mol_view[];
+        minimal_height(): number;
+        force_render(path: Set<$mol_view>): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_scroll extends $mol_view {
+		tabindex( ): number
+		event_scroll( next?: any ): any
+		scroll_top( next?: number ): number
+		scroll_left( next?: number ): number
+		field( ): ({ 
+			'tabIndex': ReturnType< $mol_scroll['tabindex'] >,
+		})  & ReturnType< $mol_view['field'] >
+		event( ): ({ 
+			scroll( next?: ReturnType< $mol_scroll['event_scroll'] > ): ReturnType< $mol_scroll['event_scroll'] >,
+		})  & ReturnType< $mol_view['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=scroll.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_scroll extends $.$mol_scroll {
+        scroll_top(next?: number, cache?: 'cache'): number;
+        scroll_left(next?: number, cache?: 'cache'): number;
+        event_scroll(next?: Event): void;
+        minimal_height(): number;
+        minimal_width(): number;
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	type $mol_pop_bubble__align__6ATX1EWU = $mol_type_enforce<
+		ReturnType< $mol_pop['align'] >
+		,
+		ReturnType< $mol_pop_bubble['align'] >
+	>
+	type $mol_pop_bubble__content__M29UEXQK = $mol_type_enforce<
+		ReturnType< $mol_pop['bubble_content'] >
+		,
+		ReturnType< $mol_pop_bubble['content'] >
+	>
+	type $mol_pop_bubble__height_max__UXXHCIKY = $mol_type_enforce<
+		ReturnType< $mol_pop['height_max'] >
+		,
+		ReturnType< $mol_pop_bubble['height_max'] >
+	>
+	export class $mol_pop extends $mol_view {
+		Anchor( ): any
+		align( ): string
+		bubble_content( ): readonly($mol_view_content)[]
+		height_max( ): number
+		Bubble( ): $mol_pop_bubble
+		showed( next?: boolean ): boolean
+		align_vert( ): string
+		align_hor( ): string
+		prefer( ): string
+		sub( ): readonly(any)[]
+		sub_visible( ): readonly(any)[]
+	}
+	
+	export class $mol_pop_bubble extends $mol_view {
+		content( ): readonly($mol_view_content)[]
+		height_max( ): number
+		align( ): string
+		sub( ): ReturnType< $mol_pop_bubble['content'] >
+		style( ): ({ 
+			'maxHeight': ReturnType< $mol_pop_bubble['height_max'] >,
+		})  & ReturnType< $mol_view['style'] >
+		attr( ): ({ 
+			'mol_pop_align': ReturnType< $mol_pop_bubble['align'] >,
+			'tabindex': number,
+		})  & ReturnType< $mol_view['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=pop.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_pop extends $.$mol_pop {
+        showed(next?: boolean): boolean;
+        sub_visible(): any[];
+        height_max(): number;
+        align(): string;
+        align_vert(): "suspense" | "top" | "bottom";
+        align_hor(): "suspense" | "left" | "right";
+        View_port(): $mol_view;
+        view_port(): {
+            width: number;
+            height: number;
+            left: number;
+            right: number;
+            top: number;
+            bottom: number;
+        } | {
+            left: number;
+            top: number;
+            width: number;
+            height: number;
+        };
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_check__minimal_width__A76B3YE5 = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_check['minimal_width'] >
+	>
+	type $mol_check__minimal_height__2A4368O3 = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_check['minimal_height'] >
+	>
+	type $mol_check__enabled__UDUG07JW = $mol_type_enforce<
+		ReturnType< $mol_pick['trigger_enabled'] >
+		,
+		ReturnType< $mol_check['enabled'] >
+	>
+	type $mol_check__checked__9EE5Y4JC = $mol_type_enforce<
+		ReturnType< $mol_pick['showed'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $mol_check__clicks__43036M5T = $mol_type_enforce<
+		ReturnType< $mol_pick['clicks'] >
+		,
+		ReturnType< $mol_check['clicks'] >
+	>
+	type $mol_check__sub__R97HDS7A = $mol_type_enforce<
+		ReturnType< $mol_pick['trigger_content'] >
+		,
+		ReturnType< $mol_check['sub'] >
+	>
+	type $mol_check__hint__P8W48NM6 = $mol_type_enforce<
+		ReturnType< $mol_pick['hint'] >
+		,
+		ReturnType< $mol_check['hint'] >
+	>
+	export class $mol_pick extends $mol_pop {
+		keydown( next?: any ): any
+		trigger_enabled( ): boolean
+		clicks( next?: any ): any
+		trigger_content( ): readonly($mol_view_content)[]
+		hint( ): string
+		Trigger( ): $mol_check
+		event( ): ({ 
+			keydown( next?: ReturnType< $mol_pick['keydown'] > ): ReturnType< $mol_pick['keydown'] >,
+		})  & ReturnType< $mol_pop['event'] >
+		Anchor( ): ReturnType< $mol_pick['Trigger'] >
+	}
+	
+}
+
+//# sourceMappingURL=pick.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_pick extends $.$mol_pick {
+        keydown(event: KeyboardEvent): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
     class $mol_plugin extends $mol_view {
         dom_node_external(next?: Element): Element;
         render(): void;
@@ -834,11 +1578,2022 @@ declare namespace $ {
 
 declare namespace $ {
 
+	export class $mol_hotkey extends $mol_plugin {
+		keydown( next?: any ): any
+		event( ): ({ 
+			keydown( next?: ReturnType< $mol_hotkey['keydown'] > ): ReturnType< $mol_hotkey['keydown'] >,
+		})  & ReturnType< $mol_plugin['event'] >
+		key( ): Record<string, any>
+		mod_ctrl( ): boolean
+		mod_alt( ): boolean
+		mod_shift( ): boolean
+	}
+	
+}
+
+//# sourceMappingURL=hotkey.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_hotkey extends $.$mol_hotkey {
+        key(): {
+            readonly [x: number]: ((event: KeyboardEvent) => void) | undefined;
+            readonly backspace?: ((event: KeyboardEvent) => void) | undefined;
+            readonly tab?: ((event: KeyboardEvent) => void) | undefined;
+            readonly enter?: ((event: KeyboardEvent) => void) | undefined;
+            readonly shift?: ((event: KeyboardEvent) => void) | undefined;
+            readonly ctrl?: ((event: KeyboardEvent) => void) | undefined;
+            readonly alt?: ((event: KeyboardEvent) => void) | undefined;
+            readonly pause?: ((event: KeyboardEvent) => void) | undefined;
+            readonly capsLock?: ((event: KeyboardEvent) => void) | undefined;
+            readonly escape?: ((event: KeyboardEvent) => void) | undefined;
+            readonly space?: ((event: KeyboardEvent) => void) | undefined;
+            readonly pageUp?: ((event: KeyboardEvent) => void) | undefined;
+            readonly pageDown?: ((event: KeyboardEvent) => void) | undefined;
+            readonly end?: ((event: KeyboardEvent) => void) | undefined;
+            readonly home?: ((event: KeyboardEvent) => void) | undefined;
+            readonly left?: ((event: KeyboardEvent) => void) | undefined;
+            readonly up?: ((event: KeyboardEvent) => void) | undefined;
+            readonly right?: ((event: KeyboardEvent) => void) | undefined;
+            readonly down?: ((event: KeyboardEvent) => void) | undefined;
+            readonly insert?: ((event: KeyboardEvent) => void) | undefined;
+            readonly delete?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key0?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key1?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key2?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key3?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key4?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key5?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key6?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key7?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key8?: ((event: KeyboardEvent) => void) | undefined;
+            readonly key9?: ((event: KeyboardEvent) => void) | undefined;
+            readonly A?: ((event: KeyboardEvent) => void) | undefined;
+            readonly B?: ((event: KeyboardEvent) => void) | undefined;
+            readonly C?: ((event: KeyboardEvent) => void) | undefined;
+            readonly D?: ((event: KeyboardEvent) => void) | undefined;
+            readonly E?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F?: ((event: KeyboardEvent) => void) | undefined;
+            readonly G?: ((event: KeyboardEvent) => void) | undefined;
+            readonly H?: ((event: KeyboardEvent) => void) | undefined;
+            readonly I?: ((event: KeyboardEvent) => void) | undefined;
+            readonly J?: ((event: KeyboardEvent) => void) | undefined;
+            readonly K?: ((event: KeyboardEvent) => void) | undefined;
+            readonly L?: ((event: KeyboardEvent) => void) | undefined;
+            readonly M?: ((event: KeyboardEvent) => void) | undefined;
+            readonly N?: ((event: KeyboardEvent) => void) | undefined;
+            readonly O?: ((event: KeyboardEvent) => void) | undefined;
+            readonly P?: ((event: KeyboardEvent) => void) | undefined;
+            readonly Q?: ((event: KeyboardEvent) => void) | undefined;
+            readonly R?: ((event: KeyboardEvent) => void) | undefined;
+            readonly S?: ((event: KeyboardEvent) => void) | undefined;
+            readonly T?: ((event: KeyboardEvent) => void) | undefined;
+            readonly U?: ((event: KeyboardEvent) => void) | undefined;
+            readonly V?: ((event: KeyboardEvent) => void) | undefined;
+            readonly W?: ((event: KeyboardEvent) => void) | undefined;
+            readonly X?: ((event: KeyboardEvent) => void) | undefined;
+            readonly Y?: ((event: KeyboardEvent) => void) | undefined;
+            readonly Z?: ((event: KeyboardEvent) => void) | undefined;
+            readonly metaLeft?: ((event: KeyboardEvent) => void) | undefined;
+            readonly metaRight?: ((event: KeyboardEvent) => void) | undefined;
+            readonly select?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad0?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad1?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad2?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad3?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad4?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad5?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad6?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad7?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad8?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numpad9?: ((event: KeyboardEvent) => void) | undefined;
+            readonly multiply?: ((event: KeyboardEvent) => void) | undefined;
+            readonly add?: ((event: KeyboardEvent) => void) | undefined;
+            readonly subtract?: ((event: KeyboardEvent) => void) | undefined;
+            readonly decimal?: ((event: KeyboardEvent) => void) | undefined;
+            readonly divide?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F1?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F2?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F3?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F4?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F5?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F6?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F7?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F8?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F9?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F10?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F11?: ((event: KeyboardEvent) => void) | undefined;
+            readonly F12?: ((event: KeyboardEvent) => void) | undefined;
+            readonly numLock?: ((event: KeyboardEvent) => void) | undefined;
+            readonly scrollLock?: ((event: KeyboardEvent) => void) | undefined;
+            readonly semicolon?: ((event: KeyboardEvent) => void) | undefined;
+            readonly equals?: ((event: KeyboardEvent) => void) | undefined;
+            readonly comma?: ((event: KeyboardEvent) => void) | undefined;
+            readonly dash?: ((event: KeyboardEvent) => void) | undefined;
+            readonly period?: ((event: KeyboardEvent) => void) | undefined;
+            readonly forwardSlash?: ((event: KeyboardEvent) => void) | undefined;
+            readonly graveAccent?: ((event: KeyboardEvent) => void) | undefined;
+            readonly bracketOpen?: ((event: KeyboardEvent) => void) | undefined;
+            readonly slashBack?: ((event: KeyboardEvent) => void) | undefined;
+            readonly slashBackLeft?: ((event: KeyboardEvent) => void) | undefined;
+            readonly bracketClose?: ((event: KeyboardEvent) => void) | undefined;
+            readonly quoteSingle?: ((event: KeyboardEvent) => void) | undefined;
+        };
+        keydown(event?: KeyboardEvent): void;
+    }
+}
+
+declare namespace $ {
+    let $mol_action: typeof $mol_wire_method;
+}
+
+declare namespace $ {
+
+	type $mol_hotkey__mod_ctrl__PKG3EG1T = $mol_type_enforce<
+		ReturnType< $mol_string['submit_with_ctrl'] >
+		,
+		ReturnType< $mol_hotkey['mod_ctrl'] >
+	>
+	type $mol_hotkey__key__6HCCZE28 = $mol_type_enforce<
+		({ 
+			enter( next?: ReturnType< $mol_string['submit'] > ): ReturnType< $mol_string['submit'] >,
+		}) 
+		,
+		ReturnType< $mol_hotkey['key'] >
+	>
+	export class $mol_string extends $mol_view {
+		selection_watcher( ): any
+		error_report( ): any
+		disabled( ): boolean
+		value( next?: string ): string
+		value_changed( next?: ReturnType< $mol_string['value'] > ): ReturnType< $mol_string['value'] >
+		hint( ): string
+		hint_visible( ): ReturnType< $mol_string['hint'] >
+		spellcheck( ): boolean
+		autocomplete_native( ): string
+		selection_end( ): number
+		selection_start( ): number
+		keyboard( ): string
+		enter( ): string
+		length_max( ): number
+		type( next?: string ): string
+		event_change( next?: any ): any
+		submit_with_ctrl( ): boolean
+		submit( next?: any ): any
+		Submit( ): $mol_hotkey
+		dom_name( ): string
+		enabled( ): boolean
+		minimal_height( ): number
+		autocomplete( ): boolean
+		selection( next?: readonly(number)[] ): readonly(number)[]
+		auto( ): readonly(any)[]
+		field( ): ({ 
+			'disabled': ReturnType< $mol_string['disabled'] >,
+			'value': ReturnType< $mol_string['value_changed'] >,
+			'placeholder': ReturnType< $mol_string['hint_visible'] >,
+			'spellcheck': ReturnType< $mol_string['spellcheck'] >,
+			'autocomplete': ReturnType< $mol_string['autocomplete_native'] >,
+			'selectionEnd': ReturnType< $mol_string['selection_end'] >,
+			'selectionStart': ReturnType< $mol_string['selection_start'] >,
+			'inputMode': ReturnType< $mol_string['keyboard'] >,
+			'enterkeyhint': ReturnType< $mol_string['enter'] >,
+		})  & ReturnType< $mol_view['field'] >
+		attr( ): ({ 
+			'maxlength': ReturnType< $mol_string['length_max'] >,
+			'type': ReturnType< $mol_string['type'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		event( ): ({ 
+			input( next?: ReturnType< $mol_string['event_change'] > ): ReturnType< $mol_string['event_change'] >,
+		})  & ReturnType< $mol_view['event'] >
+		plugins( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=string.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_string extends $.$mol_string {
+        event_change(next?: Event): void;
+        error_report(): void;
+        hint_visible(): string;
+        disabled(): boolean;
+        autocomplete_native(): "on" | "off";
+        selection_watcher(): $mol_dom_listener;
+        selection_change(event: Event): void;
+        selection_start(): number;
+        selection_end(): number;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_icon_minus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=minus.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_plus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=plus.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_string__type__PBOV8HFQ = $mol_type_enforce<
+		ReturnType< $mol_number['type'] >
+		,
+		ReturnType< $mol_string['type'] >
+	>
+	type $mol_string__value__JQR9WVFC = $mol_type_enforce<
+		ReturnType< $mol_number['value_string'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__hint__TE47NU1Q = $mol_type_enforce<
+		ReturnType< $mol_number['hint'] >
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__enabled__64FA3DAS = $mol_type_enforce<
+		ReturnType< $mol_number['string_enabled'] >
+		,
+		ReturnType< $mol_string['enabled'] >
+	>
+	type $mol_string__submit__C7ZMA2HA = $mol_type_enforce<
+		ReturnType< $mol_number['submit'] >
+		,
+		ReturnType< $mol_string['submit'] >
+	>
+	type $mol_button_minor__event_click__15S6RLX2 = $mol_type_enforce<
+		ReturnType< $mol_number['event_dec'] >
+		,
+		ReturnType< $mol_button_minor['event_click'] >
+	>
+	type $mol_button_minor__enabled__R16G1PCC = $mol_type_enforce<
+		ReturnType< $mol_number['dec_enabled'] >
+		,
+		ReturnType< $mol_button_minor['enabled'] >
+	>
+	type $mol_button_minor__sub__LWR77MI2 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__event_click__PR7JIHGE = $mol_type_enforce<
+		ReturnType< $mol_number['event_inc'] >
+		,
+		ReturnType< $mol_button_minor['event_click'] >
+	>
+	type $mol_button_minor__enabled__LMOLKCCM = $mol_type_enforce<
+		ReturnType< $mol_number['inc_enabled'] >
+		,
+		ReturnType< $mol_button_minor['enabled'] >
+	>
+	type $mol_button_minor__sub__WBCP2BH4 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	export class $mol_number extends $mol_view {
+		precision( ): number
+		type( ): string
+		value_string( next?: string ): string
+		hint( ): string
+		string_enabled( ): ReturnType< $mol_number['enabled'] >
+		submit( next?: any ): any
+		String( ): $mol_string
+		event_dec( next?: any ): any
+		dec_enabled( ): ReturnType< $mol_number['enabled'] >
+		dec_icon( ): $mol_icon_minus
+		Dec( ): $mol_button_minor
+		event_inc( next?: any ): any
+		inc_enabled( ): ReturnType< $mol_number['enabled'] >
+		inc_icon( ): $mol_icon_plus
+		Inc( ): $mol_button_minor
+		precision_view( ): ReturnType< $mol_number['precision'] >
+		precision_change( ): ReturnType< $mol_number['precision'] >
+		value_min( ): number
+		value_max( ): number
+		value( next?: number ): number
+		enabled( ): boolean
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=number.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_number extends $.$mol_number {
+        value_limited(next?: any): number;
+        event_dec(next?: Event): void;
+        event_inc(next?: Event): void;
+        value_string(next?: string): string;
+        dec_enabled(): boolean;
+        inc_enabled(): boolean;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_icon_image extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=image.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_image_filter extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=filter.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_image_filter_center_focus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=focus.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_check_icon extends $mol_check {
+	}
+	
+}
+
+//# sourceMappingURL=icon.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_arrow_expand extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=expand.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_arrow_expand_all extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=all.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_magnify extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=magnify.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_magnify_plus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=plus.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_magnify_plus_outline extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=outline.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_magnify_minus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=minus.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_magnify_minus_outline extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=outline.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_check__checked__3GHUHC3D = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_checked'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $mol_check__label__JMDH2P8L = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_label'] >
+		,
+		ReturnType< $mol_check['label'] >
+	>
+	type $mol_check__enabled__AKWPJXQR = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_enabled'] >
+		,
+		ReturnType< $mol_check['enabled'] >
+	>
+	type $mol_check__hint__3PQ7G0LX = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_hint'] >
+		,
+		ReturnType< $mol_check['hint'] >
+	>
+	type $mol_check__minimal_height__RRPHM855 = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_check['minimal_height'] >
+	>
+	export class $mol_check_list extends $mol_view {
+		option_checked( id: any, next?: boolean ): boolean
+		option_title( id: any): string
+		option_label( id: any): readonly(any)[]
+		enabled( ): boolean
+		option_enabled( id: any): ReturnType< $mol_check_list['enabled'] >
+		option_hint( id: any): string
+		items( ): readonly($mol_check)[]
+		dictionary( ): Record<string, any>
+		Option( id: any): $mol_check
+		options( ): Record<string, any>
+		keys( ): readonly(string)[]
+		sub( ): ReturnType< $mol_check_list['items'] >
+	}
+	
+}
+
+//# sourceMappingURL=list.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_check_list extends $.$mol_check_list {
+        options(): {
+            [key: string]: string;
+        };
+        dictionary(next?: Record<string, boolean>): Record<string, boolean>;
+        option_checked(id: string, next?: boolean | null): boolean;
+        keys(): readonly string[];
+        items(): $.$mol_check[];
+        option_title(key: string): string;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    class $mol_state_session<Value> extends $mol_object {
+        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+        static native(): Storage | {
+            getItem(key: string): any;
+            setItem(key: string, value: string): void;
+            removeItem(key: string): void;
+        };
+        static value<Value>(key: string, next?: Value): Value;
+        prefix(): string;
+        value(key: string, next?: Value): Value;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_switch extends $mol_check_list {
+		value( next?: string ): string
+	}
+	
+}
+
+//# sourceMappingURL=switch.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_switch extends $.$mol_switch {
+        value(next?: string): string;
+        option_checked(key: string, next?: boolean): boolean;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_view__sub__IDDSFOJK = $mol_type_enforce<
+		ReturnType< $mol_card['content'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__minimal_height__REZ8ZZCT = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_view['minimal_height'] >
+	>
+	type $mol_view__sub__NWAKP556 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $mol_card extends $mol_list {
+		status( ): string
+		content( ): readonly($mol_view_content)[]
+		Content( ): $mol_view
+		status_text( ): ReturnType< $mol_card['status'] >
+		Status( ): $mol_view
+		attr( ): ({ 
+			'mol_card_status_type': ReturnType< $mol_card['status'] >,
+		})  & ReturnType< $mol_list['attr'] >
+		rows( ): readonly($mol_view)[]
+	}
+	
+}
+
+//# sourceMappingURL=card.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_card extends $.$mol_card {
+        rows(): readonly $mol_view[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    const $mpds_cifplayer_lib_tween: typeof import("./_tween");
+}
+
+declare namespace $ {
+    class $mol_state_arg extends $mol_object {
+        prefix: string;
+        static href(next?: string): string;
+        static href_normal(): string;
+        static href_absolute(): string;
+        static dict(next?: {
+            [key: string]: string | null;
+        }): Readonly<{
+            [key: string]: string;
+        }>;
+        static dict_cut(except: string[]): {
+            [key: string]: string;
+        };
+        static value(key: string, next?: string | null): string | null;
+        static link(next: Record<string, string | null>): string;
+        static prolog: string;
+        static separator: string;
+        static make_link(next: {
+            [key: string]: string | null;
+        }): string;
+        static go(next: {
+            [key: string]: string | null;
+        }): void;
+        static encode(str: string): string;
+        constructor(prefix?: string);
+        value(key: string, next?: string): string | null;
+        sub(postfix: string): $mol_state_arg;
+        link(next: Record<string, string | null>): string;
+    }
+}
+
+declare namespace $ {
+    let $mol_mem_persist: typeof $mol_wire_solid;
+}
+
+declare namespace $ {
+    export function $mol_wire_sync<Host extends object>(obj: Host): ObjectOrFunctionResultAwaited<Host>;
+    type FunctionResultAwaited<Some> = Some extends (...args: infer Args) => infer Res ? (...args: Args) => Awaited<Res> : Some;
+    type MethodsResultAwaited<Host extends Object> = {
+        [K in keyof Host]: FunctionResultAwaited<Host[K]>;
+    };
+    type ObjectOrFunctionResultAwaited<Some> = (Some extends (...args: any) => unknown ? FunctionResultAwaited<Some> : {}) & (Some extends Object ? MethodsResultAwaited<Some> : Some);
+    export {};
+}
+
+declare namespace $ {
+    class $mol_storage extends $mol_object2 {
+        static native(): StorageManager;
+        static persisted(next?: boolean, cache?: 'cache'): boolean;
+        static estimate(): StorageEstimate;
+        static dir(): FileSystemDirectoryHandle;
+    }
+}
+
+declare namespace $ {
+    class $mol_state_local<Value> extends $mol_object {
+        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+        static native(): Storage | {
+            getItem(key: string): any;
+            setItem(key: string, value: string): void;
+            removeItem(key: string): void;
+        };
+        static changes(next?: StorageEvent): StorageEvent | undefined;
+        static value<Value>(key: string, next?: Value | null): Value | null;
+        prefix(): string;
+        value(key: string, next?: Value): Value | null;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    function $mol_lights(this: $, next?: boolean): boolean;
+}
+
+declare namespace $ {
+    const $mpds_cifplayer_lib_math: any;
+}
+
+declare namespace $ {
+    class $mol_error_mix<Cause extends {} = {}> extends AggregateError {
+        readonly cause: Cause;
+        name: string;
+        constructor(message: string, cause?: Cause, ...errors: Error[]);
+        static [Symbol.toPrimitive](): string;
+        static toString(): string;
+        static make(...params: ConstructorParameters<typeof $mol_error_mix>): $mol_error_mix<{}>;
+    }
+}
+
+declare namespace $ {
+    class $mol_data_error extends $mol_error_mix {
+    }
+}
+
+declare namespace $ {
+    type $mpds_cifplayer_matinfio_cell = {
+        a: number;
+        b: number;
+        c: number;
+        alpha: number;
+        beta: number;
+        gamma: number;
+    };
+    function $mpds_cifplayer_matinfio_cell_to_matrix(this: $, cell: $mpds_cifplayer_matinfio_cell): number[][];
+    function $mpds_cifplayer_matinfio_cell_params_from_matrix(matrix: number[][]): number[];
+}
+
+declare namespace $ {
+    function $mpds_cifplayer_matinfio_player_from_obj(this: $, crystal: $mpds_cifplayer_matinfio_internal_obj): $mpds_cifplayer_matinfio_player_obj;
+}
+
+declare namespace $ {
+    export const $mpds_cifplayer_matinfio_chemical_elements: {
+        JmolColors: {
+            D: string;
+            H: string;
+            He: string;
+            Li: string;
+            Be: string;
+            B: string;
+            C: string;
+            N: string;
+            O: string;
+            F: string;
+            Ne: string;
+            Na: string;
+            Mg: string;
+            Al: string;
+            Si: string;
+            P: string;
+            S: string;
+            Cl: string;
+            Ar: string;
+            K: string;
+            Ca: string;
+            Sc: string;
+            Ti: string;
+            V: string;
+            Cr: string;
+            Mn: string;
+            Fe: string;
+            Co: string;
+            Ni: string;
+            Cu: string;
+            Zn: string;
+            Ga: string;
+            Ge: string;
+            As: string;
+            Se: string;
+            Br: string;
+            Kr: string;
+            Rb: string;
+            Sr: string;
+            Y: string;
+            Zr: string;
+            Nb: string;
+            Mo: string;
+            Tc: string;
+            Ru: string;
+            Rh: string;
+            Pd: string;
+            Ag: string;
+            Cd: string;
+            In: string;
+            Sn: string;
+            Sb: string;
+            Te: string;
+            I: string;
+            Xe: string;
+            Cs: string;
+            Ba: string;
+            La: string;
+            Ce: string;
+            Pr: string;
+            Nd: string;
+            Pm: string;
+            Sm: string;
+            Eu: string;
+            Gd: string;
+            Tb: string;
+            Dy: string;
+            Ho: string;
+            Er: string;
+            Tm: string;
+            Yb: string;
+            Lu: string;
+            Hf: string;
+            Ta: string;
+            W: string;
+            Re: string;
+            Os: string;
+            Ir: string;
+            Pt: string;
+            Au: string;
+            Hg: string;
+            Tl: string;
+            Pb: string;
+            Bi: string;
+            Po: string;
+            At: string;
+            Rn: string;
+            Fr: string;
+            Ra: string;
+            Ac: string;
+            Th: string;
+            Pa: string;
+            U: string;
+            Np: string;
+            Pu: string;
+            Am: string;
+            Cm: string;
+            Bk: string;
+            Cf: string;
+            Es: string;
+            Fm: string;
+            Md: string;
+            No: string;
+            Lr: string;
+            Rf: string;
+            Db: string;
+            Sg: string;
+            Bh: string;
+            Hs: string;
+            Mt: string;
+        };
+        AseRadii: {
+            X: number;
+            H: number;
+            He: number;
+            Li: number;
+            Be: number;
+            B: number;
+            C: number;
+            N: number;
+            O: number;
+            F: number;
+            Ne: number;
+            Na: number;
+            Mg: number;
+            Al: number;
+            Si: number;
+            P: number;
+            S: number;
+            Cl: number;
+            Ar: number;
+            K: number;
+            Ca: number;
+            Sc: number;
+            Ti: number;
+            V: number;
+            Cr: number;
+            Mn: number;
+            Fe: number;
+            Co: number;
+            Ni: number;
+            Cu: number;
+            Zn: number;
+            Ga: number;
+            Ge: number;
+            As: number;
+            Se: number;
+            Br: number;
+            Kr: number;
+            Rb: number;
+            Sr: number;
+            Y: number;
+            Zr: number;
+            Nb: number;
+            Mo: number;
+            Tc: number;
+            Ru: number;
+            Rh: number;
+            Pd: number;
+            Ag: number;
+            Cd: number;
+            In: number;
+            Sn: number;
+            Sb: number;
+            Te: number;
+            I: number;
+            Xe: number;
+            Cs: number;
+            Ba: number;
+            La: number;
+            Ce: number;
+            Pr: number;
+            Nd: number;
+            Pm: number;
+            Sm: number;
+            Eu: number;
+            Gd: number;
+            Tb: number;
+            Dy: number;
+            Ho: number;
+            Er: number;
+            Tm: number;
+            Yb: number;
+            Lu: number;
+            Hf: number;
+            Ta: number;
+            W: number;
+            Re: number;
+            Os: number;
+            Ir: number;
+            Pt: number;
+            Au: number;
+            Hg: number;
+            Tl: number;
+            Pb: number;
+            Bi: number;
+            Po: number;
+            At: number;
+            Rn: number;
+            Fr: number;
+            Ra: number;
+            Ac: number;
+            Th: number;
+            Pa: number;
+            U: number;
+            Np: number;
+            Pu: number;
+            Am: number;
+            Cm: number;
+            Bk: number;
+            Cf: number;
+            Es: number;
+            Fm: number;
+            Md: number;
+            No: number;
+            Lr: number;
+            Rf: number;
+            Db: number;
+            Sg: number;
+            Bh: number;
+            Hs: number;
+            Mt: number;
+        };
+    };
+    export const $mpds_cifplayer_matinfio_custom_atom_loop_props: Record<string, string>;
+    type Format = 'CIF' | 'OPTIMADE' | 'POSCAR' | 'OPTIMADE_str' | 'unknown';
+    export const $mpds_cifplayer_matinfio_log: {
+        error: {
+            (...data: any[]): void;
+            (message?: any, ...optionalParams: any[]): void;
+        };
+        warning: {
+            (...data: any[]): void;
+            (message?: any, ...optionalParams: any[]): void;
+        };
+    };
+    export type $mpds_cifplayer_matinfio_internal_obj_atom = {
+        fract: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        x: number;
+        y: number;
+        z: number;
+        c: string;
+        r: number;
+        symbol: string;
+        label: string;
+        overlays: Record<string, string | number>;
+    };
+    export type $mpds_cifplayer_matinfio_internal_obj = {
+        cell_matrix?: number[][];
+        cell?: $mpds_cifplayer_matinfio_cell;
+        atoms: $mpds_cifplayer_matinfio_internal_obj_atom[];
+        sg_name: string;
+        ng_name: string;
+        info: string;
+        cartesian: boolean;
+        mpds_demo: boolean;
+        mpds_data: boolean;
+    };
+    export type $mpds_cifplayer_matinfio_player_obj = {
+        cell_matrix?: number[][];
+        cell?: $mpds_cifplayer_matinfio_cell;
+        descr: $mpds_cifplayer_matinfio_cell & {
+            symlabel?: string;
+        };
+        overlayed: Record<string, string>;
+        atoms: {
+            fract: {
+                x: number;
+                y: number;
+                z: number;
+            } | null;
+            x: number;
+            y: number;
+            z: number;
+            c: string;
+            r: number;
+            overlays: Record<string, string | number>;
+        }[];
+        sg_name: string;
+        ng_name: number;
+        info: string;
+        mpds_demo: boolean;
+        mpds_data: boolean;
+    };
+    export class $mpds_cifplayer_matinfio extends $mol_object2 {
+        static log: {
+            error: {
+                (...data: any[]): void;
+                (message?: any, ...optionalParams: any[]): void;
+            };
+            warning: {
+                (...data: any[]): void;
+                (message?: any, ...optionalParams: any[]): void;
+            };
+        };
+        static detect_format(data: any): "OPTIMADE" | "CIF" | "OPTIMADE_str" | "POSCAR" | "unknown";
+        readonly source: {
+            readonly data: any;
+            readonly format: Format;
+        };
+        constructor(data: any, format?: Format);
+        internal_obj(): $mpds_cifplayer_matinfio_internal_obj;
+        player(): $mpds_cifplayer_matinfio_player_obj;
+        flatten(): {
+            cell: any;
+            atoms: any[];
+            types: number[];
+            symlabel: string | boolean;
+        };
+        cif(): any;
+    }
+    export {};
+}
+
+declare namespace $ {
+    const $mpds_cifplayer_lib_spacegroups: typeof import("./_spacegroups");
+    type $mpds_cifplayer_lib_spacegroups_info = import('./_spacegroups').SpaceGroupInfo;
+}
+
+declare namespace $ {
+    class $mpds_cifplayer_matinfio_spacegroup extends $mol_object2 {
+        readonly data: $mpds_cifplayer_lib_spacegroups_info;
+        protected constructor(data: $mpds_cifplayer_lib_spacegroups_info);
+        static by_name_or_num(name: string, num: number): $mpds_cifplayer_matinfio_spacegroup;
+        static by_name(name: string): $mpds_cifplayer_matinfio_spacegroup | null;
+        static by_num(num: number): $mpds_cifplayer_matinfio_spacegroup | null;
+        static unknown(): $mpds_cifplayer_matinfio_spacegroup;
+        symmetry_list(): string[];
+        symmetric_atom(symmetry: string, atom: $mpds_cifplayer_matinfio_internal_obj_atom, cell: number[][]): $mpds_cifplayer_matinfio_internal_obj_atom;
+        symmetric_atoms(atom: $mpds_cifplayer_matinfio_internal_obj_atom, cell_matrix: number[][]): $mpds_cifplayer_matinfio_internal_obj_atom[];
+    }
+}
+
+declare namespace $ {
+    function $mol_promise<Result = void>(): Promise<Result> & {
+        done: (res: Result | PromiseLike<Result>) => void;
+        fail: (error?: any) => void;
+    };
+}
+
+declare namespace $ {
+    function $mol_wait_timeout_async(this: $, timeout: number): Promise<void> & {
+        done: (res: void | PromiseLike<void>) => void;
+        fail: (error?: any) => void;
+    } & {
+        destructor: () => void;
+    };
+    function $mol_wait_timeout(this: $, timeout: number): void;
+}
+
+declare namespace $ {
+    function $mol_view_component(View: typeof $mol_view): {
+        new (): {
+            view: $mol_view;
+            root?: $mol_wire_sub | null | undefined;
+            connectedCallback(): void;
+            disconnectedCallback(): void;
+            attributeChangedCallback(name: keyof any, prev: string, next: string): void;
+            toString(): string;
+            accessKey: string;
+            readonly accessKeyLabel: string;
+            autocapitalize: string;
+            dir: string;
+            draggable: boolean;
+            hidden: boolean;
+            inert: boolean;
+            innerText: string;
+            lang: string;
+            readonly offsetHeight: number;
+            readonly offsetLeft: number;
+            readonly offsetParent: Element | null;
+            readonly offsetTop: number;
+            readonly offsetWidth: number;
+            outerText: string;
+            popover: string | null;
+            spellcheck: boolean;
+            title: string;
+            translate: boolean;
+            attachInternals(): ElementInternals;
+            click(): void;
+            hidePopover(): void;
+            showPopover(): void;
+            togglePopover(force?: boolean | undefined): boolean;
+            addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+            addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+            removeEventListener<K_1 extends keyof HTMLElementEventMap>(type: K_1, listener: (this: HTMLElement, ev: HTMLElementEventMap[K_1]) => any, options?: boolean | EventListenerOptions | undefined): void;
+            removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions | undefined): void;
+            readonly attributes: NamedNodeMap;
+            readonly classList: DOMTokenList;
+            className: string;
+            readonly clientHeight: number;
+            readonly clientLeft: number;
+            readonly clientTop: number;
+            readonly clientWidth: number;
+            id: string;
+            readonly localName: string;
+            readonly namespaceURI: string | null;
+            onfullscreenchange: ((this: Element, ev: Event) => any) | null;
+            onfullscreenerror: ((this: Element, ev: Event) => any) | null;
+            outerHTML: string;
+            readonly ownerDocument: Document;
+            readonly part: DOMTokenList;
+            readonly prefix: string | null;
+            readonly scrollHeight: number;
+            scrollLeft: number;
+            scrollTop: number;
+            readonly scrollWidth: number;
+            readonly shadowRoot: ShadowRoot | null;
+            slot: string;
+            readonly tagName: string;
+            attachShadow(init: ShadowRootInit): ShadowRoot;
+            checkVisibility(options?: CheckVisibilityOptions | undefined): boolean;
+            closest<K_2 extends keyof HTMLElementTagNameMap>(selector: K_2): HTMLElementTagNameMap[K_2] | null;
+            closest<K_3 extends keyof SVGElementTagNameMap>(selector: K_3): SVGElementTagNameMap[K_3] | null;
+            closest<K_4 extends keyof MathMLElementTagNameMap>(selector: K_4): MathMLElementTagNameMap[K_4] | null;
+            closest<E extends Element = Element>(selectors: string): E | null;
+            computedStyleMap(): StylePropertyMapReadOnly;
+            getAttribute(qualifiedName: string): string | null;
+            getAttributeNS(namespace: string | null, localName: string): string | null;
+            getAttributeNames(): string[];
+            getAttributeNode(qualifiedName: string): Attr | null;
+            getAttributeNodeNS(namespace: string | null, localName: string): Attr | null;
+            getBoundingClientRect(): DOMRect;
+            getClientRects(): DOMRectList;
+            getElementsByClassName(classNames: string): HTMLCollectionOf<Element>;
+            getElementsByTagName<K_5 extends keyof HTMLElementTagNameMap>(qualifiedName: K_5): HTMLCollectionOf<HTMLElementTagNameMap[K_5]>;
+            getElementsByTagName<K_6 extends keyof SVGElementTagNameMap>(qualifiedName: K_6): HTMLCollectionOf<SVGElementTagNameMap[K_6]>;
+            getElementsByTagName<K_7 extends keyof MathMLElementTagNameMap>(qualifiedName: K_7): HTMLCollectionOf<MathMLElementTagNameMap[K_7]>;
+            getElementsByTagName<K_8 extends keyof HTMLElementDeprecatedTagNameMap>(qualifiedName: K_8): HTMLCollectionOf<HTMLElementDeprecatedTagNameMap[K_8]>;
+            getElementsByTagName(qualifiedName: string): HTMLCollectionOf<Element>;
+            getElementsByTagNameNS(namespaceURI: "http://www.w3.org/1999/xhtml", localName: string): HTMLCollectionOf<HTMLElement>;
+            getElementsByTagNameNS(namespaceURI: "http://www.w3.org/2000/svg", localName: string): HTMLCollectionOf<SVGElement>;
+            getElementsByTagNameNS(namespaceURI: "http://www.w3.org/1998/Math/MathML", localName: string): HTMLCollectionOf<MathMLElement>;
+            getElementsByTagNameNS(namespace: string | null, localName: string): HTMLCollectionOf<Element>;
+            hasAttribute(qualifiedName: string): boolean;
+            hasAttributeNS(namespace: string | null, localName: string): boolean;
+            hasAttributes(): boolean;
+            hasPointerCapture(pointerId: number): boolean;
+            insertAdjacentElement(where: InsertPosition, element: Element): Element | null;
+            insertAdjacentHTML(position: InsertPosition, text: string): void;
+            insertAdjacentText(where: InsertPosition, data: string): void;
+            matches(selectors: string): boolean;
+            releasePointerCapture(pointerId: number): void;
+            removeAttribute(qualifiedName: string): void;
+            removeAttributeNS(namespace: string | null, localName: string): void;
+            removeAttributeNode(attr: Attr): Attr;
+            requestFullscreen(options?: FullscreenOptions | undefined): Promise<void>;
+            requestPointerLock(): void;
+            scroll(options?: ScrollToOptions | undefined): void;
+            scroll(x: number, y: number): void;
+            scrollBy(options?: ScrollToOptions | undefined): void;
+            scrollBy(x: number, y: number): void;
+            scrollIntoView(arg?: boolean | ScrollIntoViewOptions | undefined): void;
+            scrollTo(options?: ScrollToOptions | undefined): void;
+            scrollTo(x: number, y: number): void;
+            setAttribute(qualifiedName: string, value: string): void;
+            setAttributeNS(namespace: string | null, qualifiedName: string, value: string): void;
+            setAttributeNode(attr: Attr): Attr | null;
+            setAttributeNodeNS(attr: Attr): Attr | null;
+            setPointerCapture(pointerId: number): void;
+            toggleAttribute(qualifiedName: string, force?: boolean | undefined): boolean;
+            webkitMatchesSelector(selectors: string): boolean;
+            readonly baseURI: string;
+            readonly childNodes: NodeListOf<ChildNode>;
+            readonly firstChild: ChildNode | null;
+            readonly isConnected: boolean;
+            readonly lastChild: ChildNode | null;
+            readonly nextSibling: ChildNode | null;
+            readonly nodeName: string;
+            readonly nodeType: number;
+            nodeValue: string | null;
+            readonly parentElement: HTMLElement | null;
+            readonly parentNode: ParentNode | null;
+            readonly previousSibling: ChildNode | null;
+            textContent: string | null;
+            appendChild<T extends Node>(node: T): T;
+            cloneNode(deep?: boolean | undefined): Node;
+            compareDocumentPosition(other: Node): number;
+            contains(other: Node | null): boolean;
+            getRootNode(options?: GetRootNodeOptions | undefined): Node;
+            hasChildNodes(): boolean;
+            insertBefore<T_1 extends Node>(node: T_1, child: Node | null): T_1;
+            isDefaultNamespace(namespace: string | null): boolean;
+            isEqualNode(otherNode: Node | null): boolean;
+            isSameNode(otherNode: Node | null): boolean;
+            lookupNamespaceURI(prefix: string | null): string | null;
+            lookupPrefix(namespace: string | null): string | null;
+            normalize(): void;
+            removeChild<T_2 extends Node>(child: T_2): T_2;
+            replaceChild<T_3 extends Node>(node: Node, child: T_3): T_3;
+            readonly ELEMENT_NODE: 1;
+            readonly ATTRIBUTE_NODE: 2;
+            readonly TEXT_NODE: 3;
+            readonly CDATA_SECTION_NODE: 4;
+            readonly ENTITY_REFERENCE_NODE: 5;
+            readonly ENTITY_NODE: 6;
+            readonly PROCESSING_INSTRUCTION_NODE: 7;
+            readonly COMMENT_NODE: 8;
+            readonly DOCUMENT_NODE: 9;
+            readonly DOCUMENT_TYPE_NODE: 10;
+            readonly DOCUMENT_FRAGMENT_NODE: 11;
+            readonly NOTATION_NODE: 12;
+            readonly DOCUMENT_POSITION_DISCONNECTED: 1;
+            readonly DOCUMENT_POSITION_PRECEDING: 2;
+            readonly DOCUMENT_POSITION_FOLLOWING: 4;
+            readonly DOCUMENT_POSITION_CONTAINS: 8;
+            readonly DOCUMENT_POSITION_CONTAINED_BY: 16;
+            readonly DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: 32;
+            dispatchEvent(event: Event): boolean;
+            ariaAtomic: string | null;
+            ariaAutoComplete: string | null;
+            ariaBusy: string | null;
+            ariaChecked: string | null;
+            ariaColCount: string | null;
+            ariaColIndex: string | null;
+            ariaColSpan: string | null;
+            ariaCurrent: string | null;
+            ariaDescription: string | null;
+            ariaDisabled: string | null;
+            ariaExpanded: string | null;
+            ariaHasPopup: string | null;
+            ariaHidden: string | null;
+            ariaInvalid: string | null;
+            ariaKeyShortcuts: string | null;
+            ariaLabel: string | null;
+            ariaLevel: string | null;
+            ariaLive: string | null;
+            ariaModal: string | null;
+            ariaMultiLine: string | null;
+            ariaMultiSelectable: string | null;
+            ariaOrientation: string | null;
+            ariaPlaceholder: string | null;
+            ariaPosInSet: string | null;
+            ariaPressed: string | null;
+            ariaReadOnly: string | null;
+            ariaRequired: string | null;
+            ariaRoleDescription: string | null;
+            ariaRowCount: string | null;
+            ariaRowIndex: string | null;
+            ariaRowSpan: string | null;
+            ariaSelected: string | null;
+            ariaSetSize: string | null;
+            ariaSort: string | null;
+            ariaValueMax: string | null;
+            ariaValueMin: string | null;
+            ariaValueNow: string | null;
+            ariaValueText: string | null;
+            role: string | null;
+            animate(keyframes: Keyframe[] | PropertyIndexedKeyframes | null, options?: number | KeyframeAnimationOptions | undefined): Animation;
+            getAnimations(options?: GetAnimationsOptions | undefined): Animation[];
+            after(...nodes: (string | Node)[]): void;
+            before(...nodes: (string | Node)[]): void;
+            remove(): void;
+            replaceWith(...nodes: (string | Node)[]): void;
+            innerHTML: string;
+            readonly nextElementSibling: Element | null;
+            readonly previousElementSibling: Element | null;
+            readonly childElementCount: number;
+            readonly children: HTMLCollection;
+            readonly firstElementChild: Element | null;
+            readonly lastElementChild: Element | null;
+            append(...nodes: (string | Node)[]): void;
+            prepend(...nodes: (string | Node)[]): void;
+            querySelector<K_9 extends keyof HTMLElementTagNameMap>(selectors: K_9): HTMLElementTagNameMap[K_9] | null;
+            querySelector<K_10 extends keyof SVGElementTagNameMap>(selectors: K_10): SVGElementTagNameMap[K_10] | null;
+            querySelector<K_11 extends keyof MathMLElementTagNameMap>(selectors: K_11): MathMLElementTagNameMap[K_11] | null;
+            querySelector<K_12 extends keyof HTMLElementDeprecatedTagNameMap>(selectors: K_12): HTMLElementDeprecatedTagNameMap[K_12] | null;
+            querySelector<E_1 extends Element = Element>(selectors: string): E_1 | null;
+            querySelectorAll<K_13 extends keyof HTMLElementTagNameMap>(selectors: K_13): NodeListOf<HTMLElementTagNameMap[K_13]>;
+            querySelectorAll<K_14 extends keyof SVGElementTagNameMap>(selectors: K_14): NodeListOf<SVGElementTagNameMap[K_14]>;
+            querySelectorAll<K_15 extends keyof MathMLElementTagNameMap>(selectors: K_15): NodeListOf<MathMLElementTagNameMap[K_15]>;
+            querySelectorAll<K_16 extends keyof HTMLElementDeprecatedTagNameMap>(selectors: K_16): NodeListOf<HTMLElementDeprecatedTagNameMap[K_16]>;
+            querySelectorAll<E_2 extends Element = Element>(selectors: string): NodeListOf<E_2>;
+            replaceChildren(...nodes: (string | Node)[]): void;
+            readonly assignedSlot: HTMLSlotElement | null;
+            readonly attributeStyleMap: StylePropertyMap;
+            readonly style: CSSStyleDeclaration;
+            contentEditable: string;
+            enterKeyHint: string;
+            inputMode: string;
+            readonly isContentEditable: boolean;
+            onabort: ((this: GlobalEventHandlers, ev: UIEvent) => any) | null;
+            onanimationcancel: ((this: GlobalEventHandlers, ev: AnimationEvent) => any) | null;
+            onanimationend: ((this: GlobalEventHandlers, ev: AnimationEvent) => any) | null;
+            onanimationiteration: ((this: GlobalEventHandlers, ev: AnimationEvent) => any) | null;
+            onanimationstart: ((this: GlobalEventHandlers, ev: AnimationEvent) => any) | null;
+            onauxclick: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onbeforeinput: ((this: GlobalEventHandlers, ev: InputEvent) => any) | null;
+            onbeforetoggle: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onblur: ((this: GlobalEventHandlers, ev: FocusEvent) => any) | null;
+            oncancel: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            oncanplay: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            oncanplaythrough: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onchange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onclick: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onclose: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            oncontextmenu: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            oncopy: ((this: GlobalEventHandlers, ev: ClipboardEvent) => any) | null;
+            oncuechange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            oncut: ((this: GlobalEventHandlers, ev: ClipboardEvent) => any) | null;
+            ondblclick: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            ondrag: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondragend: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondragenter: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondragleave: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondragover: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondragstart: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondrop: ((this: GlobalEventHandlers, ev: DragEvent) => any) | null;
+            ondurationchange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onemptied: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onended: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onerror: OnErrorEventHandler;
+            onfocus: ((this: GlobalEventHandlers, ev: FocusEvent) => any) | null;
+            onformdata: ((this: GlobalEventHandlers, ev: FormDataEvent) => any) | null;
+            ongotpointercapture: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            oninput: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            oninvalid: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onkeydown: ((this: GlobalEventHandlers, ev: KeyboardEvent) => any) | null;
+            onkeypress: ((this: GlobalEventHandlers, ev: KeyboardEvent) => any) | null;
+            onkeyup: ((this: GlobalEventHandlers, ev: KeyboardEvent) => any) | null;
+            onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onloadeddata: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onloadedmetadata: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onloadstart: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onlostpointercapture: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onmousedown: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmouseenter: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmouseleave: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmousemove: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmouseout: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmouseover: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onmouseup: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
+            onpaste: ((this: GlobalEventHandlers, ev: ClipboardEvent) => any) | null;
+            onpause: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onplay: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onplaying: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onpointercancel: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerdown: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerenter: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerleave: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointermove: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerout: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerover: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onpointerup: ((this: GlobalEventHandlers, ev: PointerEvent) => any) | null;
+            onprogress: ((this: GlobalEventHandlers, ev: ProgressEvent<EventTarget>) => any) | null;
+            onratechange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onreset: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onresize: ((this: GlobalEventHandlers, ev: UIEvent) => any) | null;
+            onscroll: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onscrollend: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onsecuritypolicyviolation: ((this: GlobalEventHandlers, ev: SecurityPolicyViolationEvent) => any) | null;
+            onseeked: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onseeking: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onselect: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onselectionchange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onselectstart: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onslotchange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onstalled: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onsubmit: ((this: GlobalEventHandlers, ev: SubmitEvent) => any) | null;
+            onsuspend: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            ontimeupdate: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            ontoggle: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            ontouchcancel?: ((this: GlobalEventHandlers, ev: TouchEvent) => any) | null | undefined;
+            ontouchend?: ((this: GlobalEventHandlers, ev: TouchEvent) => any) | null | undefined;
+            ontouchmove?: ((this: GlobalEventHandlers, ev: TouchEvent) => any) | null | undefined;
+            ontouchstart?: ((this: GlobalEventHandlers, ev: TouchEvent) => any) | null | undefined;
+            ontransitioncancel: ((this: GlobalEventHandlers, ev: TransitionEvent) => any) | null;
+            ontransitionend: ((this: GlobalEventHandlers, ev: TransitionEvent) => any) | null;
+            ontransitionrun: ((this: GlobalEventHandlers, ev: TransitionEvent) => any) | null;
+            ontransitionstart: ((this: GlobalEventHandlers, ev: TransitionEvent) => any) | null;
+            onvolumechange: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwaiting: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwebkitanimationend: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwebkitanimationiteration: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwebkitanimationstart: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwebkittransitionend: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+            onwheel: ((this: GlobalEventHandlers, ev: WheelEvent) => any) | null;
+            autofocus: boolean;
+            readonly dataset: DOMStringMap;
+            nonce?: string | undefined;
+            tabIndex: number;
+            blur(): void;
+            focus(options?: FocusOptions | undefined): void;
+        };
+        tag: string;
+        observedAttributes: Set<unknown>;
+    } | undefined;
+}
+
+declare namespace $ {
+    function $mpds_cifplayer_matinfio_cif_to_obj(this: $, str: string): $mpds_cifplayer_matinfio_internal_obj;
+    function $mpds_cifplayer_matinfio_cif_from_obj(this: $, crystal: any): string;
+}
+
+declare namespace $ {
+    function $mpds_cifplayer_matinfio_poscar_to_obj(this: $, str: string): false | {
+        cell_matrix: number[][];
+        atoms: any[];
+        types: number[];
+        cartesian: boolean;
+    };
+}
+
+declare namespace $ {
+    function $mpds_cifplayer_matinfio_optimade_str_to_obj(this: $, str: string): false | {
+        cell_matrix: any;
+        atoms: any[];
+        info: string;
+        cartesian: boolean;
+    };
+    function $mpds_cifplayer_matinfio_optimade_to_obj(this: $, payload: Record<string, any>): false | {
+        cell_matrix: any;
+        atoms: any[];
+        info: string;
+        cartesian: boolean;
+    };
+}
+
+declare namespace $ {
+    function $mpds_cifplayer_matinfio_flatten_from_obj(this: $, crystal: any): {
+        cell: any;
+        atoms: any[];
+        types: number[];
+        symlabel: string | boolean;
+    };
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mpds_cifplayer_lib_three_view__controls_target__XF93FWFF = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['controls_target'] >
+		,
+		ReturnType< $mpds_cifplayer_lib_three_view['controls_target'] >
+	>
+	type $mpds_cifplayer_lib_three_view__on_render__M6MUVLFZ = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['on_render'] >
+		,
+		ReturnType< $mpds_cifplayer_lib_three_view['on_render'] >
+	>
+	type $mol_paragraph__title__HH2JC88V = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_a'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__1OWY0YYP = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_b'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__5FJDAHKH = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_c'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__UVO8R3QT = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_alpha'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__684ODP8Q = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_beta'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__V53EDA10 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['descr_gamma'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_view__sub__OU5OV8CC = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['info_sub'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__title__V1HST888 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['Toogle_all_title'] >
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click__PG8GUTZY = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['toogle_all_symmetry'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_check_box__title__51Y4TG1E = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['sym_name'] >
+		,
+		ReturnType< $mol_check_box['title'] >
+	>
+	type $mol_check_box__checked__4HI2KUE9 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['symmetry_visible'] >
+		,
+		ReturnType< $mol_check_box['checked'] >
+	>
+	type $mol_list__sub__DCXK9PIF = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['sym_checks'] >
+		,
+		ReturnType< $mol_list['sub'] >
+	>
+	type $mol_scroll__sub__P1DGR53O = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_scroll['sub'] >
+	>
+	type $mol_pick__trigger_content__003KXHZH = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_pick['trigger_content'] >
+	>
+	type $mol_pick__bubble_content__7I4OD1IG = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_pick['bubble_content'] >
+	>
+	type $mol_paragraph__title__M94U6AIO = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_number__value__K4E7P39N = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_a'] >
+		,
+		ReturnType< $mol_number['value'] >
+	>
+	type $mol_number__hint__NEVAL7LI = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_number['hint'] >
+	>
+	type $mol_number__value_min__5R2WP3EY = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_number['value_min'] >
+	>
+	type $mol_number__value_max__1CQGCC6J = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_limit_a'] >
+		,
+		ReturnType< $mol_number['value_max'] >
+	>
+	type $mol_paragraph__title__KUO67W35 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_number__value__GAX33OH5 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_b'] >
+		,
+		ReturnType< $mol_number['value'] >
+	>
+	type $mol_number__hint__DOSG8BFL = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_number['hint'] >
+	>
+	type $mol_number__value_min__2B2MFK32 = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_number['value_min'] >
+	>
+	type $mol_number__value_max__3RRNJGHM = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_limit_b'] >
+		,
+		ReturnType< $mol_number['value_max'] >
+	>
+	type $mol_paragraph__title__ISW2XXUQ = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_number__value__F8R6X5R7 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_c'] >
+		,
+		ReturnType< $mol_number['value'] >
+	>
+	type $mol_number__hint__H2Z91N2V = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_number['hint'] >
+	>
+	type $mol_number__value_min__Y9HU7RJQ = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_number['value_min'] >
+	>
+	type $mol_number__value_max__QBK2IDWI = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['spread_limit_c'] >
+		,
+		ReturnType< $mol_number['value_max'] >
+	>
+	type $mol_pick__trigger_content__OFKPH8Y9 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_pick['trigger_content'] >
+	>
+	type $mol_pick__bubble_content__R63VP2IV = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_pick['bubble_content'] >
+	>
+	type $mol_check_icon__checked__F7KWTC8V = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['centered'] >
+		,
+		ReturnType< $mol_check_icon['checked'] >
+	>
+	type $mol_check_icon__Icon__ID9P173A = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['Center_icon'] >
+		,
+		ReturnType< $mol_check_icon['Icon'] >
+	>
+	type $mol_view__sub__A99E37CF = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['left_panel'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_check__checked__EOQA6PM5 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['fullscreen'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $mol_check__Icon__IGHVUAXE = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['Expand_icon'] >
+		,
+		ReturnType< $mol_check['Icon'] >
+	>
+	type $mol_button_minor__click__2Y7ZV8KJ = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['zoom_up'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub__E62G65SL = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__click__OPC1XV2E = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['zoom_down'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub__XDXXXZ11 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_list__sub__OAOOXT6W = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_list['sub'] >
+	>
+	type $mol_view__sub__CTPDPHR0 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_switch__value__4EZOL0EA = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['overlay'] >
+		,
+		ReturnType< $mol_switch['value'] >
+	>
+	type $mol_switch__options__AJPA17CB = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['available_overlays'] >
+		,
+		ReturnType< $mol_switch['options'] >
+	>
+	type $mol_view__sub__M8JVY4X4 = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['overlays_sub'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_card__theme__3H0UPLTR = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_card['theme'] >
+	>
+	type $mol_card__title__IFKHRFZN = $mol_type_enforce<
+		ReturnType< $mpds_cifplayer_player['message'] >
+		,
+		ReturnType< $mol_card['title'] >
+	>
+	type $mol_view__sub__P710NS8N = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $mpds_cifplayer_player extends $mol_view {
+		spread_a( next?: number ): number
+		spread_b( next?: number ): number
+		spread_c( next?: number ): number
+		dir_light( ): any
+		ambient_light( ): any
+		atom_boxes( ): readonly(any)[]
+		overlay_boxes( ): readonly(any)[]
+		cell_box( ): any
+		axes_box( ): any
+		overlay_changed( ): any
+		scene( ): ReturnType< ReturnType< $mpds_cifplayer_player['Three'] >['scene'] >
+		controls( ): ReturnType< ReturnType< $mpds_cifplayer_player['Three'] >['controls'] >
+		controls_target( ): any
+		camera( ): ReturnType< ReturnType< $mpds_cifplayer_player['Three'] >['camera'] >
+		on_render( ): any
+		Three( ): $mpds_cifplayer_lib_three_view
+		descr_a( ): string
+		Descr_a( ): $mol_paragraph
+		descr_b( ): string
+		Descr_b( ): $mol_paragraph
+		descr_c( ): string
+		Descr_c( ): $mol_paragraph
+		descr_alpha( ): string
+		Descr_alpha( ): $mol_paragraph
+		descr_beta( ): string
+		Descr_beta( ): $mol_paragraph
+		descr_gamma( ): string
+		Descr_gamma( ): $mol_paragraph
+		info_sub( ): readonly(any)[]
+		Info( ): $mol_view
+		Sym_icon( ): $mol_icon_eye_check
+		symlabel( ): string
+		Toogle_all_title( ): string
+		toogle_all_symmetry( next?: any ): any
+		Toogle_all( ): $mol_button_minor
+		sym_name( id: any): string
+		symmetry_visible( id: any, next?: boolean ): boolean
+		Sym_check( id: any): $mol_check_box
+		sym_checks( ): readonly(any)[]
+		Sym_checks( ): $mol_list
+		Sym_list( ): $mol_scroll
+		Symlabel( ): $mol_pick
+		symlabel_visible( ): readonly(any)[]
+		spread_cell_label( ): string
+		Spread_label_a( ): $mol_paragraph
+		spread_limit_a( ): number
+		Spread_a( ): $mol_number
+		Spread_label_b( ): $mol_paragraph
+		spread_limit_b( ): number
+		Spread_b( ): $mol_number
+		Spread_label_c( ): $mol_paragraph
+		spread_limit_c( ): number
+		Spread_c( ): $mol_number
+		Spread_cells( ): $mol_pick
+		centered( next?: boolean ): boolean
+		Center_icon( ): $mol_icon_image_filter_center_focus
+		Center( ): $mol_check_icon
+		left_panel( ): readonly(any)[]
+		Left_panel( ): $mol_view
+		fullscreen( next?: boolean ): boolean
+		Expand_icon( ): $mol_icon_arrow_expand_all
+		Fullscreen( ): $mol_check
+		zoom_up( next?: any ): any
+		Zoom_up_icon( ): $mol_icon_magnify_plus_outline
+		Zoom_up( ): $mol_button_minor
+		zoom_down( next?: any ): any
+		Zoom_down_icon( ): $mol_icon_magnify_minus_outline
+		Zoom_down( ): $mol_button_minor
+		Zoom_section( ): $mol_list
+		Tools( ): $mol_view
+		overlay( next?: string ): string
+		available_overlays( ): Record<string, string>
+		Switch_overlay( ): $mol_switch
+		overlays_sub( ): readonly(any)[]
+		Overlays( ): $mol_view
+		message( ): string
+		Message_card( ): $mol_card
+		Message( ): $mol_view
+		message_visible( ): readonly(any)[]
+		color_a( ): string
+		color_b( ): string
+		color_c( ): string
+		data( next?: any ): any
+		externals( next?: any ): any
+		atom_radius_scale( ): number
+		zoom_scale_step( ): number
+		vibrate( next?: any ): any
+		unvibrate( ): any
+		spread_cells( ): readonly(any)[]
+		spread_cells_limit( ): number
+		auto( ): readonly(any)[]
+		atom_box( id: any): any
+		overlay_box( id: any): any
+		sub( ): readonly(any)[]
+		colors_light( ): ({ 
+			'a': string,
+			'b': string,
+			'c': string,
+		}) 
+		colors_dark( ): ({ 
+			'a': string,
+			'b': string,
+			'c': string,
+		}) 
+		cell_lines_color( ): string
+		axcolor( ): readonly(any)[]
+		style( ): ({ 
+			'--color_a': ReturnType< $mpds_cifplayer_player['color_a'] >,
+			'--color_b': ReturnType< $mpds_cifplayer_player['color_b'] >,
+			'--color_c': ReturnType< $mpds_cifplayer_player['color_c'] >,
+		})  & ReturnType< $mol_view['style'] >
+		attr( ): ({ 
+			'fullscreen': ReturnType< $mpds_cifplayer_player['fullscreen'] >,
+		})  & ReturnType< $mol_view['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=player.view.tree.d.ts.map
+declare namespace $.$$ {
+}
+
+declare namespace $.$$ {
+    const THREE: typeof import("../lib/three/_three");
+    type THREE = typeof THREE;
+    export class $mpds_cifplayer_player extends $.$mpds_cifplayer_player {
+        theme(): string;
+        available_overlays(): {
+            [x: string]: string;
+        };
+        symlabel(): string;
+        descr_a(): string;
+        descr_b(): string;
+        descr_c(): string;
+        descr_alpha(): string;
+        descr_beta(): string;
+        descr_gamma(): string;
+        color_a(): string;
+        color_b(): string;
+        color_c(): string;
+        camera_distance(): any;
+        zoom_up(): void;
+        zoom_down(): void;
+        message_visible(): readonly any[];
+        message(): string;
+        structure_3d_data(): $mpds_cifplayer_matinfio_player_obj;
+        text_canvas(text: string): HTMLCanvasElement;
+        create_sprite(text: string): any;
+        axis_vectors(): any[] | undefined;
+        controls_target(): any;
+        spacegroup(): $mpds_cifplayer_matinfio_spacegroup;
+        sym_checks(): $mol_check_box[];
+        sym_name(id: any): string;
+        toogle_all_symmetry(): void;
+        all_symmetry_enabled(): boolean;
+        symmetry_visible(id: any, next?: any): boolean;
+        Toogle_all_title(): string;
+        symmetry_atoms(symmetry: string): $mpds_cifplayer_matinfio_internal_obj_atom[] | undefined;
+        symmetry_list(): string[];
+        visible_atoms(): {
+            fract: {
+                x: number;
+                y: number;
+                z: number;
+            } | null;
+            x: number;
+            y: number;
+            z: number;
+            c: string;
+            r: number;
+            overlays: Record<string, string | number>;
+        }[];
+        visible_atoms_translated(fract_translate: [number, number, number]): {
+            x: number;
+            y: number;
+            z: number;
+            fract: {
+                x: number;
+                y: number;
+                z: number;
+            } | null;
+            c: string;
+            r: number;
+            overlays: Record<string, string | number>;
+        }[];
+        atom_box(fract_translate: [number, number, number]): any;
+        cell_translations(): [number, number, number][];
+        atom_boxes(): any[];
+        overlay_changed(): void;
+        overlay_box(fract_translate: [number, number, number]): any;
+        overlay_boxes(): any[];
+        dir_light(): InstanceType<THREE["DirectionalLight"]>;
+        ambient_light(): InstanceType<THREE["AmbientLight"]>;
+        cell_center(): any;
+        axes_box(): any;
+        cell_box(): any;
+        tweens: any;
+        on_render(): void;
+        vibrate(phonon: number[][]): void;
+        unvibrate(): void;
+        left_panel(): readonly any[];
+        symlabel_visible(): readonly any[];
+        spread_cells(): number[];
+        spread_cell_label(): string;
+        spread_limit_a(): number;
+        spread_limit_b(): number;
+        spread_limit_c(): number;
+    }
+    export {};
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_button_major extends $mol_button_minor {
+		theme( ): string
+	}
+	
+}
+
+//# sourceMappingURL=major.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_row extends $mol_view {
+	}
+	
+}
+
+//# sourceMappingURL=row.view.tree.d.ts.map
+declare namespace $ {
+    function $mol_dom_parse(text: string, type?: DOMParserSupportedType): Document;
+}
+
+declare var $node: any;
+
+declare namespace $ {
+    class $mol_fetch_response extends $mol_object2 {
+        readonly native: Response;
+        constructor(native: Response);
+        status(): "success" | "unknown" | "inform" | "redirect" | "wrong" | "failed";
+        code(): number;
+        message(): string;
+        headers(): Headers;
+        mime(): string | null;
+        stream(): ReadableStream<Uint8Array> | null;
+        text(): string;
+        json(): unknown;
+        buffer(): ArrayBuffer;
+        xml(): Document;
+        xhtml(): Document;
+        html(): Document;
+    }
+    class $mol_fetch extends $mol_object2 {
+        static request(input: RequestInfo, init?: RequestInit): Promise<Response> & {
+            destructor: () => void;
+        };
+        static response(input: RequestInfo, init?: RequestInit): $mol_fetch_response;
+        static success(input: RequestInfo, init?: RequestInit): $mol_fetch_response;
+        static stream(input: RequestInfo, init?: RequestInit): ReadableStream<Uint8Array> | null;
+        static text(input: RequestInfo, init?: RequestInit): string;
+        static json(input: RequestInfo, init?: RequestInit): unknown;
+        static buffer(input: RequestInfo, init?: RequestInit): ArrayBuffer;
+        static xml(input: RequestInfo, init?: RequestInit): Document;
+        static xhtml(input: RequestInfo, init?: RequestInit): Document;
+        static html(input: RequestInfo, init?: RequestInit): Document;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_paragraph__title__FA99YHLR = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title__7QLL1TOC = $mol_type_enforce<
+		ReturnType< $mpds_tmdne_app['name'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mpds_cifplayer_player__data__ORUYUAID = $mol_type_enforce<
+		ReturnType< $mpds_tmdne_app['json'] >
+		,
+		ReturnType< $mpds_cifplayer_player['data'] >
+	>
+	type $mpds_cifplayer_player__Fullscreen__3RT3FRS7 = $mol_type_enforce<
+		any
+		,
+		ReturnType< $mpds_cifplayer_player['Fullscreen'] >
+	>
+	type $mol_paragraph__title__Q86TRF45 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_major__click__VBG7Q44V = $mol_type_enforce<
+		ReturnType< $mpds_tmdne_app['update'] >
+		,
+		ReturnType< $mol_button_major['click'] >
+	>
+	type $mol_button_major__click__ZSYA7VWQ = $mol_type_enforce<
+		ReturnType< $mpds_tmdne_app['update'] >
+		,
+		ReturnType< $mol_button_major['click'] >
+	>
+	type $mol_row__sub__0K8T7XJY = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_row['sub'] >
+	>
 	export class $mpds_tmdne_app extends $mol_view {
+		Head( ): $mol_paragraph
+		name( ): string
+		Name( ): $mol_paragraph
+		json( ): any
+		Player( ): $mpds_cifplayer_player
+		Question( ): $mol_paragraph
+		update( next?: any ): any
+		Yes( ): $mol_button_major
+		No( ): $mol_button_major
+		Answer( ): $mol_row
+		title( ): string
+		number( next?: number ): number
+		auto( ): readonly(any)[]
+		sub( ): readonly(any)[]
 	}
 	
 }
 
 //# sourceMappingURL=app.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mpds_tmdne_app extends $.$mpds_tmdne_app {
+        json(): any;
+        name(): any;
+        update(): void;
+    }
+}
+
+declare namespace $.$$ {
+}
+
 export = $;
 //# sourceMappingURL=web.d.ts.map

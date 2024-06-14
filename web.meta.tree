@@ -16,3 +16,13 @@
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
 	include \/mol/view/tree/test
+\/mpds/cifplayer/lib/three
+	require \/mpds/cifplayer/lib/three/_three.js
+\/mpds/cifplayer/lib/tween
+	require \/mpds/cifplayer/lib/tween/_tween.js
+\/mpds/cifplayer/lib/math
+	require \/mpds/cifplayer/lib/math/_math.js
+\/mpds/cifplayer/lib/spacegroups
+	require \/mpds/cifplayer/lib/spacegroups/_spacegroups.js
+\/mpds/cifplayer/player
+	deploy \/mpds/cifplayer/player/spacegroup.tree
