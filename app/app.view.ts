@@ -14,7 +14,7 @@ namespace $.$$ {
 
 		@ $mol_action
 		update() {
-			this.number( this.number( random_int( 1, 384937 ) ) )
+			this.number( random_int( 1, 384937 ) )
 		}
 		
 	}
