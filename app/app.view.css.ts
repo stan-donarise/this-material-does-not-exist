@@ -1,6 +1,6 @@
 namespace $.$$ {
 	
-	$mol_style_define( $mpds_tmdne_app, {
+	$mol_style_define( $optimade_tmdne_app, {
 
 		padding: {
 			top: $mol_gap.block,

@@ -14,10 +14,10 @@ jobs:
 
     - uses: hyoo-ru/mam_build@master2
       with:
-        package: mpds/tmdne
+        package: optimade/tmdne
         modules: app
 
     - uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
         branch: gh-pages
-        folder: mpds/tmdne/app/-
+        folder: optimade/tmdne/app/-

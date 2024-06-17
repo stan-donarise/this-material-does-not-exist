@@ -1,4 +1,4 @@
-$mpds_tmdne_app $mol_view
+$optimade_tmdne_app $mol_view
 	title \This material does not exist
 	number? 1
 	auto /

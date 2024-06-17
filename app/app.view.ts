@@ -1,6 +1,6 @@
 namespace $.$$ {
 
-	export class $mpds_tmdne_app extends $.$mpds_tmdne_app {
+	export class $optimade_tmdne_app extends $.$optimade_tmdne_app {
 
 		@ $mol_mem
 		json() {
