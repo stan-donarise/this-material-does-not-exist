@@ -11228,11 +11228,13 @@ var $;
                 margin: 'auto',
             },
             Head: {
+                userSelect: 'none',
                 justify: {
                     content: 'center',
                 },
             },
             Prediction: {
+                userSelect: 'none',
                 font: {
                     size: '0.7rem',
                 },
@@ -11369,12 +11371,14 @@ var $;
                 },
             },
             Hint_no: {
+                userSelect: 'none',
                 color: '#ff6666',
                 position: 'absolute',
                 left: '1rem',
                 bottom: '5rem',
             },
             Hint_yes: {
+                userSelect: 'none',
                 color: $mol_theme.current,
                 position: 'absolute',
                 right: '1rem',
