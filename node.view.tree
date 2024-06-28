@@ -1,11 +1,7 @@
-$mol_paragraph $mol_view
-	line_height 24
-	letter_width 7
-	width_limit +Infinity
-	row_width 0
-	sub / <= title
+$mol_theme_auto $mol_plugin
+	attr * mol_theme <= theme \
 
-$mpds_cifplayer_lib_three_view $mol_view
+$optimade_cifplayer_lib_three_view $mol_view
 	sub /
 		<= canvas null
 	scene null
@@ -19,6 +15,13 @@ $mpds_cifplayer_lib_three_view $mol_view
 		<= controls_target_changed null
 		<= resize null
 		<= start_render_loop null
+
+$mol_paragraph $mol_view
+	line_height 24
+	letter_width 7
+	width_limit +Infinity
+	row_width 0
+	sub / <= title
 
 $mol_svg $mol_view
 	dom_name \svg
@@ -260,6 +263,13 @@ $mol_icon_magnify_minus $mol_icon path \M9,2A7,7 0 0,1 16,9C16,10.57 15.5,12 14.
 
 $mol_icon_magnify_minus_outline $mol_icon path \M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5A6.5,6.5 0 0,0 9.5,3A6.5,6.5 0 0,0 3,9.5A6.5,6.5 0 0,0 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.5L20.5,19L15.5,14M9.5,14C7,14 5,12 5,9.5C5,7 7,5 9.5,5C12,5 14,7 14,9.5C14,12 12,14 9.5,14M7,9H12V10H7V9Z
 
+$mol_icon_brightness_6 $mol_icon path \M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z
+
+$mol_lights_toggle $mol_check_icon
+	Icon <= Lights_icon $mol_icon_brightness_6
+	hint @ \Toggle lights
+	checked? <=> lights? false
+
 $mol_check_list $mol_view
 	dictionary *
 	Option* $mol_check
@@ -289,7 +299,7 @@ $mol_card $mol_list
 			sub /
 				<= status_text <= status \
 
-$mpds_cifplayer_player $mol_view
+$optimade_cifplayer_player $mol_view
 	data? null
 	externals? null
 	atom_radius_scale 0.6
@@ -301,6 +311,9 @@ $mpds_cifplayer_player $mol_view
 		<= spread_b? 1
 		<= spread_c? 1
 	spread_cells_limit 50
+	-
+	plugins /
+		<= Theme $mol_theme_auto
 	-
 	auto /
 		<= dir_light null
@@ -314,7 +327,7 @@ $mpds_cifplayer_player $mol_view
 	overlay_box* null
 	-
 	sub /
-		<= Three $mpds_cifplayer_lib_three_view
+		<= Three $optimade_cifplayer_lib_three_view
 			scene => scene
 			controls => controls
 			controls_target <= controls_target null
@@ -392,6 +405,7 @@ $mpds_cifplayer_player $mol_view
 						<= Zoom_down $mol_button_minor
 							click? <=> zoom_down? null
 							sub / <= Zoom_down_icon $mol_icon_magnify_minus_outline
+				<= Lights $mol_lights_toggle
 		<= Overlays $mol_view
 			sub <= overlays_sub /
 				<= Switch_overlay $mol_switch
@@ -427,29 +441,437 @@ $mpds_cifplayer_player $mol_view
 		^
 		fullscreen <= fullscreen?
 
-$mol_button_major $mol_button_minor
-	theme \$mol_theme_base
+$mol_link $mol_view
+	uri \
+	dom_name \a
+	uri_off \
+	uri_native null
+	external false
+	attr *
+		^
+		href <= uri_toggle \
+		title <= hint_safe <= hint \
+		target <= target \_self
+		download <= file_name \
+		mol_link_current <= current false
+		rel <= relation \
+	sub /$mol_view_content
+		<= title
+	arg *
+	event *
+		^
+		click?event <=> click?event <=> event_click?event null
 
-$mol_row $mol_view
+$mol_image $mol_view
+	dom_name \img
+	field *any
+		^
+		src <= uri \
+		alt <= title
+		loading <= loading \eager
+		decoding <= decoding \async
+		crossOrigin <= cors null
+	attr *any
+		^
+		width <= natural_width 0
+		height <= natural_height 0
+	event *any
+		load? <=> load? null
+	minimal_width 16
+	minimal_height 16
 
-$mpds_tmdne_app $mol_view
+$mol_link_iconed $mol_link
+	sub /
+		<= Icon $mol_image
+			uri <= icon \
+			title \
+	content /
+		<= title <= uri
+	host \
+
+$mol_dimmer $mol_paragraph
+	haystack \
+	needle \
+	sub <= parts /$mol_view_content
+	Low* $mol_paragraph
+		sub /
+			<= string* \
+	High* $mol_paragraph
+		sub /
+			<= string* \
+
+$mol_html_view $mol_list
+	html \
+	dom null
+	safe_link* \
+	views* /
+	xss_uri \https://en.wikipedia.org/wiki/XSS#
+	Heading* $mol_html_view_heading
+		level <= heading_level* 1
+		sub <= content* /
+	Paragraph* $mol_paragraph
+		sub <= content* /
+	List* $mol_list
+		rows <= content* /
+	Quote* $mol_list
+		rows <= content* /
+	Strong* $mol_paragraph
+		sub <= content* /
+	Emphasis* $mol_paragraph
+		sub <= content* /
+	Deleted* $mol_paragraph
+		sub <= content* /
+	Inserted* $mol_paragraph
+		sub <= content* /
+	Code* $mol_paragraph
+		sub <= content* /
+	Link* $mol_link_iconed
+		uri <= link_uri* \
+		content <= content* /
+	Image* $mol_image
+		uri <= image_uri* \
+	Break* $mol_paragraph
+		sub /
+	Text* $mol_dimmer
+		needle <= highlight \
+		haystack <= text* \
+
+$mol_html_view_heading $mol_paragraph
+	attr *
+		^
+		mol_html_view_heading <= level 1
+
+$optimade_tmdne_html_view $mol_html_view
+	minimal_height 16
+	Subscript* $mol_view
+		dom_name \sub
+		sub <= content*
+	Superscript* $mol_view
+		dom_name \sup
+		sub <= content*
+	Text* $mol_dimmer
+		minimal_height 16
+		needle <= highlight
+		haystack <= text*
+
+$mol_stack $mol_view
+
+$mol_text_code_token $mol_dimmer
+	attr *
+		^
+		mol_text_code_token_type <= type \
+
+$mol_text_code_token_link $mol_text_code_token
+	dom_name \a
+	type \code-link
+	attr *
+		^
+		href <= uri \
+		target \_blank
+
+$mol_text_code_row $mol_paragraph
+	text \
+	minimal_height 24
+	numb_showed true
+	syntax null
+	uri_resolve* \
+	Numb $mol_view
+		sub /
+			<= numb 0
+	Token* $mol_text_code_token
+		type <= token_type* \
+		haystack <= token_text* \
+		needle <= highlight \
+	Token_link* $mol_text_code_token_link
+		haystack <= token_text* \
+		needle <= highlight \
+		uri <= token_uri* \
+	find_pos* null
+
+$mol_icon_clipboard $mol_icon path \M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3
+
+$mol_icon_clipboard_outline $mol_icon path \M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3M7,7H17V5H19V19H5V5H7V7Z
+
+$mol_button_copy $mol_button_minor
+	blobs /$mol_blob
+		<= text_blob? $mol_blob /
+			/BlobPart <= text <= title
+			* type \text/plain
+		<= html_blob? $mol_blob /
+			/BlobPart <= html \
+			* type \text/html
+	data *
+	sub /
+		<= Icon $mol_icon_clipboard_outline
+		<= title \
+
+
+$mol_text_code $mol_stack
+	attr *
+		^
+		mol_text_code_sidebar_showed <= sidebar_showed false
+	text \
+	text_lines /string
+	find_pos* null
+	uri_base \
+	sub /
+		<= Rows $mol_list
+			render_visible_only <= render_visible_only false
+			rows <= rows /
+				<= Row*0 $mol_text_code_row
+					numb_showed <= sidebar_showed
+					numb <= row_numb* 0
+					text <= row_text* \
+					syntax <= syntax null
+					uri_resolve* <= uri_resolve* \
+					highlight <= highlight \
+		<= Copy $mol_button_copy
+			hint @ \Copy whole code
+			text <= text_export \
+
+$mol_textarea $mol_stack
+	attr *
+		^
+		mol_textarea_clickable <= clickable? false
+		mol_textarea_sidebar_showed <= sidebar_showed false
+	event *
+		keydown?event <=> press?event null
+		pointermove?event <=> hover?event null
+	sub /
+		<= Edit $mol_textarea_edit
+			value? <=> value? \
+			hint <= hint \ 
+			enabled <= enabled true
+			spellcheck <= spellcheck true
+			length_max <= length_max +Infinity
+			selection? <=> selection? /number
+			bring => bring
+			submit? <=> submit? null
+			submit_with_ctrl <= submit_with_ctrl true
+		<= View $mol_text_code
+			text <= value
+			render_visible_only false
+			row_numb* <= row_numb* 0
+			sidebar_showed <= sidebar_showed
+			highlight <= highlight \
+	symbols_alt *string
+		comma \<
+		period \>
+		dash \−
+		equals \≈
+		graveAccent \́
+		forwardSlash \÷
+		E \€
+		V \✔
+		X \×
+		C \©
+		P \§
+		H \₽
+		key0 \°
+		key8 \•
+		key2 \@
+		key3 \#
+		key4 \$
+		key6 \^
+		key7 \&
+		bracketOpen \[
+		bracketClose \]
+		slashBack \|
+	symbols_alt_ctrl *string
+		space \ 
+	symbols_alt_shift *string
+		V \✅
+		X \❌
+		O \⭕
+		key1 \❗
+		key4 \💲
+		key7 \❓
+		comma \«
+		period \»
+		semicolon \“
+		quoteSingle \”
+		dash \—
+		equals \≠
+		graveAccent \̱
+		bracketOpen \{
+		bracketClose \}
+
+$mol_textarea_edit $mol_string
+	dom_name \textarea
+	enter \enter
+	field *
+		^
+		scrollTop 0
+
+$mol_touch $mol_plugin
+	start_zoom? 0
+	start_distance? 0
+	zoom? 1
+	allow_draw true
+	allow_pan true
+	allow_zoom true
+	action_type? \
+	action_point? $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pan? /
+		0
+		0
+	pan? $mol_vector_2d<number> /
+		0
+		0
+	pointer_center $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pos? null
+	swipe_precision 16
+	-
+	swipe_right? null
+	swipe_bottom? null
+	swipe_left? null
+	swipe_top? null
+	-
+	swipe_from_right? null
+	swipe_from_bottom? null
+	swipe_from_left? null
+	swipe_from_top? null
+	-
+	swipe_to_right? null
+	swipe_to_bottom? null
+	swipe_to_left? null
+	swipe_to_top? null
+	-
+	draw_start?event null
+	draw?event null
+	draw_end?event null
+	-
+	style *
+		^
+		touch-action \none
+		overscroll-behavior \none
+	-
+	event *
+		^
+		pointerdown?event <=> event_start?event null
+		pointermove?event <=> event_move?event null
+		pointerup?event <=> event_end?event null
+		pointerleave?event <=> event_leave?event null
+		wheel?event <=> event_wheel?event null
+
+$optimade_tmdne_swipe $mol_view
+	plugins /
+		<= Touch $mol_touch
+			allow_draw false
+			allow_pan <= allowed true
+			pan? => pan?
+	speed_threshold 1
+	right_threshold <= threshold 60
+	left_threshold <= threshold
+	passed \
+	passed_left false
+	passed_right false
+	swiped_to? \
+	on_swiped null
+	reset null
+	reset_hard null
+	x? 0
+	sub /
+		<= Float $mol_view
+			sub <= content /
+			style *
+				left <= left \0px
+				transition <= transition? \
+	pointer_holding? false
+	event *
+		^
+		pointerdown? <=> pointerdown? null
+		pointerup? <=> pointerup? null
+
+$optimade_tmdne_app $mol_view
 	title \This material does not exist
 	number? 1
+	plugins /
+		<= Theme $mol_theme_auto
 	auto /
 		<= update
+	rotating? false
 	sub /
-		<= Head $mol_paragraph
-			title \Does this material exist?
-		<= Name $mol_paragraph
-			title <= name \
-		<= Player $mpds_cifplayer_player
+		<= Player $optimade_cifplayer_player
+			fullscreen? => player_fullscreen?
+			attr *
+				fullscreen <= player_fullscreen?
+				card_holding <= card_holding
 			data <= json null
 			Fullscreen null
-		<= Question $mol_paragraph
-			title \Do you think it's synthesizable?
-		<= Answer $mol_row
+			Overlays null
+			event *
+				pointerdown? <=> player_pointerdown? null
+				pointerup? <=> player_pointerup? null
+		<= Head_space $mol_view
 			sub /
-				<= Yes $mol_button_major
-					click? <=> update? null
-				<= No $mol_button_major
-					click? <=> update?
+				<= Head_card $mol_list
+					sub /
+						<= Head $mol_paragraph
+							title \Does this material exist?
+		<= Prediction $mol_list
+			attr *
+				rotating <= rotating
+			sub <= params /
+				<= Param* $mol_view
+					sub /
+						<= Param_name* $mol_paragraph
+							minimal_height 16
+							title <= param_name* \
+						<= Param_symbol_html* $optimade_tmdne_html_view
+							html <= param_symbol* \
+						\=
+						<= Param_value* $mol_view
+							minimal_height 16
+							sub /
+								<= param_value* \
+								<= Param_unit* $optimade_tmdne_html_view
+									html <= param_unit* \
+								<= Param_mae* $mol_view
+									sub /
+										\(±
+										<= param_mae* \
+										<= Param_mae_unit* $optimade_tmdne_html_view
+											html <= param_unit* \
+										\)
+		<= Foot $mol_view
+			attr *
+				rotating <= rotating
+			sub /
+				<= Hint_no $mol_view
+					sub / \ᐊ No
+				<= Hint_yes $mol_view
+					sub / \Yes ᐅ
+				<= Swipeable $optimade_tmdne_swipe
+					passed => passed
+					swiped_to? <=> swiped_to? \
+					reset_hard => card_reset
+					on_swiped <= update null
+					allowed <= loaded false
+					content /
+						<= Card $mol_view
+							attr *
+								loaded <= loaded
+							sub / <= Card_content $mol_view
+								attr *
+									card_position <= card_position \
+								sub /
+									<= Name $optimade_tmdne_html_view
+										html <= name \
+									<= Question $mol_paragraph
+										title \Do you think it's synthesizable?
+									<= Why_label $mol_view
+										sub /
+											<= Why_title $mol_paragraph
+												title \Why?
+											<= Why_optinal $mol_paragraph
+												title \(optinal)
+									<= Why $mol_textarea
+										value? <=> why? \
+					pointer_holding? <=> card_holding? false

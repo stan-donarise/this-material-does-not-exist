@@ -2581,21 +2581,27 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_paragraph) = class $mol_paragraph extends ($.$mol_view) {
-		line_height(){
-			return 24;
+"use strict";
+var $;
+(function ($) {
+    class $mol_plugin extends $mol_view {
+        dom_node_external(next) {
+            return next ?? $mol_owning_get(this).host.dom_node();
+        }
+        render() {
+            this.dom_node_actual();
+        }
+    }
+    $.$mol_plugin = $mol_plugin;
+})($ || ($ = {}));
+
+;
+	($.$mol_theme_auto) = class $mol_theme_auto extends ($.$mol_plugin) {
+		theme(){
+			return "";
 		}
-		letter_width(){
-			return 7;
-		}
-		width_limit(){
-			return +Infinity;
-		}
-		row_width(){
-			return 0;
-		}
-		sub(){
-			return [(this?.title())];
+		attr(){
+			return {"mol_theme": (this?.theme())};
 		}
 	};
 
@@ -2607,61 +2613,345 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    var $$;
-    (function ($$) {
-        class $mol_paragraph extends $.$mol_paragraph {
-            maximal_width() {
-                let width = 0;
-                const letter = this.letter_width();
-                for (const kid of this.sub()) {
-                    if (!kid)
-                        continue;
-                    if (kid instanceof $mol_view) {
-                        width += kid.maximal_width();
-                    }
-                    else if (typeof kid !== 'object') {
-                        width += String(kid).length * letter;
-                    }
-                }
-                return width;
-            }
-            width_limit() {
-                return this.$.$mol_window.size().width;
-            }
-            minimal_width() {
-                return this.letter_width();
-            }
-            row_width() {
-                return Math.max(Math.min(this.width_limit(), this.maximal_width()), this.letter_width());
-            }
-            minimal_height() {
-                return Math.max(1, Math.ceil(this.maximal_width() / this.row_width())) * this.line_height();
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_paragraph.prototype, "maximal_width", null);
-        __decorate([
-            $mol_mem
-        ], $mol_paragraph.prototype, "row_width", null);
-        __decorate([
-            $mol_mem
-        ], $mol_paragraph.prototype, "minimal_height", null);
-        $$.$mol_paragraph = $mol_paragraph;
-    })($$ = $.$$ || ($.$$ = {}));
+    $.$mol_action = $mol_wire_method;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mol/paragraph/paragraph.view.css", ":where([mol_paragraph]) {\n\tmargin: 0;\n\tmax-width: 100%;\n}\n");
+    class $mol_state_arg extends $mol_object {
+        prefix;
+        static href(next) {
+            if (next === undefined) {
+                next = $mol_dom_context.location.href;
+            }
+            else if (!/^about:srcdoc/.test(next)) {
+                new $mol_after_frame(() => {
+                    const next = this.href();
+                    const prev = $mol_dom_context.location.href;
+                    if (next === prev)
+                        return;
+                    const history = $mol_dom_context.history;
+                    history.replaceState(history.state, $mol_dom_context.document.title, next);
+                });
+            }
+            if ($mol_dom_context.parent !== $mol_dom_context.self) {
+                $mol_dom_context.parent.postMessage(['hashchange', next], '*');
+            }
+            return next;
+        }
+        static href_normal() {
+            return this.link({});
+        }
+        static href_absolute() {
+            return new URL(this.href(), $mol_dom_context.location.href).toString();
+        }
+        static dict(next) {
+            var href = this.href(next && this.make_link(next)).split(/#!?/)[1] || '';
+            var chunks = href.split(this.separator);
+            var params = {};
+            chunks.forEach(chunk => {
+                if (!chunk)
+                    return;
+                var vals = chunk.split('=').map(decodeURIComponent);
+                params[vals.shift()] = vals.join('=');
+            });
+            return params;
+        }
+        static dict_cut(except) {
+            const dict = this.dict();
+            const cut = {};
+            for (const key in dict) {
+                if (except.indexOf(key) >= 0)
+                    break;
+                cut[key] = dict[key];
+            }
+            return cut;
+        }
+        static value(key, next) {
+            const nextDict = (next === void 0) ? void 0 : { ...this.dict(), [key]: next };
+            const next2 = this.dict(nextDict)[key];
+            return (next2 == null) ? null : next2;
+        }
+        static link(next) {
+            return this.make_link({
+                ...this.dict_cut(Object.keys(next)),
+                ...next,
+            });
+        }
+        static prolog = '!';
+        static separator = '/';
+        static make_link(next) {
+            const chunks = [];
+            for (let key in next) {
+                if (null == next[key])
+                    continue;
+                const val = next[key];
+                chunks.push([key].concat(val ? [val] : []).map(this.encode).join('='));
+            }
+            return new URL('#' + this.prolog + chunks.join(this.separator), this.href_absolute()).toString();
+        }
+        static go(next) {
+            $mol_dom_context.location.href = this.make_link(next);
+        }
+        static encode(str) {
+            return encodeURIComponent(str).replace(/\(/g, '%28').replace(/\)/g, '%29');
+        }
+        constructor(prefix = '') {
+            super();
+            this.prefix = prefix;
+        }
+        value(key, next) {
+            return this.constructor.value(this.prefix + key, next);
+        }
+        sub(postfix) {
+            return new this.constructor(this.prefix + postfix + '.');
+        }
+        link(next) {
+            var prefix = this.prefix;
+            var dict = {};
+            for (var key in next) {
+                dict[prefix + key] = next[key];
+            }
+            return this.constructor.link(dict);
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_state_arg, "href", null);
+    __decorate([
+        $mol_mem
+    ], $mol_state_arg, "href_normal", null);
+    __decorate([
+        $mol_mem
+    ], $mol_state_arg, "href_absolute", null);
+    __decorate([
+        $mol_mem
+    ], $mol_state_arg, "dict", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_arg, "dict_cut", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_arg, "value", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_arg, "make_link", null);
+    __decorate([
+        $mol_action
+    ], $mol_state_arg, "go", null);
+    $.$mol_state_arg = $mol_state_arg;
+    function $mol_state_arg_change() {
+        $mol_state_arg.href($mol_dom_context.location.href);
+    }
+    self.addEventListener('hashchange', $mol_state_arg_change);
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $.$mol_mem_persist = $mol_wire_solid;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $.$mol_mem_cached = $mol_wire_probe;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function $mol_wire_sync(obj) {
+        return new Proxy(obj, {
+            get(obj, field) {
+                const val = obj[field];
+                if (typeof val !== 'function')
+                    return val;
+                const temp = $mol_wire_task.getter(val);
+                return function $mol_wire_sync(...args) {
+                    const fiber = temp(obj, args);
+                    return fiber.sync();
+                };
+            },
+            apply(obj, self, args) {
+                const temp = $mol_wire_task.getter(obj);
+                const fiber = temp(self, args);
+                return fiber.sync();
+            },
+        });
+    }
+    $.$mol_wire_sync = $mol_wire_sync;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_storage extends $mol_object2 {
+        static native() {
+            return this.$.$mol_dom_context.navigator.storage ?? {
+                persisted: async () => false,
+                persist: async () => false,
+                estimate: async () => ({}),
+                getDirectory: async () => null,
+            };
+        }
+        static persisted(next, cache) {
+            $mol_mem_persist();
+            if (cache)
+                return Boolean(next);
+            const native = this.native();
+            if (next && !$mol_mem_cached(() => this.persisted())) {
+                native.persist().then(actual => {
+                    setTimeout(() => this.persisted(actual, 'cache'), 5000);
+                    if (actual)
+                        this.$.$mol_log3_done({ place: `$mol_storage`, message: `Persist: Yes` });
+                    else
+                        this.$.$mol_log3_fail({ place: `$mol_storage`, message: `Persist: No` });
+                });
+            }
+            return next ?? $mol_wire_sync(native).persisted();
+        }
+        static estimate() {
+            return $mol_wire_sync(this.native() ?? {}).estimate();
+        }
+        static dir() {
+            return $mol_wire_sync(this.native()).getDirectory();
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_storage, "native", null);
+    __decorate([
+        $mol_mem
+    ], $mol_storage, "persisted", null);
+    $.$mol_storage = $mol_storage;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_state_local extends $mol_object {
+        static 'native()';
+        static native() {
+            if (this['native()'])
+                return this['native()'];
+            check: try {
+                const native = $mol_dom_context.localStorage;
+                if (!native)
+                    break check;
+                native.setItem('', '');
+                native.removeItem('');
+                return this['native()'] = native;
+            }
+            catch (error) {
+                console.warn(error);
+            }
+            return this['native()'] = {
+                getItem(key) {
+                    return this[':' + key];
+                },
+                setItem(key, value) {
+                    this[':' + key] = value;
+                },
+                removeItem(key) {
+                    this[':' + key] = void 0;
+                }
+            };
+        }
+        static changes(next) { return next; }
+        static value(key, next) {
+            this.changes();
+            if (next === void 0)
+                return JSON.parse(this.native().getItem(key) || 'null');
+            if (next === null) {
+                this.native().removeItem(key);
+            }
+            else {
+                this.native().setItem(key, JSON.stringify(next));
+                this.$.$mol_storage.persisted(true);
+            }
+            return next;
+        }
+        prefix() { return ''; }
+        value(key, next) {
+            return $mol_state_local.value(this.prefix() + '.' + key, next);
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_state_local, "changes", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_local, "value", null);
+    $.$mol_state_local = $mol_state_local;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    self.addEventListener('storage', event => $.$mol_state_local.changes(event));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function parse(theme) {
+        if (theme === 'true')
+            return true;
+        if (theme === 'false')
+            return false;
+        return null;
+    }
+    function $mol_lights(next) {
+        const arg = parse(this.$mol_state_arg.value('mol_lights'));
+        const base = false;
+        if (next === undefined) {
+            return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
+        }
+        else {
+            if (arg === null) {
+                this.$mol_state_local.value('$mol_lights', next === base ? null : next);
+            }
+            else {
+                this.$mol_state_arg.value('mol_lights', String(next));
+            }
+            return next;
+        }
+    }
+    $.$mol_lights = $mol_lights;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_theme_auto extends $.$mol_theme_auto {
+            theme() {
+                return this.$.$mol_lights() ? '$mol_theme_light' : '$mol_theme_dark';
+            }
+        }
+        $$.$mol_theme_auto = $mol_theme_auto;
+    })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
 ;
 
 var $node = $node || {}
-void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../mpds/cifplayer/lib/three/" ) ] }; 
+void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../optimade/cifplayer/lib/three/" ) ] }; 
 ;
 "use strict";
 /**
@@ -2672,16 +2962,16 @@ void function( module ) { var exports = module.exports = this; function require(
 
 ;
 
-$node[ "../mpds/cifplayer/lib/three/_three" ] = $node[ "../mpds/cifplayer/lib/three/_three.js" ] = module.exports }.call( {} , {} )
+$node[ "../optimade/cifplayer/lib/three/_three" ] = $node[ "../optimade/cifplayer/lib/three/_three.js" ] = module.exports }.call( {} , {} )
 ;
 "use strict";
 var $;
 (function ($) {
-    $.$mpds_cifplayer_lib_three = require('../mpds/cifplayer/lib/three/_three.js');
+    $.$optimade_cifplayer_lib_three = require('../optimade/cifplayer/lib/three/_three.js');
 })($ || ($ = {}));
 
 ;
-	($.$mpds_cifplayer_lib_three_view) = class $mpds_cifplayer_lib_three_view extends ($.$mol_view) {
+	($.$optimade_cifplayer_lib_three_view) = class $optimade_cifplayer_lib_three_view extends ($.$mol_view) {
 		canvas(){
 			return null;
 		}
@@ -2728,8 +3018,8 @@ var $;
 			];
 		}
 	};
-	($mol_mem_key(($.$mpds_cifplayer_lib_three_view.prototype), "new_object"));
-	($mol_mem_key(($.$mpds_cifplayer_lib_three_view.prototype), "object"));
+	($mol_mem_key(($.$optimade_cifplayer_lib_three_view.prototype), "new_object"));
+	($mol_mem_key(($.$optimade_cifplayer_lib_three_view.prototype), "object"));
 
 
 ;
@@ -2861,7 +3151,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $mol_style_define($mpds_cifplayer_lib_three_view, {
+        $mol_style_define($optimade_cifplayer_lib_three_view, {
             flex: {
                 grow: 1,
                 basis: '20rem',
@@ -2876,8 +3166,8 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const THREE = $mpds_cifplayer_lib_three;
-        class $mpds_cifplayer_lib_three_view extends $.$mpds_cifplayer_lib_three_view {
+        const THREE = $optimade_cifplayer_lib_three;
+        class $optimade_cifplayer_lib_three_view extends $.$optimade_cifplayer_lib_three_view {
             start_render_loop() {
                 const render_loop = () => {
                     this.rerender();
@@ -2905,7 +3195,7 @@ var $;
                 return obj;
             }
             remove_object(obj) {
-                $mpds_cifplayer_lib_three_view_dispose_deep(obj);
+                $optimade_cifplayer_lib_three_view_dispose_deep(obj);
                 this.scene()?.remove(obj);
             }
             scene() {
@@ -2963,42 +3253,42 @@ var $;
                 this.controls().handleResize();
             }
             destructor() {
-                $mpds_cifplayer_lib_three_view_dispose_deep(this.scene());
+                $optimade_cifplayer_lib_three_view_dispose_deep(this.scene());
                 this.renderer()?.dispose();
             }
         }
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "start_render_loop", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "start_render_loop", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "scene", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "scene", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "camera", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "camera", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "controls_target", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "controls_target", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "controls_target_changed", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "controls_target_changed", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "controls", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "controls", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "renderer", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "renderer", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "canvas", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "canvas", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "size", null);
+        ], $optimade_cifplayer_lib_three_view.prototype, "size", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_lib_three_view.prototype, "resize", null);
-        $$.$mpds_cifplayer_lib_three_view = $mpds_cifplayer_lib_three_view;
-        function $mpds_cifplayer_lib_three_view_dispose_deep(object) {
+        ], $optimade_cifplayer_lib_three_view.prototype, "resize", null);
+        $$.$optimade_cifplayer_lib_three_view = $optimade_cifplayer_lib_three_view;
+        function $optimade_cifplayer_lib_three_view_dispose_deep(object) {
             const dispose = (object) => {
                 object.dispose();
             };
@@ -3018,7 +3308,7 @@ var $;
             if (object.traverse)
                 object.traverse((obj) => disposeObject(obj));
         }
-        $$.$mpds_cifplayer_lib_three_view_dispose_deep = $mpds_cifplayer_lib_three_view_dispose_deep;
+        $$.$optimade_cifplayer_lib_three_view_dispose_deep = $optimade_cifplayer_lib_three_view_dispose_deep;
         function traverseMaterialsTextures(material, materialCallback, textureCallback) {
             const traverseMaterial = (mat) => {
                 if (materialCallback)
@@ -3040,6 +3330,84 @@ var $;
                 traverseMaterial(material);
         }
     })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_paragraph) = class $mol_paragraph extends ($.$mol_view) {
+		line_height(){
+			return 24;
+		}
+		letter_width(){
+			return 7;
+		}
+		width_limit(){
+			return +Infinity;
+		}
+		row_width(){
+			return 0;
+		}
+		sub(){
+			return [(this?.title())];
+		}
+	};
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_paragraph extends $.$mol_paragraph {
+            maximal_width() {
+                let width = 0;
+                const letter = this.letter_width();
+                for (const kid of this.sub()) {
+                    if (!kid)
+                        continue;
+                    if (kid instanceof $mol_view) {
+                        width += kid.maximal_width();
+                    }
+                    else if (typeof kid !== 'object') {
+                        width += String(kid).length * letter;
+                    }
+                }
+                return width;
+            }
+            width_limit() {
+                return this.$.$mol_window.size().width;
+            }
+            minimal_width() {
+                return this.letter_width();
+            }
+            row_width() {
+                return Math.max(Math.min(this.width_limit(), this.maximal_width()), this.letter_width());
+            }
+            minimal_height() {
+                return Math.max(1, Math.ceil(this.maximal_width() / this.row_width())) * this.line_height();
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_paragraph.prototype, "maximal_width", null);
+        __decorate([
+            $mol_mem
+        ], $mol_paragraph.prototype, "row_width", null);
+        __decorate([
+            $mol_mem
+        ], $mol_paragraph.prototype, "minimal_height", null);
+        $$.$mol_paragraph = $mol_paragraph;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/paragraph/paragraph.view.css", ":where([mol_paragraph]) {\n\tmargin: 0;\n\tmax-width: 100%;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -3807,13 +4175,6 @@ var $;
 
 ;
 "use strict";
-var $;
-(function ($) {
-    $.$mol_mem_cached = $mol_wire_probe;
-})($ || ($ = {}));
-
-;
-"use strict";
 
 ;
 "use strict";
@@ -4331,21 +4692,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-"use strict";
-var $;
-(function ($) {
-    class $mol_plugin extends $mol_view {
-        dom_node_external(next) {
-            return next ?? $mol_owning_get(this).host.dom_node();
-        }
-        render() {
-            this.dom_node_actual();
-        }
-    }
-    $.$mol_plugin = $mol_plugin;
-})($ || ($ = {}));
-
-;
 	($.$mol_hotkey) = class $mol_hotkey extends ($.$mol_plugin) {
 		keydown(next){
 			if(next !== undefined) return next;
@@ -4524,13 +4870,6 @@ var $;
 	($mol_mem(($.$mol_string.prototype), "Submit"));
 	($mol_mem(($.$mol_string.prototype), "selection"));
 
-
-;
-"use strict";
-var $;
-(function ($) {
-    $.$mol_action = $mol_wire_method;
-})($ || ($ = {}));
 
 ;
 "use strict";
@@ -4959,6 +5298,538 @@ var $;
 "use strict";
 
 ;
+	($.$mol_icon_brightness_6) = class $mol_icon_brightness_6 extends ($.$mol_icon) {
+		path(){
+			return "M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z";
+		}
+	};
+
+
+;
+"use strict";
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    const decoders = {};
+    function $mol_charset_decode(buffer, encoding = 'utf8') {
+        let decoder = decoders[encoding];
+        if (!decoder)
+            decoder = decoders[encoding] = new TextDecoder(encoding);
+        return decoder.decode(buffer);
+    }
+    $.$mol_charset_decode = $mol_charset_decode;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $node = $node || {};
+
+;
+"use strict";
+var $;
+(function ($) {
+    const TextEncoder = globalThis.TextEncoder ?? $node.util.TextEncoder;
+    const encoder = new TextEncoder();
+    function $mol_charset_encode(value) {
+        return encoder.encode(value);
+    }
+    $.$mol_charset_encode = $mol_charset_encode;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_file_not_found extends Error {
+    }
+    $.$mol_file_not_found = $mol_file_not_found;
+    class $mol_file extends $mol_object {
+        static absolute(path) {
+            throw new Error('Not implemented yet');
+        }
+        static relative(path) {
+            throw new Error('Not implemented yet');
+        }
+        static base = '';
+        path() {
+            return '.';
+        }
+        parent() {
+            return this.resolve('..');
+        }
+        reset() {
+            try {
+                this.stat(null);
+            }
+            catch (error) {
+                if (error instanceof $mol_file_not_found)
+                    return;
+                return $mol_fail_hidden(error);
+            }
+        }
+        version() {
+            return this.stat()?.mtime.getTime().toString(36).toUpperCase() ?? '';
+        }
+        watcher() {
+            console.warn('$mol_file_web.watcher() not implemented');
+            return {
+                destructor() { }
+            };
+        }
+        exists(next) {
+            let exists = Boolean(this.stat());
+            if (next === undefined)
+                return exists;
+            if (next === exists)
+                return exists;
+            if (next) {
+                this.parent().exists(true);
+                this.ensure();
+            }
+            else {
+                this.drop();
+            }
+            this.reset();
+            return next;
+        }
+        type() {
+            return this.stat()?.type ?? '';
+        }
+        name() {
+            return this.path().replace(/^.*\//, '');
+        }
+        ext() {
+            const match = /((?:\.\w+)+)$/.exec(this.path());
+            return match ? match[1].substring(1) : '';
+        }
+        text(next, virt) {
+            if (virt) {
+                const now = new Date;
+                this.stat({
+                    type: 'file',
+                    size: 0,
+                    atime: now,
+                    mtime: now,
+                    ctime: now,
+                }, 'virt');
+                return next;
+            }
+            if (next === undefined) {
+                return $mol_charset_decode(this.buffer(undefined));
+            }
+            else {
+                const buffer = next === undefined ? undefined : $mol_charset_encode(next);
+                this.buffer(buffer);
+                return next;
+            }
+        }
+        find(include, exclude) {
+            const found = [];
+            const sub = this.sub();
+            for (const child of sub) {
+                const child_path = child.path();
+                if (exclude && child_path.match(exclude))
+                    continue;
+                if (!include || child_path.match(include))
+                    found.push(child);
+                if (child.type() === 'dir') {
+                    const sub_child = child.find(include, exclude);
+                    for (const child of sub_child)
+                        found.push(child);
+                }
+            }
+            return found;
+        }
+        size() {
+            switch (this.type()) {
+                case 'file': return this.stat()?.size ?? 0;
+                default: return 0;
+            }
+        }
+        open(...modes) {
+            return 0;
+        }
+        toJSON() {
+            return this.path();
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_file.prototype, "exists", null);
+    __decorate([
+        $mol_mem
+    ], $mol_file.prototype, "text", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_file, "absolute", null);
+    $.$mol_file = $mol_file;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function $mol_dom_parse(text, type = 'application/xhtml+xml') {
+        const parser = new $mol_dom_context.DOMParser();
+        const doc = parser.parseFromString(text, type);
+        const error = doc.getElementsByTagName('parsererror');
+        if (error.length)
+            throw new Error(error[0].textContent);
+        return doc;
+    }
+    $.$mol_dom_parse = $mol_dom_parse;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_fetch_response extends $mol_object2 {
+        native;
+        constructor(native) {
+            super();
+            this.native = native;
+        }
+        status() {
+            const types = ['unknown', 'inform', 'success', 'redirect', 'wrong', 'failed'];
+            return types[Math.floor(this.native.status / 100)];
+        }
+        code() {
+            return this.native.status;
+        }
+        message() {
+            return this.native.statusText || `HTTP Error ${this.code()}`;
+        }
+        headers() {
+            return this.native.headers;
+        }
+        mime() {
+            return this.headers().get('content-type');
+        }
+        stream() {
+            return this.native.body;
+        }
+        text() {
+            const buffer = this.buffer();
+            const native = this.native;
+            const mime = native.headers.get('content-type') || '';
+            const [, charset] = /charset=(.*)/.exec(mime) || [, 'utf-8'];
+            const decoder = new TextDecoder(charset);
+            return decoder.decode(buffer);
+        }
+        json() {
+            return $mol_wire_sync(this.native).json();
+        }
+        buffer() {
+            return $mol_wire_sync(this.native).arrayBuffer();
+        }
+        xml() {
+            return $mol_dom_parse(this.text(), 'application/xml');
+        }
+        xhtml() {
+            return $mol_dom_parse(this.text(), 'application/xhtml+xml');
+        }
+        html() {
+            return $mol_dom_parse(this.text(), 'text/html');
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "stream", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "text", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "buffer", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "xml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "xhtml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "html", null);
+    $.$mol_fetch_response = $mol_fetch_response;
+    class $mol_fetch extends $mol_object2 {
+        static request(input, init = {}) {
+            const native = globalThis.fetch ?? $node['undici'].fetch;
+            const controller = new AbortController();
+            let done = false;
+            const promise = native(input, {
+                ...init,
+                signal: controller.signal,
+            }).finally(() => {
+                done = true;
+            });
+            return Object.assign(promise, {
+                destructor: () => {
+                    if (!done && !controller.signal.aborted)
+                        controller.abort();
+                },
+            });
+        }
+        static response(input, init) {
+            return new $mol_fetch_response($mol_wire_sync(this).request(input, init));
+        }
+        static success(input, init) {
+            const response = this.response(input, init);
+            if (response.status() === 'success')
+                return response;
+            throw new Error(response.message());
+        }
+        static stream(input, init) {
+            return this.success(input, init).stream();
+        }
+        static text(input, init) {
+            return this.success(input, init).text();
+        }
+        static json(input, init) {
+            return this.success(input, init).json();
+        }
+        static buffer(input, init) {
+            return this.success(input, init).buffer();
+        }
+        static xml(input, init) {
+            return this.success(input, init).xml();
+        }
+        static xhtml(input, init) {
+            return this.success(input, init).xhtml();
+        }
+        static html(input, init) {
+            return this.success(input, init).html();
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "response", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "success", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "stream", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "text", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "json", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "buffer", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "xml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "xhtml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "html", null);
+    $.$mol_fetch = $mol_fetch;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_file_web extends $mol_file {
+        static absolute(path) {
+            return this.make({
+                path: $mol_const(path)
+            });
+        }
+        static relative(path) {
+            return this.absolute(new URL(path, this.base).toString());
+        }
+        static base = $mol_dom_context.document?.currentScript
+            ? new URL('.', $mol_dom_context.document.currentScript['src']).toString()
+            : '';
+        buffer(next) {
+            if (next !== undefined)
+                throw new Error(`Saving content not supported: ${this.path}`);
+            const response = $mol_fetch.response(this.path());
+            if (response.native.status === 404)
+                throw new $mol_file_not_found(`File not found: ${this.path()}`);
+            return new Uint8Array(response.buffer());
+        }
+        stat(next, virt) {
+            let stat = next;
+            if (next === undefined) {
+                const content = this.text();
+                const ctime = new Date();
+                stat = {
+                    type: 'file',
+                    size: content.length,
+                    ctime,
+                    atime: ctime,
+                    mtime: ctime
+                };
+            }
+            this.parent().watcher();
+            return stat;
+        }
+        resolve(path) {
+            let res = this.path() + '/' + path;
+            while (true) {
+                let prev = res;
+                res = res.replace(/\/[^\/.]+\/\.\.\//, '/');
+                if (prev === res)
+                    break;
+            }
+            return this.constructor.absolute(res);
+        }
+        ensure() {
+            throw new Error('$mol_file_web.ensure() not implemented');
+        }
+        drop() {
+            throw new Error('$mol_file_web.drop() not implemented');
+        }
+        sub() {
+            throw new Error('$mol_file_web.sub() not implemented');
+        }
+        relate(base = this.constructor.relative('.')) {
+            throw new Error('$mol_file_web.relate() not implemented');
+        }
+        append(next) {
+            throw new Error('$mol_file_web.append() not implemented');
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_file_web.prototype, "buffer", null);
+    __decorate([
+        $mol_mem
+    ], $mol_file_web.prototype, "stat", null);
+    __decorate([
+        $mol_mem
+    ], $mol_file_web.prototype, "sub", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_file_web, "absolute", null);
+    $.$mol_file_web = $mol_file_web;
+    $.$mol_file = $mol_file_web;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_locale extends $mol_object {
+        static lang_default() {
+            return 'en';
+        }
+        static lang(next) {
+            return this.$.$mol_state_local.value('locale', next) || $mol_dom_context.navigator.language.replace(/-.*/, '') || this.lang_default();
+        }
+        static source(lang) {
+            return JSON.parse(this.$.$mol_file.relative(`web.locale=${lang}.json`).text().toString());
+        }
+        static texts(lang, next) {
+            if (next)
+                return next;
+            try {
+                return this.source(lang).valueOf();
+            }
+            catch (error) {
+                if ($mol_fail_catch(error)) {
+                    const def = this.lang_default();
+                    if (lang === def)
+                        throw error;
+                }
+            }
+            return {};
+        }
+        static text(key) {
+            const lang = this.lang();
+            const target = this.texts(lang)[key];
+            if (target)
+                return target;
+            this.warn(key);
+            const en = this.texts('en')[key];
+            if (!en)
+                return key;
+            return en;
+        }
+        static warn(key) {
+            console.warn(`Not translated to "${this.lang()}": ${key}`);
+            return null;
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_locale, "lang_default", null);
+    __decorate([
+        $mol_mem
+    ], $mol_locale, "lang", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_locale, "source", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_locale, "texts", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_locale, "text", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_locale, "warn", null);
+    $.$mol_locale = $mol_locale;
+})($ || ($ = {}));
+
+;
+	($.$mol_lights_toggle) = class $mol_lights_toggle extends ($.$mol_check_icon) {
+		Lights_icon(){
+			const obj = new this.$.$mol_icon_brightness_6();
+			return obj;
+		}
+		lights(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Icon(){
+			return (this?.Lights_icon());
+		}
+		hint(){
+			return (this.$.$mol_locale.text("$mol_lights_toggle_hint"));
+		}
+		checked(next){
+			return (this?.lights(next));
+		}
+	};
+	($mol_mem(($.$mol_lights_toggle.prototype), "Lights_icon"));
+	($mol_mem(($.$mol_lights_toggle.prototype), "lights"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_lights_toggle extends $.$mol_lights_toggle {
+            lights(next) {
+                return this.$.$mol_lights(next);
+            }
+        }
+        $$.$mol_lights_toggle = $mol_lights_toggle;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$mol_check_list) = class $mol_check_list extends ($.$mol_view) {
 		option_checked(id, next){
 			if(next !== undefined) return next;
@@ -5208,7 +6079,7 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mpds_cifplayer_player) = class $mpds_cifplayer_player extends ($.$mol_view) {
+	($.$optimade_cifplayer_player) = class $optimade_cifplayer_player extends ($.$mol_view) {
 		spread_a(next){
 			if(next !== undefined) return next;
 			return 1;
@@ -5220,6 +6091,10 @@ var $;
 		spread_c(next){
 			if(next !== undefined) return next;
 			return 1;
+		}
+		Theme(){
+			const obj = new this.$.$mol_theme_auto();
+			return obj;
 		}
 		dir_light(){
 			return null;
@@ -5258,7 +6133,7 @@ var $;
 			return null;
 		}
 		Three(){
-			const obj = new this.$.$mpds_cifplayer_lib_three_view();
+			const obj = new this.$.$optimade_cifplayer_lib_three_view();
 			(obj.controls_target) = () => ((this?.controls_target()));
 			(obj.on_render) = () => ((this?.on_render()));
 			return obj;
@@ -5519,9 +6394,17 @@ var $;
 			(obj.sub) = () => ([(this?.Zoom_up()), (this?.Zoom_down())]);
 			return obj;
 		}
+		Lights(){
+			const obj = new this.$.$mol_lights_toggle();
+			return obj;
+		}
 		Tools(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this?.Fullscreen()), (this?.Zoom_section())]);
+			(obj.sub) = () => ([
+				(this?.Fullscreen()), 
+				(this?.Zoom_section()), 
+				(this?.Lights())
+			]);
 			return obj;
 		}
 		overlay(next){
@@ -5602,6 +6485,9 @@ var $;
 		spread_cells_limit(){
 			return 50;
 		}
+		plugins(){
+			return [(this?.Theme())];
+		}
 		auto(){
 			return [
 				(this?.dir_light()), 
@@ -5664,388 +6550,80 @@ var $;
 			return {...(super.attr()), "fullscreen": (this?.fullscreen())};
 		}
 	};
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "spread_a"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "spread_b"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "spread_c"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Three"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_a"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_b"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_c"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_alpha"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_beta"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Descr_gamma"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Info"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Sym_icon"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "toogle_all_symmetry"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Toogle_all"));
-	($mol_mem_key(($.$mpds_cifplayer_player.prototype), "symmetry_visible"));
-	($mol_mem_key(($.$mpds_cifplayer_player.prototype), "Sym_check"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Sym_checks"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Sym_list"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Symlabel"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_label_a"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_a"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_label_b"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_b"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_label_c"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_c"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Spread_cells"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "centered"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Center_icon"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Center"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Left_panel"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "fullscreen"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Expand_icon"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Fullscreen"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "zoom_up"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Zoom_up_icon"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Zoom_up"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "zoom_down"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Zoom_down_icon"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Zoom_down"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Zoom_section"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Tools"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "overlay"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Switch_overlay"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Overlays"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Message_card"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "Message"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "data"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "externals"));
-	($mol_mem(($.$mpds_cifplayer_player.prototype), "vibrate"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "spread_a"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "spread_b"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "spread_c"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Theme"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Three"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_a"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_b"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_c"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_alpha"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_beta"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Descr_gamma"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Info"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Sym_icon"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "toogle_all_symmetry"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Toogle_all"));
+	($mol_mem_key(($.$optimade_cifplayer_player.prototype), "symmetry_visible"));
+	($mol_mem_key(($.$optimade_cifplayer_player.prototype), "Sym_check"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Sym_checks"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Sym_list"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Symlabel"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_label_a"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_a"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_label_b"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_b"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_label_c"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_c"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Spread_cells"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "centered"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Center_icon"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Center"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Left_panel"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "fullscreen"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Expand_icon"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Fullscreen"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "zoom_up"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Zoom_up_icon"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Zoom_up"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "zoom_down"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Zoom_down_icon"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Zoom_down"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Zoom_section"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Lights"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Tools"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "overlay"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Switch_overlay"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Overlays"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Message_card"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "Message"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "data"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "externals"));
+	($mol_mem(($.$optimade_cifplayer_player.prototype), "vibrate"));
 
 
 ;
 
 var $node = $node || {}
-void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../mpds/cifplayer/lib/tween/" ) ] }; 
+void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../optimade/cifplayer/lib/tween/" ) ] }; 
 ;
 "use strict";var t,e=Object.freeze({Linear:Object.freeze({None:function(t){return t},In:function(t){return this.None(t)},Out:function(t){return this.None(t)},InOut:function(t){return this.None(t)}}),Quadratic:Object.freeze({In:function(t){return t*t},Out:function(t){return t*(2-t)},InOut:function(t){return(t*=2)<1?.5*t*t:-.5*(--t*(t-2)-1)}}),Cubic:Object.freeze({In:function(t){return t*t*t},Out:function(t){return--t*t*t+1},InOut:function(t){return(t*=2)<1?.5*t*t*t:.5*((t-=2)*t*t+2)}}),Quartic:Object.freeze({In:function(t){return t*t*t*t},Out:function(t){return 1- --t*t*t*t},InOut:function(t){return(t*=2)<1?.5*t*t*t*t:-.5*((t-=2)*t*t*t-2)}}),Quintic:Object.freeze({In:function(t){return t*t*t*t*t},Out:function(t){return--t*t*t*t*t+1},InOut:function(t){return(t*=2)<1?.5*t*t*t*t*t:.5*((t-=2)*t*t*t*t+2)}}),Sinusoidal:Object.freeze({In:function(t){return 1-Math.sin((1-t)*Math.PI/2)},Out:function(t){return Math.sin(t*Math.PI/2)},InOut:function(t){return.5*(1-Math.sin(Math.PI*(.5-t)))}}),Exponential:Object.freeze({In:function(t){return 0===t?0:Math.pow(1024,t-1)},Out:function(t){return 1===t?1:1-Math.pow(2,-10*t)},InOut:function(t){return 0===t?0:1===t?1:(t*=2)<1?.5*Math.pow(1024,t-1):.5*(2-Math.pow(2,-10*(t-1)))}}),Circular:Object.freeze({In:function(t){return 1-Math.sqrt(1-t*t)},Out:function(t){return Math.sqrt(1- --t*t)},InOut:function(t){return(t*=2)<1?-.5*(Math.sqrt(1-t*t)-1):.5*(Math.sqrt(1-(t-=2)*t)+1)}}),Elastic:Object.freeze({In:function(t){return 0===t?0:1===t?1:-Math.pow(2,10*(t-1))*Math.sin(5*(t-1.1)*Math.PI)},Out:function(t){return 0===t?0:1===t?1:Math.pow(2,-10*t)*Math.sin(5*(t-.1)*Math.PI)+1},InOut:function(t){return 0===t?0:1===t?1:(t*=2)<1?-.5*Math.pow(2,10*(t-1))*Math.sin(5*(t-1.1)*Math.PI):.5*Math.pow(2,-10*(t-1))*Math.sin(5*(t-1.1)*Math.PI)+1}}),Back:Object.freeze({In:function(t){var e=1.70158;return 1===t?1:t*t*((e+1)*t-e)},Out:function(t){var e=1.70158;return 0===t?0:--t*t*((e+1)*t+e)+1},InOut:function(t){var e=2.5949095;return(t*=2)<1?t*t*((e+1)*t-e)*.5:.5*((t-=2)*t*((e+1)*t+e)+2)}}),Bounce:Object.freeze({In:function(t){return 1-e.Bounce.Out(1-t)},Out:function(t){return t<1/2.75?7.5625*t*t:t<2/2.75?7.5625*(t-=1.5/2.75)*t+.75:t<2.5/2.75?7.5625*(t-=2.25/2.75)*t+.9375:7.5625*(t-=2.625/2.75)*t+.984375},InOut:function(t){return t<.5?.5*e.Bounce.In(2*t):.5*e.Bounce.Out(2*t-1)+.5}}),generatePow:function(t){return void 0===t&&(t=4),t=(t=t<Number.EPSILON?Number.EPSILON:t)>1e4?1e4:t,{In:function(e){return Math.pow(e,t)},Out:function(e){return 1-Math.pow(1-e,t)},InOut:function(e){return e<.5?Math.pow(2*e,t)/2:(1-Math.pow(2-2*e,t))/2+.5}}}}),i=function(){return performance.now()},n=function(){function t(){this._tweens={},this._tweensAddedDuringUpdate={}}return t.prototype.getAll=function(){var t=this;return Object.keys(this._tweens).map((function(e){return t._tweens[e]}))},t.prototype.removeAll=function(){this._tweens={}},t.prototype.add=function(t){this._tweens[t.getId()]=t,this._tweensAddedDuringUpdate[t.getId()]=t},t.prototype.remove=function(t){delete this._tweens[t.getId()],delete this._tweensAddedDuringUpdate[t.getId()]},t.prototype.update=function(t,e){void 0===t&&(t=i()),void 0===e&&(e=!1);var n=Object.keys(this._tweens);if(0===n.length)return!1;for(;n.length>0;){this._tweensAddedDuringUpdate={};for(var r=0;r<n.length;r++){var s=this._tweens[n[r]],a=!e;s&&!1===s.update(t,a)&&!e&&delete this._tweens[n[r]]}n=Object.keys(this._tweensAddedDuringUpdate)}return!0},t}(),r={Linear:function(t,e){var i=t.length-1,n=i*e,s=Math.floor(n),a=r.Utils.Linear;return e<0?a(t[0],t[1],n):e>1?a(t[i],t[i-1],i-n):a(t[s],t[s+1>i?i:s+1],n-s)},Bezier:function(t,e){for(var i=0,n=t.length-1,s=Math.pow,a=r.Utils.Bernstein,o=0;o<=n;o++)i+=s(1-e,n-o)*s(e,o)*t[o]*a(n,o);return i},CatmullRom:function(t,e){var i=t.length-1,n=i*e,s=Math.floor(n),a=r.Utils.CatmullRom;return t[0]===t[i]?(e<0&&(s=Math.floor(n=i*(1+e))),a(t[(s-1+i)%i],t[s],t[(s+1)%i],t[(s+2)%i],n-s)):e<0?t[0]-(a(t[0],t[0],t[1],t[1],-n)-t[0]):e>1?t[i]-(a(t[i],t[i],t[i-1],t[i-1],n-i)-t[i]):a(t[s?s-1:0],t[s],t[i<s+1?i:s+1],t[i<s+2?i:s+2],n-s)},Utils:{Linear:function(t,e,i){return(e-t)*i+t},Bernstein:function(t,e){var i=r.Utils.Factorial;return i(t)/i(e)/i(t-e)},Factorial:(t=[1],function(e){var i=1;if(t[e])return t[e];for(var n=e;n>1;n--)i*=n;return t[e]=i,i}),CatmullRom:function(t,e,i,n,r){var s=.5*(i-t),a=.5*(n-e),o=r*r;return(2*e-2*i+s+a)*(r*o)+(-3*e+3*i-2*s-a)*o+s*r+e}}},s=function(){function t(){}return t.nextId=function(){return t._nextId++},t._nextId=0,t}(),a=new n,o=function(){function t(t,i){void 0===i&&(i=a),this._object=t,this._group=i,this._isPaused=!1,this._pauseStart=0,this._valuesStart={},this._valuesEnd={},this._valuesStartRepeat={},this._duration=1e3,this._isDynamic=!1,this._initialRepeat=0,this._repeat=0,this._yoyo=!1,this._isPlaying=!1,this._reversed=!1,this._delayTime=0,this._startTime=0,this._easingFunction=e.Linear.None,this._interpolationFunction=r.Linear,this._chainedTweens=[],this._onStartCallbackFired=!1,this._onEveryStartCallbackFired=!1,this._id=s.nextId(),this._isChainStopped=!1,this._propertiesAreSetUp=!1,this._goToEnd=!1}return t.prototype.getId=function(){return this._id},t.prototype.isPlaying=function(){return this._isPlaying},t.prototype.isPaused=function(){return this._isPaused},t.prototype.to=function(t,e){if(void 0===e&&(e=1e3),this._isPlaying)throw new Error("Can not call Tween.to() while Tween is already started or paused. Stop the Tween first.");return this._valuesEnd=t,this._propertiesAreSetUp=!1,this._duration=e,this},t.prototype.duration=function(t){return void 0===t&&(t=1e3),this._duration=t,this},t.prototype.dynamic=function(t){return void 0===t&&(t=!1),this._isDynamic=t,this},t.prototype.start=function(t,e){if(void 0===t&&(t=i()),void 0===e&&(e=!1),this._isPlaying)return this;if(this._group&&this._group.add(this),this._repeat=this._initialRepeat,this._reversed)for(var n in this._reversed=!1,this._valuesStartRepeat)this._swapEndStartRepeatValues(n),this._valuesStart[n]=this._valuesStartRepeat[n];if(this._isPlaying=!0,this._isPaused=!1,this._onStartCallbackFired=!1,this._onEveryStartCallbackFired=!1,this._isChainStopped=!1,this._startTime=t,this._startTime+=this._delayTime,!this._propertiesAreSetUp||e){if(this._propertiesAreSetUp=!0,!this._isDynamic){var r={};for(var s in this._valuesEnd)r[s]=this._valuesEnd[s];this._valuesEnd=r}this._setupProperties(this._object,this._valuesStart,this._valuesEnd,this._valuesStartRepeat,e)}return this},t.prototype.startFromCurrentValues=function(t){return this.start(t,!0)},t.prototype._setupProperties=function(t,e,i,n,r){for(var s in i){var a=t[s],o=Array.isArray(a),u=o?"array":typeof a,h=!o&&Array.isArray(i[s]);if("undefined"!==u&&"function"!==u){if(h){if(0===(v=i[s]).length)continue;for(var p=[a],_=0,l=v.length;_<l;_+=1){var c=this._handleRelativeValue(a,v[_]);if(isNaN(c)){h=!1,console.warn("Found invalid interpolation list. Skipping.");break}p.push(c)}h&&(i[s]=p)}if("object"!==u&&!o||!a||h)(void 0===e[s]||r)&&(e[s]=a),o||(e[s]*=1),n[s]=h?i[s].slice().reverse():e[s]||0;else{e[s]=o?[]:{};var d=a;for(var f in d)e[s][f]=d[f];n[s]=o?[]:{};var v=i[s];if(!this._isDynamic){var y={};for(var f in v)y[f]=v[f];i[s]=v=y}this._setupProperties(d,e[s],v,n[s],r)}}}},t.prototype.stop=function(){return this._isChainStopped||(this._isChainStopped=!0,this.stopChainedTweens()),this._isPlaying?(this._group&&this._group.remove(this),this._isPlaying=!1,this._isPaused=!1,this._onStopCallback&&this._onStopCallback(this._object),this):this},t.prototype.end=function(){return this._goToEnd=!0,this.update(1/0),this},t.prototype.pause=function(t){return void 0===t&&(t=i()),this._isPaused||!this._isPlaying||(this._isPaused=!0,this._pauseStart=t,this._group&&this._group.remove(this)),this},t.prototype.resume=function(t){return void 0===t&&(t=i()),this._isPaused&&this._isPlaying?(this._isPaused=!1,this._startTime+=t-this._pauseStart,this._pauseStart=0,this._group&&this._group.add(this),this):this},t.prototype.stopChainedTweens=function(){for(var t=0,e=this._chainedTweens.length;t<e;t++)this._chainedTweens[t].stop();return this},t.prototype.group=function(t){return void 0===t&&(t=a),this._group=t,this},t.prototype.delay=function(t){return void 0===t&&(t=0),this._delayTime=t,this},t.prototype.repeat=function(t){return void 0===t&&(t=0),this._initialRepeat=t,this._repeat=t,this},t.prototype.repeatDelay=function(t){return this._repeatDelayTime=t,this},t.prototype.yoyo=function(t){return void 0===t&&(t=!1),this._yoyo=t,this},t.prototype.easing=function(t){return void 0===t&&(t=e.Linear.None),this._easingFunction=t,this},t.prototype.interpolation=function(t){return void 0===t&&(t=r.Linear),this._interpolationFunction=t,this},t.prototype.chain=function(){for(var t=[],e=0;e<arguments.length;e++)t[e]=arguments[e];return this._chainedTweens=t,this},t.prototype.onStart=function(t){return this._onStartCallback=t,this},t.prototype.onEveryStart=function(t){return this._onEveryStartCallback=t,this},t.prototype.onUpdate=function(t){return this._onUpdateCallback=t,this},t.prototype.onRepeat=function(t){return this._onRepeatCallback=t,this},t.prototype.onComplete=function(t){return this._onCompleteCallback=t,this},t.prototype.onStop=function(t){return this._onStopCallback=t,this},t.prototype.update=function(t,e){if(void 0===t&&(t=i()),void 0===e&&(e=!0),this._isPaused)return!0;var n,r,s=this._startTime+this._duration;if(!this._goToEnd&&!this._isPlaying){if(t>s)return!1;e&&this.start(t,!0)}if(this._goToEnd=!1,t<this._startTime)return!0;!1===this._onStartCallbackFired&&(this._onStartCallback&&this._onStartCallback(this._object),this._onStartCallbackFired=!0),!1===this._onEveryStartCallbackFired&&(this._onEveryStartCallback&&this._onEveryStartCallback(this._object),this._onEveryStartCallbackFired=!0),r=(t-this._startTime)/this._duration,r=0===this._duration||r>1?1:r;var a=this._easingFunction(r);if(this._updateProperties(this._object,this._valuesStart,this._valuesEnd,a),this._onUpdateCallback&&this._onUpdateCallback(this._object,r),1===r){if(this._repeat>0){for(n in isFinite(this._repeat)&&this._repeat--,this._valuesStartRepeat)this._yoyo||"string"!=typeof this._valuesEnd[n]||(this._valuesStartRepeat[n]=this._valuesStartRepeat[n]+parseFloat(this._valuesEnd[n])),this._yoyo&&this._swapEndStartRepeatValues(n),this._valuesStart[n]=this._valuesStartRepeat[n];return this._yoyo&&(this._reversed=!this._reversed),void 0!==this._repeatDelayTime?this._startTime=t+this._repeatDelayTime:this._startTime=t+this._delayTime,this._onRepeatCallback&&this._onRepeatCallback(this._object),this._onEveryStartCallbackFired=!1,!0}this._onCompleteCallback&&this._onCompleteCallback(this._object);for(var o=0,u=this._chainedTweens.length;o<u;o++)this._chainedTweens[o].start(this._startTime+this._duration,!1);return this._isPlaying=!1,!1}return!0},t.prototype._updateProperties=function(t,e,i,n){for(var r in i)if(void 0!==e[r]){var s=e[r]||0,a=i[r],o=Array.isArray(t[r]),u=Array.isArray(a);!o&&u?t[r]=this._interpolationFunction(a,n):"object"==typeof a&&a?this._updateProperties(t[r],s,a,n):"number"==typeof(a=this._handleRelativeValue(s,a))&&(t[r]=s+(a-s)*n)}},t.prototype._handleRelativeValue=function(t,e){return"string"!=typeof e?e:"+"===e.charAt(0)||"-"===e.charAt(0)?t+parseFloat(e):parseFloat(e)},t.prototype._swapEndStartRepeatValues=function(t){var e=this._valuesStartRepeat[t],i=this._valuesEnd[t];this._valuesStartRepeat[t]="string"==typeof i?this._valuesStartRepeat[t]+parseFloat(i):this._valuesEnd[t],this._valuesEnd[t]=e},t}(),u="21.0.0",h=s.nextId,p=a,_=p.getAll.bind(p),l=p.removeAll.bind(p),c=p.add.bind(p),d=p.remove.bind(p),f=p.update.bind(p),v={Easing:e,Group:n,Interpolation:r,now:i,Sequence:s,nextId:h,Tween:o,VERSION:u,getAll:_,removeAll:l,add:c,remove:d,update:f},y=Object.freeze({__proto__:null,Easing:e,Group:n,Interpolation:r,Sequence:s,Tween:o,VERSION:u,add:c,default:v,getAll:_,nextId:h,now:i,remove:d,removeAll:l,update:f});exports.TWEEN=y;
 
 ;
 
-$node[ "../mpds/cifplayer/lib/tween/_tween" ] = $node[ "../mpds/cifplayer/lib/tween/_tween.js" ] = module.exports }.call( {} , {} )
+$node[ "../optimade/cifplayer/lib/tween/_tween" ] = $node[ "../optimade/cifplayer/lib/tween/_tween.js" ] = module.exports }.call( {} , {} )
 ;
 "use strict";
 var $;
 (function ($) {
-    $.$mpds_cifplayer_lib_tween = require('../mpds/cifplayer/lib/tween/_tween.js');
-})($ || ($ = {}));
-
-;
-"use strict";
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $mol_state_arg extends $mol_object {
-        prefix;
-        static href(next) {
-            if (next === undefined) {
-                next = $mol_dom_context.location.href;
-            }
-            else if (!/^about:srcdoc/.test(next)) {
-                new $mol_after_frame(() => {
-                    const next = this.href();
-                    const prev = $mol_dom_context.location.href;
-                    if (next === prev)
-                        return;
-                    const history = $mol_dom_context.history;
-                    history.replaceState(history.state, $mol_dom_context.document.title, next);
-                });
-            }
-            if ($mol_dom_context.parent !== $mol_dom_context.self) {
-                $mol_dom_context.parent.postMessage(['hashchange', next], '*');
-            }
-            return next;
-        }
-        static href_normal() {
-            return this.link({});
-        }
-        static href_absolute() {
-            return new URL(this.href(), $mol_dom_context.location.href).toString();
-        }
-        static dict(next) {
-            var href = this.href(next && this.make_link(next)).split(/#!?/)[1] || '';
-            var chunks = href.split(this.separator);
-            var params = {};
-            chunks.forEach(chunk => {
-                if (!chunk)
-                    return;
-                var vals = chunk.split('=').map(decodeURIComponent);
-                params[vals.shift()] = vals.join('=');
-            });
-            return params;
-        }
-        static dict_cut(except) {
-            const dict = this.dict();
-            const cut = {};
-            for (const key in dict) {
-                if (except.indexOf(key) >= 0)
-                    break;
-                cut[key] = dict[key];
-            }
-            return cut;
-        }
-        static value(key, next) {
-            const nextDict = (next === void 0) ? void 0 : { ...this.dict(), [key]: next };
-            const next2 = this.dict(nextDict)[key];
-            return (next2 == null) ? null : next2;
-        }
-        static link(next) {
-            return this.make_link({
-                ...this.dict_cut(Object.keys(next)),
-                ...next,
-            });
-        }
-        static prolog = '!';
-        static separator = '/';
-        static make_link(next) {
-            const chunks = [];
-            for (let key in next) {
-                if (null == next[key])
-                    continue;
-                const val = next[key];
-                chunks.push([key].concat(val ? [val] : []).map(this.encode).join('='));
-            }
-            return new URL('#' + this.prolog + chunks.join(this.separator), this.href_absolute()).toString();
-        }
-        static go(next) {
-            $mol_dom_context.location.href = this.make_link(next);
-        }
-        static encode(str) {
-            return encodeURIComponent(str).replace(/\(/g, '%28').replace(/\)/g, '%29');
-        }
-        constructor(prefix = '') {
-            super();
-            this.prefix = prefix;
-        }
-        value(key, next) {
-            return this.constructor.value(this.prefix + key, next);
-        }
-        sub(postfix) {
-            return new this.constructor(this.prefix + postfix + '.');
-        }
-        link(next) {
-            var prefix = this.prefix;
-            var dict = {};
-            for (var key in next) {
-                dict[prefix + key] = next[key];
-            }
-            return this.constructor.link(dict);
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $mol_state_arg, "href", null);
-    __decorate([
-        $mol_mem
-    ], $mol_state_arg, "href_normal", null);
-    __decorate([
-        $mol_mem
-    ], $mol_state_arg, "href_absolute", null);
-    __decorate([
-        $mol_mem
-    ], $mol_state_arg, "dict", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_arg, "dict_cut", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_arg, "value", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_arg, "make_link", null);
-    __decorate([
-        $mol_action
-    ], $mol_state_arg, "go", null);
-    $.$mol_state_arg = $mol_state_arg;
-    function $mol_state_arg_change() {
-        $mol_state_arg.href($mol_dom_context.location.href);
-    }
-    self.addEventListener('hashchange', $mol_state_arg_change);
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $.$mol_mem_persist = $mol_wire_solid;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    function $mol_wire_sync(obj) {
-        return new Proxy(obj, {
-            get(obj, field) {
-                const val = obj[field];
-                if (typeof val !== 'function')
-                    return val;
-                const temp = $mol_wire_task.getter(val);
-                return function $mol_wire_sync(...args) {
-                    const fiber = temp(obj, args);
-                    return fiber.sync();
-                };
-            },
-            apply(obj, self, args) {
-                const temp = $mol_wire_task.getter(obj);
-                const fiber = temp(self, args);
-                return fiber.sync();
-            },
-        });
-    }
-    $.$mol_wire_sync = $mol_wire_sync;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $mol_storage extends $mol_object2 {
-        static native() {
-            return this.$.$mol_dom_context.navigator.storage ?? {
-                persisted: async () => false,
-                persist: async () => false,
-                estimate: async () => ({}),
-                getDirectory: async () => null,
-            };
-        }
-        static persisted(next, cache) {
-            $mol_mem_persist();
-            if (cache)
-                return Boolean(next);
-            const native = this.native();
-            if (next && !$mol_mem_cached(() => this.persisted())) {
-                native.persist().then(actual => {
-                    setTimeout(() => this.persisted(actual, 'cache'), 5000);
-                    if (actual)
-                        this.$.$mol_log3_done({ place: `$mol_storage`, message: `Persist: Yes` });
-                    else
-                        this.$.$mol_log3_fail({ place: `$mol_storage`, message: `Persist: No` });
-                });
-            }
-            return next ?? $mol_wire_sync(native).persisted();
-        }
-        static estimate() {
-            return $mol_wire_sync(this.native() ?? {}).estimate();
-        }
-        static dir() {
-            return $mol_wire_sync(this.native()).getDirectory();
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $mol_storage, "native", null);
-    __decorate([
-        $mol_mem
-    ], $mol_storage, "persisted", null);
-    $.$mol_storage = $mol_storage;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $mol_state_local extends $mol_object {
-        static 'native()';
-        static native() {
-            if (this['native()'])
-                return this['native()'];
-            check: try {
-                const native = $mol_dom_context.localStorage;
-                if (!native)
-                    break check;
-                native.setItem('', '');
-                native.removeItem('');
-                return this['native()'] = native;
-            }
-            catch (error) {
-                console.warn(error);
-            }
-            return this['native()'] = {
-                getItem(key) {
-                    return this[':' + key];
-                },
-                setItem(key, value) {
-                    this[':' + key] = value;
-                },
-                removeItem(key) {
-                    this[':' + key] = void 0;
-                }
-            };
-        }
-        static changes(next) { return next; }
-        static value(key, next) {
-            this.changes();
-            if (next === void 0)
-                return JSON.parse(this.native().getItem(key) || 'null');
-            if (next === null) {
-                this.native().removeItem(key);
-            }
-            else {
-                this.native().setItem(key, JSON.stringify(next));
-                this.$.$mol_storage.persisted(true);
-            }
-            return next;
-        }
-        prefix() { return ''; }
-        value(key, next) {
-            return $mol_state_local.value(this.prefix() + '.' + key, next);
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $mol_state_local, "changes", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_local, "value", null);
-    $.$mol_state_local = $mol_state_local;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    self.addEventListener('storage', event => $.$mol_state_local.changes(event));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    function parse(theme) {
-        if (theme === 'true')
-            return true;
-        if (theme === 'false')
-            return false;
-        return null;
-    }
-    function $mol_lights(next) {
-        const arg = parse(this.$mol_state_arg.value('mol_lights'));
-        const base = false;
-        if (next === undefined) {
-            return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
-        }
-        else {
-            if (arg === null) {
-                this.$mol_state_local.value('$mol_lights', next === base ? null : next);
-            }
-            else {
-                this.$mol_state_arg.value('mol_lights', String(next));
-            }
-            return next;
-        }
-    }
-    $.$mol_lights = $mol_lights;
+    $.$optimade_cifplayer_lib_tween = require('../optimade/cifplayer/lib/tween/_tween.js');
 })($ || ($ = {}));
 
 ;
 
 var $node = $node || {}
-void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../mpds/cifplayer/lib/math/" ) ] }; 
+void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../optimade/cifplayer/lib/math/" ) ] }; 
 ;
 "use strict";function r(){return r=Object.assign?Object.assign.bind():function(r){for(var t=1;t<arguments.length;t++){var e=arguments[t];for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&(r[n]=e[n])}return r},r.apply(this,arguments)}var t={epsilon:1e-12,matrix:"Matrix",number:"number",precision:64,predictable:!1,randomSeed:null};function e(r){return"number"==typeof r}function n(r){return!(!r||"object"!=typeof r||"function"!=typeof r.constructor)&&(!0===r.isBigNumber&&"object"==typeof r.constructor.prototype&&!0===r.constructor.prototype.isBigNumber||"function"==typeof r.constructor.isDecimal&&!0===r.constructor.isDecimal(r))}function i(r){return r&&"object"==typeof r&&!0===Object.getPrototypeOf(r).isComplex||!1}function u(r){return r&&"object"==typeof r&&!0===Object.getPrototypeOf(r).isFraction||!1}function a(r){return r&&!0===r.constructor.prototype.isUnit||!1}function o(r){return"string"==typeof r}var s=Array.isArray;function f(r){return r&&!0===r.constructor.prototype.isMatrix||!1}function c(r){return Array.isArray(r)||f(r)}function l(r){return r&&r.isDenseMatrix&&!0===r.constructor.prototype.isMatrix||!1}function p(r){return r&&r.isSparseMatrix&&!0===r.constructor.prototype.isMatrix||!1}function h(r){return r&&!0===r.constructor.prototype.isRange||!1}function d(r){return r&&!0===r.constructor.prototype.isIndex||!1}function D(r){return"boolean"==typeof r}function m(r){return r&&!0===r.constructor.prototype.isResultSet||!1}function v(r){return r&&!0===r.constructor.prototype.isHelp||!1}function y(r){return"function"==typeof r}function g(r){return r instanceof Date}function w(r){return r instanceof RegExp}function x(r){return!(!r||"object"!=typeof r||r.constructor!==Object||i(r)||u(r))}function A(r){return null===r}function E(r){return void 0===r}function F(r){return r&&!0===r.isAccessorNode&&!0===r.constructor.prototype.isNode||!1}function C(r){return r&&!0===r.isArrayNode&&!0===r.constructor.prototype.isNode||!1}function b(r){return r&&!0===r.isAssignmentNode&&!0===r.constructor.prototype.isNode||!1}function _(r){return r&&!0===r.isBlockNode&&!0===r.constructor.prototype.isNode||!1}function M(r){return r&&!0===r.isConditionalNode&&!0===r.constructor.prototype.isNode||!1}function B(r){return r&&!0===r.isConstantNode&&!0===r.constructor.prototype.isNode||!1}function S(r){return r&&!0===r.isFunctionAssignmentNode&&!0===r.constructor.prototype.isNode||!1}function N(r){return r&&!0===r.isFunctionNode&&!0===r.constructor.prototype.isNode||!1}function z(r){return r&&!0===r.isIndexNode&&!0===r.constructor.prototype.isNode||!1}function T(r){return r&&!0===r.isNode&&!0===r.constructor.prototype.isNode||!1}function O(r){return r&&!0===r.isObjectNode&&!0===r.constructor.prototype.isNode||!1}function I(r){return r&&!0===r.isOperatorNode&&!0===r.constructor.prototype.isNode||!1}function q(r){return r&&!0===r.isParenthesisNode&&!0===r.constructor.prototype.isNode||!1}function j(r){return r&&!0===r.isRangeNode&&!0===r.constructor.prototype.isNode||!1}function k(r){return r&&!0===r.isRelationalNode&&!0===r.constructor.prototype.isNode||!1}function P(r){return r&&!0===r.isSymbolNode&&!0===r.constructor.prototype.isNode||!1}function R(r){return r&&!0===r.constructor.prototype.isChain||!1}function U(r){var t=typeof r;return"object"===t?null===r?"null":n(r)?"BigNumber":r.constructor&&r.constructor.name?r.constructor.name:"Object":t}function L(r){var t=typeof r;if("number"===t||"string"===t||"boolean"===t||null==r)return r;if("function"==typeof r.clone)return r.clone();if(Array.isArray(r))return r.map((function(r){return L(r)}));if(r instanceof Date)return new Date(r.valueOf());if(n(r))return r;if(x(r))return function(r,t){var e={};for(var n in r)H(r,n)&&(e[n]=t(r[n]));return e}(r,L);throw new TypeError("Cannot clone: unknown type of value (value: ".concat(r,")"))}function Z(r,t){for(var e in t)H(t,e)&&(r[e]=t[e]);return r}function V(r,t){var e,n,i;if(Array.isArray(r)){if(!Array.isArray(t))return!1;if(r.length!==t.length)return!1;for(n=0,i=r.length;n<i;n++)if(!V(r[n],t[n]))return!1;return!0}if("function"==typeof r)return r===t;if(r instanceof Object){if(Array.isArray(t)||!(t instanceof Object))return!1;for(e in r)if(!(e in t)||!V(r[e],t[e]))return!1;for(e in t)if(!(e in r))return!1;return!0}return r===t}function H(r,t){return r&&Object.hasOwnProperty.call(r,t)}var J=function(r){if(r)throw new Error("The global config is readonly. \nPlease create a mathjs instance if you want to change the default configuration. \nExample:\n\n  import { create, all } from 'mathjs';\n  const mathjs = create(all);\n  mathjs.config({ number: 'BigNumber' });\n");return Object.freeze(t)};function Y(){return!0}function Q(){return!1}function W(){}r(J,t,{MATRIX_OPTIONS:["Matrix","Array"],NUMBER_OPTIONS:["number","BigNumber","Fraction"]});const G="Argument is not a typed-function.";var X=function r(){function t(r){return"object"==typeof r&&null!==r&&r.constructor===Object}const e=[{name:"number",test:function(r){return"number"==typeof r}},{name:"string",test:function(r){return"string"==typeof r}},{name:"boolean",test:function(r){return"boolean"==typeof r}},{name:"Function",test:function(r){return"function"==typeof r}},{name:"Array",test:Array.isArray},{name:"Date",test:function(r){return r instanceof Date}},{name:"RegExp",test:function(r){return r instanceof RegExp}},{name:"Object",test:t},{name:"null",test:function(r){return null===r}},{name:"undefined",test:function(r){return void 0===r}}],n={name:"any",test:Y,isAny:!0};let i,u,a=0,o={createCount:0};function s(r){const t=i.get(r);if(t)return t;let e='Unknown type "'+r+'"';const n=r.toLowerCase();let a;for(a of u)if(a.toLowerCase()===n){e+='. Did you mean "'+a+'" ?';break}throw new TypeError(e)}function f(r){let t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"any";const e=t?s(t).index:u.length,n=[];for(let t=0;t<r.length;++t){if(!r[t]||"string"!=typeof r[t].name||"function"!=typeof r[t].test)throw new TypeError("Object with properties {name: string, test: function} expected");const u=r[t].name;if(i.has(u))throw new TypeError('Duplicate type name "'+u+'"');n.push(u),i.set(u,{name:u,test:r[t].test,isAny:r[t].isAny,index:e+t,conversionsTo:[]})}const a=u.slice(e);u=u.slice(0,e).concat(n).concat(a);for(let r=e+n.length;r<u.length;++r)i.get(u[r]).index=r}function c(){i=new Map,u=[],a=0,f([n],!1)}function l(r){const t=u.filter((t=>{const e=i.get(t);return!e.isAny&&e.test(r)}));return t.length?t:["any"]}function p(r){return r&&"function"==typeof r&&"_typedFunctionData"in r}function h(r,t,e){if(!p(r))throw new TypeError(G);const n=e&&e.exact,i=y(Array.isArray(t)?t.join(","):t),u=d(i);if(!n||u in r.signatures){const t=r._typedFunctionData.signatureMap.get(u);if(t)return t}const a=i.length;let o,s;if(n){let t;for(t in o=[],r.signatures)o.push(r._typedFunctionData.signatureMap.get(t))}else o=r._typedFunctionData.signatures;for(let r=0;r<a;++r){const t=i[r],e=[];let n;for(n of o){const i=A(n.params,r);if(i&&(!t.restParam||i.restParam)){if(!i.hasAny){const r=v(i);if(t.types.some((t=>!r.has(t.name))))continue}e.push(n)}}if(o=e,0===o.length)break}for(s of o)if(s.params.length<=a)return s;throw new TypeError("Signature not found (signature: "+(r.name||"unnamed")+"("+d(i,", ")+"))")}function d(r){let t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:",";return r.map((r=>r.name)).join(t)}function D(r){const t=0===r.indexOf("..."),e=(t?r.length>3?r.slice(3):"any":r).split("|").map((r=>s(r.trim())));let n=!1,i=t?"...":"";return{types:e.map((function(r){return n=r.isAny||n,i+=r.name+"|",{name:r.name,typeIndex:r.index,test:r.test,isAny:r.isAny,conversion:null,conversionIndex:-1}})),name:i.slice(0,-1),hasAny:n,hasConversion:!1,restParam:t}}function m(r){const t=function(r){if(0===r.length)return[];const t=r.map(s);r.length>1&&t.sort(((r,t)=>r.index-t.index));let e=t[0].conversionsTo;if(1===r.length)return e;e=e.concat([]);const n=new Set(r);for(let r=1;r<t.length;++r){let i;for(i of t[r].conversionsTo)n.has(i.from)||(e.push(i),n.add(i.from))}return e}(r.types.map((r=>r.name)));let e=r.hasAny,n=r.name;const i=t.map((function(r){const t=s(r.from);return e=t.isAny||e,n+="|"+r.from,{name:r.from,typeIndex:t.index,test:t.test,isAny:t.isAny,conversion:r,conversionIndex:r.index}}));return{types:r.types.concat(i),name:n,hasAny:e,hasConversion:i.length>0,restParam:r.restParam}}function v(r){return r.typeSet||(r.typeSet=new Set,r.types.forEach((t=>r.typeSet.add(t.name)))),r.typeSet}function y(r){const t=[];if("string"!=typeof r)throw new TypeError("Signatures must be strings");const e=r.trim();if(""===e)return t;const n=e.split(",");for(let r=0;r<n.length;++r){const e=D(n[r].trim());if(e.restParam&&r!==n.length-1)throw new SyntaxError('Unexpected rest parameter "'+n[r]+'": only allowed for the last parameter');if(0===e.types.length)return null;t.push(e)}return t}function g(r){const t=R(r);return!!t&&t.restParam}function w(r){if(r&&0!==r.types.length){if(1===r.types.length)return s(r.types[0].name).test;if(2===r.types.length){const t=s(r.types[0].name).test,e=s(r.types[1].name).test;return function(r){return t(r)||e(r)}}{const t=r.types.map((function(r){return s(r.name).test}));return function(r){for(let e=0;e<t.length;e++)if(t[e](r))return!0;return!1}}}return Y}function x(r){let t,e,n;if(g(r)){t=P(r).map(w);const e=t.length,n=w(R(r)),i=function(r){for(let t=e;t<r.length;t++)if(!n(r[t]))return!1;return!0};return function(r){for(let e=0;e<t.length;e++)if(!t[e](r[e]))return!1;return i(r)&&r.length>=e+1}}return 0===r.length?function(r){return 0===r.length}:1===r.length?(e=w(r[0]),function(r){return e(r[0])&&1===r.length}):2===r.length?(e=w(r[0]),n=w(r[1]),function(r){return e(r[0])&&n(r[1])&&2===r.length}):(t=r.map(w),function(r){for(let e=0;e<t.length;e++)if(!t[e](r[e]))return!1;return r.length===t.length})}function A(r,t){return t<r.length?r[t]:g(r)?R(r):null}function E(r,t){const e=A(r,t);return e?v(e):new Set}function F(r){return null===r.conversion||void 0===r.conversion}function C(r,t){const e=new Set;return r.forEach((r=>{const n=E(r.params,t);let i;for(i of n)e.add(i)})),e.has("any")?["any"]:Array.from(e)}function b(r,t,e){let n,i;const u=r||"unnamed";let a,o=e;for(a=0;a<t.length;a++){const r=[];if(o.forEach((e=>{const n=w(A(e.params,a));(a<e.params.length||g(e.params))&&n(t[a])&&r.push(e)})),0===r.length){if(i=C(o,a),i.length>0){const r=l(t[a]);return n=new TypeError("Unexpected type of argument in function "+u+" (expected: "+i.join(" or ")+", actual: "+r.join(" | ")+", index: "+a+")"),n.data={category:"wrongType",fn:u,index:a,actual:r,expected:i},n}}else o=r}const s=o.map((function(r){return g(r.params)?1/0:r.params.length}));if(t.length<Math.min.apply(null,s))return i=C(o,a),n=new TypeError("Too few arguments in function "+u+" (expected: "+i.join(" or ")+", index: "+t.length+")"),n.data={category:"tooFewArgs",fn:u,index:t.length,expected:i},n;const f=Math.max.apply(null,s);if(t.length>f)return n=new TypeError("Too many arguments in function "+u+" (expected: "+f+", actual: "+t.length+")"),n.data={category:"tooManyArgs",fn:u,index:t.length,expectedLength:f},n;const c=[];for(let r=0;r<t.length;++r)c.push(l(t[r]).join("|"));return n=new TypeError('Arguments of type "'+c.join(", ")+'" do not match any of the defined signatures of function '+u+"."),n.data={category:"mismatch",actual:c},n}function _(r){let t=u.length+1;for(let e=0;e<r.types.length;e++)F(r.types[e])&&(t=Math.min(t,r.types[e].typeIndex));return t}function M(r){let t=a+1;for(let e=0;e<r.types.length;e++)F(r.types[e])||(t=Math.min(t,r.types[e].conversionIndex));return t}function B(r,t){if(r.hasAny){if(!t.hasAny)return 1}else if(t.hasAny)return-1;if(r.restParam){if(!t.restParam)return 1}else if(t.restParam)return-1;if(r.hasConversion){if(!t.hasConversion)return 1}else if(t.hasConversion)return-1;const e=_(r)-_(t);if(e<0)return-1;if(e>0)return 1;const n=M(r)-M(t);return n<0?-1:n>0?1:0}function S(r,t){const e=r.params,n=t.params,i=R(e),u=R(n),a=g(e),o=g(n);if(a&&i.hasAny){if(!o||!u.hasAny)return 1}else if(o&&u.hasAny)return-1;let s,f=0,c=0;for(s of e)s.hasAny&&++f,s.hasConversion&&++c;let l=0,p=0;for(s of n)s.hasAny&&++l,s.hasConversion&&++p;if(f!==l)return f-l;if(a&&i.hasConversion){if(!o||!u.hasConversion)return 1}else if(o&&u.hasConversion)return-1;if(c!==p)return c-p;if(a){if(!o)return 1}else if(o)return-1;const h=(e.length-n.length)*(a?-1:1);if(0!==h)return h;const d=[];let D,m=0;for(let r=0;r<e.length;++r){const t=B(e[r],n[r]);d.push(t),m+=t}if(0!==m)return m;for(D of d)if(0!==D)return D;return 0}function N(r,t){let e=t;if(r.some((r=>r.hasConversion))){const n=g(r),i=r.map(z);e=function(){const r=[],e=n?arguments.length-1:arguments.length;for(let t=0;t<e;t++)r[t]=i[t](arguments[t]);return n&&(r[e]=arguments[e].map(i[e])),t.apply(this,r)}}let n=e;if(g(r)){const t=r.length-1;n=function(){return e.apply(this,U(arguments,0,t).concat([U(arguments,t)]))}}return n}function z(r){let t,e,n,i;const u=[],a=[];switch(r.types.forEach((function(r){r.conversion&&(u.push(s(r.conversion.from).test),a.push(r.conversion.convert))})),a.length){case 0:return function(r){return r};case 1:return t=u[0],n=a[0],function(r){return t(r)?n(r):r};case 2:return t=u[0],e=u[1],n=a[0],i=a[1],function(r){return t(r)?n(r):e(r)?i(r):r};default:return function(r){for(let t=0;t<a.length;t++)if(u[t](r))return a[t](r);return r}}}function T(r){return function r(t,e,n){if(e<t.length){const a=t[e];let o=[];if(a.restParam){const r=a.types.filter(F);r.length<a.types.length&&o.push({types:r,name:"..."+r.map((r=>r.name)).join("|"),hasAny:r.some((r=>r.isAny)),hasConversion:!1,restParam:!0}),o.push(a)}else o=a.types.map((function(r){return{types:[r],name:r.name,hasAny:r.isAny,hasConversion:r.conversion,restParam:!1}}));return i=o,u=function(i){return r(t,e+1,n.concat([i]))},Array.prototype.concat.apply([],i.map(u))}return[n];var i,u}(r,0,[])}function O(r,t){const e=Math.max(r.length,t.length);for(let n=0;n<e;n++){const e=E(r,n),i=E(t,n);let u,a=!1;for(u of i)if(e.has(u)){a=!0;break}if(!a)return!1}const n=r.length,i=t.length,u=g(r),a=g(t);return u?a?n===i:i>=n:a?n>=i:n===i}function I(r,t,e){const n=[];let i;for(i of r){let r=e[i];if("number"!=typeof r)throw new TypeError('No definition for referenced signature "'+i+'"');if(r=t[r],"function"!=typeof r)return!1;n.push(r)}return n}function q(r,t,e){const n=function(r){return r.map((r=>H(r)?Z(r.referToSelf.callback):V(r)?L(r.referTo.references,r.referTo.callback):r))}(r),i=new Array(n.length).fill(!1);let u=!0;for(;u;){u=!1;let r=!0;for(let a=0;a<n.length;++a){if(i[a])continue;const o=n[a];if(H(o))n[a]=o.referToSelf.callback(e),n[a].referToSelf=o.referToSelf,i[a]=!0,r=!1;else if(V(o)){const e=I(o.referTo.references,n,t);e?(n[a]=o.referTo.callback.apply(this,e),n[a].referTo=o.referTo,i[a]=!0,r=!1):u=!0}}if(r&&u)throw new SyntaxError("Circular reference detected in resolving typed.referTo")}return n}function j(r,t){if(o.createCount++,0===Object.keys(t).length)throw new SyntaxError("No signatures provided");o.warnAgainstDeprecatedThis&&function(r){const t=/\bthis(\(|\.signatures\b)/;Object.keys(r).forEach((e=>{const n=r[e];if(t.test(n.toString()))throw new SyntaxError("Using `this` to self-reference a function is deprecated since typed-function@3. Use typed.referTo and typed.referToSelf instead.")}))}(t);const e=[],n=[],i={},u=[];let a;for(a in t){if(!Object.prototype.hasOwnProperty.call(t,a))continue;const r=y(a);if(!r)continue;e.forEach((function(t){if(O(t,r))throw new TypeError('Conflicting signatures "'+d(t)+'" and "'+d(r)+'".')})),e.push(r);const o=n.length;n.push(t[a]);const s=r.map(m);let f;for(f of T(s)){const r=d(f);u.push({params:f,name:r,fn:o}),f.every((r=>!r.hasConversion))&&(i[r]=o)}}u.sort(S);const s=q(n,i,sr);let f;for(f in i)Object.prototype.hasOwnProperty.call(i,f)&&(i[f]=s[i[f]]);const c=[],l=new Map;for(f of u)l.has(f.name)||(f.fn=s[f.fn],c.push(f),l.set(f.name,f));const p=c[0]&&c[0].params.length<=2&&!g(c[0].params),h=c[1]&&c[1].params.length<=2&&!g(c[1].params),D=c[2]&&c[2].params.length<=2&&!g(c[2].params),v=c[3]&&c[3].params.length<=2&&!g(c[3].params),A=c[4]&&c[4].params.length<=2&&!g(c[4].params),E=c[5]&&c[5].params.length<=2&&!g(c[5].params),F=p&&h&&D&&v&&A&&E;for(let r=0;r<c.length;++r)c[r].test=x(c[r].params);const C=p?w(c[0].params[0]):Q,b=h?w(c[1].params[0]):Q,_=D?w(c[2].params[0]):Q,M=v?w(c[3].params[0]):Q,B=A?w(c[4].params[0]):Q,z=E?w(c[5].params[0]):Q,I=p?w(c[0].params[1]):Q,j=h?w(c[1].params[1]):Q,k=D?w(c[2].params[1]):Q,P=v?w(c[3].params[1]):Q,R=A?w(c[4].params[1]):Q,U=E?w(c[5].params[1]):Q;for(let r=0;r<c.length;++r)c[r].implementation=N(c[r].params,c[r].fn);const L=p?c[0].implementation:W,Z=h?c[1].implementation:W,V=D?c[2].implementation:W,H=v?c[3].implementation:W,J=A?c[4].implementation:W,Y=E?c[5].implementation:W,G=p?c[0].params.length:-1,X=h?c[1].params.length:-1,K=D?c[2].params.length:-1,rr=v?c[3].params.length:-1,tr=A?c[4].params.length:-1,er=E?c[5].params.length:-1,nr=F?6:0,ir=c.length,ur=c.map((r=>r.test)),ar=c.map((r=>r.implementation)),or=function(){for(let r=nr;r<ir;r++)if(ur[r](arguments))return ar[r].apply(this,arguments);return o.onMismatch(r,arguments,c)};function sr(r,t){return arguments.length===G&&C(r)&&I(t)?L.apply(this,arguments):arguments.length===X&&b(r)&&j(t)?Z.apply(this,arguments):arguments.length===K&&_(r)&&k(t)?V.apply(this,arguments):arguments.length===rr&&M(r)&&P(t)?H.apply(this,arguments):arguments.length===tr&&B(r)&&R(t)?J.apply(this,arguments):arguments.length===er&&z(r)&&U(t)?Y.apply(this,arguments):or.apply(this,arguments)}try{Object.defineProperty(sr,"name",{value:r})}catch(r){}return sr.signatures=i,sr._typedFunctionData={signatures:c,signatureMap:l},sr}function k(r,t,e){throw b(r,t,e)}function P(r){return U(r,0,r.length-1)}function R(r){return r[r.length-1]}function U(r,t,e){return Array.prototype.slice.call(r,t,e)}function L(r,t){return{referTo:{references:r,callback:t}}}function Z(r){if("function"!=typeof r)throw new TypeError("Callback function expected as first argument");return{referToSelf:{callback:r}}}function V(r){return r&&"object"==typeof r.referTo&&Array.isArray(r.referTo.references)&&"function"==typeof r.referTo.callback}function H(r){return r&&"object"==typeof r.referToSelf&&"function"==typeof r.referToSelf.callback}function J(r,t){if(!r)return t;if(t&&t!==r){const e=new Error("Function names do not match (expected: "+r+", actual: "+t+")");throw e.data={actual:t,expected:r},e}return r}function X(r){let t;for(const e in r)Object.prototype.hasOwnProperty.call(r,e)&&(p(r[e])||"string"==typeof r[e].signature)&&(t=J(t,r[e].name));return t}function K(r,t){let e;for(e in t)if(Object.prototype.hasOwnProperty.call(t,e)){if(e in r&&t[e]!==r[e]){const n=new Error('Signature "'+e+'" is defined twice');throw n.data={signature:e,sourceFunction:t[e],destFunction:r[e]},n}r[e]=t[e]}}c(),f(e);const rr=o;function tr(r){if(!r||"string"!=typeof r.from||"string"!=typeof r.to||"function"!=typeof r.convert)throw new TypeError("Object with properties {from: string, to: string, convert: function} expected");if(r.to===r.from)throw new SyntaxError('Illegal to define conversion from "'+r.from+'" to itself.')}return o=function(r){const e="string"==typeof r;let n=e?r:"";const i={};for(let r=e?1:0;r<arguments.length;++r){const u=arguments[r];let a,o={};if("function"==typeof u?(a=u.name,"string"==typeof u.signature?o[u.signature]=u:p(u)&&(o=u.signatures)):t(u)&&(o=u,e||(a=X(u))),0===Object.keys(o).length){const t=new TypeError("Argument to 'typed' at index "+r+" is not a (typed) function, nor an object with signatures as keys and functions as values.");throw t.data={index:r,argument:u},t}e||(n=J(n,a)),K(i,o)}return j(n||"",i)},o.create=r,o.createCount=rr.createCount,o.onMismatch=k,o.throwMismatchError=k,o.createError=b,o.clear=c,o.clearConversions=function(){let r;for(r of u)i.get(r).conversionsTo=[];a=0},o.addTypes=f,o._findType=s,o.referTo=function(){const r=P(arguments).map((r=>d(y(r)))),t=R(arguments);if("function"!=typeof t)throw new TypeError("Callback function expected as last argument");return L(r,t)},o.referToSelf=Z,o.convert=function(r,t){const e=s(t);if(e.test(r))return r;const n=e.conversionsTo;if(0===n.length)throw new Error("There are no conversions to "+t+" defined.");for(let t=0;t<n.length;t++){if(s(n[t].from).test(r))return n[t].convert(r)}throw new Error("Cannot convert "+r+" to "+t)},o.findSignature=h,o.find=function(r,t,e){return h(r,t,e).implementation},o.isTypedFunction=p,o.warnAgainstDeprecatedThis=!0,o.addType=function(r,t){let e="any";!1!==t&&i.has("Object")&&(e="Object"),o.addTypes([r],e)},o.addConversion=function(r){tr(r);const t=s(r.to);if(!t.conversionsTo.every((function(t){return t.from!==r.from})))throw new Error('There is already a conversion from "'+r.from+'" to "'+t.name+'"');t.conversionsTo.push({from:r.from,convert:r.convert,index:a++})},o.addConversions=function(r){r.forEach(o.addConversion)},o.removeConversion=function(r){tr(r);const t=s(r.to),e=function(r,t){for(let e=0;e<r.length;e++)if(t(r[e]))return r[e]}(t.conversionsTo,(t=>t.from===r.from));if(!e)throw new Error("Attempt to remove nonexistent conversion from "+r.from+" to "+r.to);if(e.convert!==r.convert)throw new Error("Conversion to remove does not match existing conversion");const n=t.conversionsTo.indexOf(e);t.conversionsTo.splice(n,1)},o.resolve=function(r,t){if(!p(r))throw new TypeError(G);const e=r._typedFunctionData.signatures;for(let r=0;r<e.length;++r)if(e[r].test(t))return e[r];return null},o}();function K(r){return"boolean"==typeof r||!!isFinite(r)&&r===Math.round(r)}var rr=Math.sign||function(r){return r>0?1:r<0?-1:0};function tr(r,t,e){var n={2:"0b",8:"0o",16:"0x"}[t],i="";if(e){if(e<1)throw new Error("size must be in greater than 0");if(!K(e))throw new Error("size must be an integer");if(r>2**(e-1)-1||r<-(2**(e-1)))throw new Error("Value must be in range [-2^".concat(e-1,", 2^").concat(e-1,"-1]"));if(!K(r))throw new Error("Value must be an integer");r<0&&(r+=2**e),i="i".concat(e)}var u="";return r<0&&(r=-r,u="-"),"".concat(u).concat(n).concat(r.toString(t)).concat(i)}function er(r,t){if("function"==typeof t)return t(r);if(r===1/0)return"Infinity";if(r===-1/0)return"-Infinity";if(isNaN(r))return"NaN";var n,i,u="auto";if(t&&(t.notation&&(u=t.notation),e(t)?n=t:e(t.precision)&&(n=t.precision),t.wordSize&&"number"!=typeof(i=t.wordSize)))throw new Error('Option "wordSize" must be a number');switch(u){case"fixed":return function(r,t){if(isNaN(r)||!isFinite(r))return String(r);var e=nr(r),n="number"==typeof t?ur(e,e.exponent+1+t):e,i=n.coefficients,u=n.exponent+1,a=u+(t||0);i.length<a&&(i=i.concat(ar(a-i.length)));u<0&&(i=ar(1-u).concat(i),u=1);u<i.length&&i.splice(u,0,0===u?"0.":".");return n.sign+i.join("")}(r,n);case"exponential":return ir(r,n);case"engineering":return function(r,t){if(isNaN(r)||!isFinite(r))return String(r);var n=nr(r),i=ur(n,t),u=i.exponent,a=i.coefficients,o=u%3==0?u:u<0?u-3-u%3:u-u%3;if(e(t))for(;t>a.length||u-o+1>a.length;)a.push(0);else for(var s=Math.abs(u-o)-(a.length-1),f=0;f<s;f++)a.push(0);var c=Math.abs(u-o),l=1;for(;c>0;)l++,c--;var p=a.slice(l).join(""),h=e(t)&&p.length||p.match(/[1-9]/)?"."+p:"",d=a.slice(0,l).join("")+h+"e"+(u>=0?"+":"")+o.toString();return i.sign+d}(r,n);case"bin":return tr(r,2,i);case"oct":return tr(r,8,i);case"hex":return tr(r,16,i);case"auto":return function(r,t,e){if(isNaN(r)||!isFinite(r))return String(r);var n=e&&void 0!==e.lowerExp?e.lowerExp:-3,i=e&&void 0!==e.upperExp?e.upperExp:5,u=nr(r),a=t?ur(u,t):u;if(a.exponent<n||a.exponent>=i)return ir(r,t);var o=a.coefficients,s=a.exponent;o.length<t&&(o=o.concat(ar(t-o.length))),o=o.concat(ar(s-o.length+1+(o.length<t?t-o.length:0)));var f=s>0?s:0;return f<(o=ar(-s).concat(o)).length-1&&o.splice(f+1,0,"."),a.sign+o.join("")}(r,n,t&&t).replace(/((\.\d*?)(0+))($|e)/,(function(){var r=arguments[2],t=arguments[4];return"."!==r?r+t:t}));default:throw new Error('Unknown notation "'+u+'". Choose "auto", "exponential", "fixed", "bin", "oct", or "hex.')}}function nr(r){var t=String(r).toLowerCase().match(/^(-?)(\d+\.?\d*)(e([+-]?\d+))?$/);if(!t)throw new SyntaxError("Invalid number "+r);var e=t[1],n=t[2],i=parseFloat(t[4]||"0"),u=n.indexOf(".");i+=-1!==u?u-1:n.length-1;var a=n.replace(".","").replace(/^0*/,(function(r){return i-=r.length,""})).replace(/0*$/,"").split("").map((function(r){return parseInt(r)}));return 0===a.length&&(a.push(0),i++),{sign:e,coefficients:a,exponent:i}}function ir(r,t){if(isNaN(r)||!isFinite(r))return String(r);var e=nr(r),n=t?ur(e,t):e,i=n.coefficients,u=n.exponent;i.length<t&&(i=i.concat(ar(t-i.length)));var a=i.shift();return n.sign+a+(i.length>0?"."+i.join(""):"")+"e"+(u>=0?"+":"")+u}function ur(r,t){for(var e={sign:r.sign,coefficients:r.coefficients,exponent:r.exponent},n=e.coefficients;t<=0;)n.unshift(0),e.exponent++,t++;if(n.length>t&&n.splice(t,n.length-t)[0]>=5){var i=t-1;for(n[i]++;10===n[i];)n.pop(),0===i&&(n.unshift(0),e.exponent++,i++),n[--i]++}return e}function ar(r){for(var t=[],e=0;e<r;e++)t.push(0);return t}var or=Number.EPSILON||2220446049250313e-31;function sr(r,t,e){if(null==e)return r===t;if(r===t)return!0;if(isNaN(r)||isNaN(t))return!1;if(isFinite(r)&&isFinite(t)){var n=Math.abs(r-t);return n<=or||n<=Math.max(Math.abs(r),Math.abs(t))*e}return!1}function fr(r,t,e){var n=new(0,r.constructor)(2),i="";if(e){if(e<1)throw new Error("size must be in greater than 0");if(!K(e))throw new Error("size must be an integer");if(r.greaterThan(n.pow(e-1).sub(1))||r.lessThan(n.pow(e-1).mul(-1)))throw new Error("Value must be in range [-2^".concat(e-1,", 2^").concat(e-1,"-1]"));if(!r.isInteger())throw new Error("Value must be an integer");r.lessThan(0)&&(r=r.add(n.pow(e))),i="i".concat(e)}switch(t){case 2:return"".concat(r.toBinary()).concat(i);case 8:return"".concat(r.toOctal()).concat(i);case 16:return"".concat(r.toHexadecimal()).concat(i);default:throw new Error("Base ".concat(t," not supported "))}}function cr(r,t){if("function"==typeof t)return t(r);if(!r.isFinite())return r.isNaN()?"NaN":r.gt(0)?"Infinity":"-Infinity";var e,n,i="auto";if(void 0!==t&&(t.notation&&(i=t.notation),"number"==typeof t?e=t:void 0!==t.precision&&(e=t.precision),t.wordSize&&"number"!=typeof(n=t.wordSize)))throw new Error('Option "wordSize" must be a number');switch(i){case"fixed":return function(r,t){return r.toFixed(t)}(r,e);case"exponential":return lr(r,e);case"engineering":return function(r,t){var e=r.e,n=e%3==0?e:e<0?e-3-e%3:e-e%3,i=r.mul(Math.pow(10,-n)),u=i.toPrecision(t);if(-1!==u.indexOf("e")){u=new(0,r.constructor)(u).toFixed()}return u+"e"+(e>=0?"+":"")+n.toString()}(r,e);case"bin":return fr(r,2,n);case"oct":return fr(r,8,n);case"hex":return fr(r,16,n);case"auto":var u=t&&void 0!==t.lowerExp?t.lowerExp:-3,a=t&&void 0!==t.upperExp?t.upperExp:5;if(r.isZero())return"0";var o=r.toSignificantDigits(e),s=o.e;return(s>=u&&s<a?o.toFixed():lr(r,e)).replace(/((\.\d*?)(0+))($|e)/,(function(){var r=arguments[2],t=arguments[4];return"."!==r?r+t:t}));default:throw new Error('Unknown notation "'+i+'". Choose "auto", "exponential", "fixed", "bin", "oct", or "hex.')}}function lr(r,t){return void 0!==t?r.toExponential(t-1):r.toExponential()}function pr(r,t){var e=function(r,t){if("number"==typeof r)return er(r,t);if(n(r))return cr(r,t);if(function(r){return r&&"object"==typeof r&&"number"==typeof r.s&&"number"==typeof r.n&&"number"==typeof r.d||!1}(r))return t&&"decimal"===t.fraction?r.toString():r.s*r.n+"/"+r.d;if(Array.isArray(r))return Dr(r,t);if(o(r))return hr(r);if("function"==typeof r)return r.syntax?String(r.syntax):"function";if(r&&"object"==typeof r){return"function"==typeof r.format?r.format(t):r&&r.toString(t)!=={}.toString()?r.toString(t):"{"+Object.keys(r).map((e=>hr(e)+": "+pr(r[e],t))).join(", ")+"}"}return String(r)}(r,t);return t&&"object"==typeof t&&"truncate"in t&&e.length>t.truncate?e.substring(0,t.truncate-3)+"...":e}function hr(r){for(var t=String(r),e="",n=0;n<t.length;){var i=t.charAt(n);e+=i in dr?dr[i]:i,n++}return'"'+e+'"'}var dr={'"':'\\"',"\\":"\\\\","\b":"\\b","\f":"\\f","\n":"\\n","\r":"\\r","\t":"\\t"};function Dr(r,t){if(Array.isArray(r)){for(var e="[",n=r.length,i=0;i<n;i++)0!==i&&(e+=", "),e+=Dr(r[i],t);return e+="]"}return pr(r,t)}function mr(r,t,e){if(!(this instanceof mr))throw new SyntaxError("Constructor must be called with the new operator");this.actual=r,this.expected=t,this.relation=e,this.message="Dimension mismatch ("+(Array.isArray(r)?"["+r.join(", ")+"]":r)+" "+(this.relation||"!=")+" "+(Array.isArray(t)?"["+t.join(", ")+"]":t)+")",this.stack=(new Error).stack}function vr(r,t,e){if(!(this instanceof vr))throw new SyntaxError("Constructor must be called with the new operator");this.index=r,arguments.length<3?(this.min=0,this.max=t):(this.min=t,this.max=e),void 0!==this.min&&this.index<this.min?this.message="Index out of range ("+this.index+" < "+this.min+")":void 0!==this.max&&this.index>=this.max?this.message="Index out of range ("+this.index+" > "+(this.max-1)+")":this.message="Index out of range ("+this.index+")",this.stack=(new Error).stack}function yr(r){for(var t=[];Array.isArray(r);)t.push(r.length),r=r[0];return t}function gr(r,t,e){var n,i=r.length;if(i!==t[e])throw new mr(i,t[e]);if(e<t.length-1){var u=e+1;for(n=0;n<i;n++){var a=r[n];if(!Array.isArray(a))throw new mr(t.length-1,t.length,"<");gr(r[n],t,u)}}else for(n=0;n<i;n++)if(Array.isArray(r[n]))throw new mr(t.length+1,t.length,">")}function wr(r,t){if(0===t.length){if(Array.isArray(r))throw new mr(r.length,0)}else gr(r,t,0)}function xr(r,t){if(void 0!==r){if(!e(r)||!K(r))throw new TypeError("Index must be an integer (value: "+r+")");if(r<0||"number"==typeof t&&r>=t)throw new vr(r,t)}}function Ar(r,t,i){if(!Array.isArray(t))throw new TypeError("Array expected");if(0===t.length)throw new Error("Resizing to scalar is not supported");return t.forEach((function(r){if(!e(r)||!K(r)||r<0)throw new TypeError("Invalid size, must contain positive integers (size: "+pr(t)+")")})),(e(r)||n(r))&&(r=[r]),Er(r,t,0,void 0!==i?i:0),r}function Er(r,t,e,n){var i,u,a=r.length,o=t[e],s=Math.min(a,o);if(r.length=o,e<t.length-1){var f=e+1;for(i=0;i<s;i++)u=r[i],Array.isArray(u)||(u=[u],r[i]=u),Er(u,t,f,n);for(i=s;i<o;i++)u=[],r[i]=u,Er(u,t,f,n)}else{for(i=0;i<s;i++)for(;Array.isArray(r[i]);)r[i]=r[i][0];for(i=s;i<o;i++)r[i]=n}}function Fr(r,t){var e=Nr(r),n=e.length;if(!Array.isArray(r)||!Array.isArray(t))throw new TypeError("Array expected");if(0===t.length)throw new mr(0,n,"!=");var i=br(t=Cr(t,n));if(n!==i)throw new mr(i,n,"!=");try{return function(r,t){for(var e,n=r,i=t.length-1;i>0;i--){var u=t[i];e=[];for(var a=n.length/u,o=0;o<a;o++)e.push(n.slice(o*u,(o+1)*u));n=e}return n}(e,t)}catch(r){if(r instanceof mr)throw new mr(i,n,"!=");throw r}}function Cr(r,t){var e=br(r),n=r.slice(),i=r.indexOf(-1);if(r.indexOf(-1,i+1)>=0)throw new Error("More than one wildcard in sizes");if(i>=0){if(!(t%e==0))throw new Error("Could not replace wildcard, since "+t+" is no multiple of "+-e);n[i]=-t/e}return n}function br(r){return r.reduce(((r,t)=>r*t),1)}function _r(r,t){for(var e=t||yr(r);Array.isArray(r)&&1===r.length;)r=r[0],e.shift();for(var n=e.length;1===e[n-1];)n--;return n<e.length&&(r=Mr(r,n,0),e.length=n),r}function Mr(r,t,e){var n,i;if(e<t){var u=e+1;for(n=0,i=r.length;n<i;n++)r[n]=Mr(r[n],t,u)}else for(;Array.isArray(r);)r=r[0];return r}function Br(r,t,e,n){var i=n||yr(r);if(e)for(var u=0;u<e;u++)r=[r],i.unshift(1);for(r=Sr(r,t,0);i.length<t;)i.push(1);return r}function Sr(r,t,e){var n,i;if(Array.isArray(r)){var u=e+1;for(n=0,i=r.length;n<i;n++)r[n]=Sr(r[n],t,u)}else for(var a=e;a<t;a++)r=[r];return r}function Nr(r){if(!Array.isArray(r))return r;var t=[];return r.forEach((function r(e){Array.isArray(e)?e.forEach(r):t.push(e)})),t}function zr(r,t){for(var e,n=0,i=0;i<r.length;i++){var u=r[i],a=Array.isArray(u);if(0===i&&a&&(n=u.length),a&&u.length!==n)return;var o=a?zr(u,t):t(u);if(void 0===e)e=o;else if(e!==o)return"mixed"}return e}function Tr(r,t,e,n){if(n<e){if(r.length!==t.length)throw new mr(r.length,t.length);for(var i=[],u=0;u<r.length;u++)i[u]=Tr(r[u],t[u],e,n+1);return i}return r.concat(t)}function Or(){var r=Array.prototype.slice.call(arguments,0,-1),t=Array.prototype.slice.call(arguments,-1);if(1===r.length)return r[0];if(r.length>1)return r.slice(1).reduce((function(r,e){return Tr(r,e,t,0)}),r[0]);throw new Error("Wrong number of arguments in function concat")}function Ir(r,t){for(var e=t.length,n=r.length,i=0;i<n;i++){var u=e-n+i;if(r[i]<t[u]&&r[i]>1||r[i]>t[u])throw new Error("shape missmatch: missmatch is found in arg with shape (".concat(r,") not possible to broadcast dimension ").concat(n," with size ").concat(r[i]," to size ").concat(t[u]))}}function qr(t,e){var n=yr(t);if(V(n,e))return t;Ir(n,e);var i,u,a,o=function(){for(var r=arguments.length,t=new Array(r),e=0;e<r;e++)t[e]=arguments[e];for(var n=t.map((r=>r.length)),i=Math.max(...n),u=new Array(i).fill(null),a=0;a<t.length;a++)for(var o=t[a],s=n[a],f=0;f<s;f++){var c=i-s+f;o[f]>u[c]&&(u[c]=o[f])}for(var l=0;l<t.length;l++)Ir(t[l],u);return u}(n,e),s=o.length,f=[...Array(s-n.length).fill(1),...n],c=function(t){return r([],t)}(t);n.length<s&&(n=yr(c=Fr(c,f)));for(var l=0;l<s;l++)n[l]<o[l]&&(i=c,u=o[l],a=l,n=yr(c=Or(...Array(u).fill(i),a)));return c}function jr(r,t,e,n){function i(n){var i=function(r,t){for(var e={},n=0;n<t.length;n++){var i=t[n],u=r[i];void 0!==u&&(e[i]=u)}return e}(n,t.map(kr));return function(r,t,e){var n=t.filter((r=>!function(r){return r&&"?"===r[0]}(r))).every((r=>void 0!==e[r]));if(!n){var i=t.filter((r=>void 0===e[r]));throw new Error('Cannot create function "'.concat(r,'", ')+"some dependencies are missing: ".concat(i.map((r=>'"'.concat(r,'"'))).join(", "),"."))}}(r,t,n),e(i)}return i.isFactory=!0,i.fn=r,i.dependencies=t.slice().sort(),n&&(i.meta=n),i}function kr(r){return r&&"?"===r[0]?r.slice(1):r}function Pr(r,t){if(Ur(r)&&Rr(r,t))return r[t];if("function"==typeof r[t]&&function(r,t){if(null==r||"function"!=typeof r[t])return!1;if(H(r,t)&&Object.getPrototypeOf&&t in Object.getPrototypeOf(r))return!1;if(H(Zr,t))return!0;if(t in Object.prototype)return!1;if(t in Function.prototype)return!1;return!0}(r,t))throw new Error('Cannot access method "'+t+'" as a property');throw new Error('No access to property "'+t+'"')}function Rr(r,t){return!(!r||"object"!=typeof r)&&(!!H(Lr,t)||!(t in Object.prototype)&&!(t in Function.prototype))}function Ur(r){return"object"==typeof r&&r&&r.constructor===Object}mr.prototype=new RangeError,mr.prototype.constructor=RangeError,mr.prototype.name="DimensionError",mr.prototype.isDimensionError=!0,vr.prototype=new RangeError,vr.prototype.constructor=RangeError,vr.prototype.name="IndexError",vr.prototype.isIndexError=!0;var Lr={length:!0,name:!0},Zr={toString:!0,valueOf:!0,toLocaleString:!0};class Vr{constructor(r){this.wrappedObject=r}keys(){return Object.keys(this.wrappedObject)}get(r){return Pr(this.wrappedObject,r)}set(r,t){return function(r,t,e){if(Ur(r)&&Rr(r,t))return r[t]=e,e;throw new Error('No access to property "'+t+'"')}(this.wrappedObject,r,t),this}has(r){return t=this.wrappedObject,r in t;var t}}function Hr(r){return!!r&&(r instanceof Map||r instanceof Vr||"function"==typeof r.set&&"function"==typeof r.get&&"function"==typeof r.keys&&"function"==typeof r.has)}var Jr=function(){return Jr=X.create,X},Yr=jr("typed",["?BigNumber","?Complex","?DenseMatrix","?Fraction"],(function(r){var{BigNumber:t,Complex:U,DenseMatrix:L,Fraction:Z}=r,V=Jr();return V.clear(),V.addTypes([{name:"number",test:e},{name:"Complex",test:i},{name:"BigNumber",test:n},{name:"Fraction",test:u},{name:"Unit",test:a},{name:"identifier",test:r=>o&&/^(?:[A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088E\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF40\uDF42-\uDF49\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD23\uDE80-\uDEA9\uDEB0\uDEB1\uDF00-\uDF1C\uDF27\uDF30-\uDF45\uDF70-\uDF81\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC03-\uDC37\uDC71\uDC72\uDC75\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD44\uDD47\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE3F\uDE40\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC5F-\uDC61\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDEB8\uDF00-\uDF1A\uDF40-\uDF46]|\uD806[\uDC00-\uDC2B\uDCA0-\uDCDF\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD2F\uDD3F\uDD41\uDDA0-\uDDA7\uDDAA-\uDDD0\uDDE1\uDDE3\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE89\uDE9D\uDEB0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD89\uDD98\uDEE0-\uDEF2\uDF02\uDF04-\uDF10\uDF12-\uDF33\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2F\uDC41-\uDC46]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE70-\uDEBE\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE7F\uDF00-\uDF4A\uDF50\uDF93-\uDF9F\uDFE0\uDFE1\uDFE3]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD32\uDD50-\uDD52\uDD55\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]|\uD838[\uDC30-\uDC6D\uDD00-\uDD2C\uDD37-\uDD3D\uDD4E\uDE90-\uDEAD\uDEC0-\uDEEB]|\uD839[\uDCD0-\uDCEB\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43\uDD4B]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF])(?:[0-9A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088E\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF40\uDF42-\uDF49\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD23\uDE80-\uDEA9\uDEB0\uDEB1\uDF00-\uDF1C\uDF27\uDF30-\uDF45\uDF70-\uDF81\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC03-\uDC37\uDC71\uDC72\uDC75\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD44\uDD47\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE3F\uDE40\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC5F-\uDC61\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDEB8\uDF00-\uDF1A\uDF40-\uDF46]|\uD806[\uDC00-\uDC2B\uDCA0-\uDCDF\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD2F\uDD3F\uDD41\uDDA0-\uDDA7\uDDAA-\uDDD0\uDDE1\uDDE3\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE89\uDE9D\uDEB0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD89\uDD98\uDEE0-\uDEF2\uDF02\uDF04-\uDF10\uDF12-\uDF33\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2F\uDC41-\uDC46]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE70-\uDEBE\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE7F\uDF00-\uDF4A\uDF50\uDF93-\uDF9F\uDFE0\uDFE1\uDFE3]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD32\uDD50-\uDD52\uDD55\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]|\uD838[\uDC30-\uDC6D\uDD00-\uDD2C\uDD37-\uDD3D\uDD4E\uDE90-\uDEAD\uDEC0-\uDEEB]|\uD839[\uDCD0-\uDCEB\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43\uDD4B]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF])*$/.test(r)},{name:"string",test:o},{name:"Chain",test:R},{name:"Array",test:s},{name:"Matrix",test:f},{name:"DenseMatrix",test:l},{name:"SparseMatrix",test:p},{name:"Range",test:h},{name:"Index",test:d},{name:"boolean",test:D},{name:"ResultSet",test:m},{name:"Help",test:v},{name:"function",test:y},{name:"Date",test:g},{name:"RegExp",test:w},{name:"null",test:A},{name:"undefined",test:E},{name:"AccessorNode",test:F},{name:"ArrayNode",test:C},{name:"AssignmentNode",test:b},{name:"BlockNode",test:_},{name:"ConditionalNode",test:M},{name:"ConstantNode",test:B},{name:"FunctionNode",test:N},{name:"FunctionAssignmentNode",test:S},{name:"IndexNode",test:z},{name:"Node",test:T},{name:"ObjectNode",test:O},{name:"OperatorNode",test:I},{name:"ParenthesisNode",test:q},{name:"RangeNode",test:j},{name:"RelationalNode",test:k},{name:"SymbolNode",test:P},{name:"Map",test:Hr},{name:"Object",test:x}]),V.addConversions([{from:"number",to:"BigNumber",convert:function(r){if(t||$r(r),r.toExponential().replace(/e.*$/,"").replace(/^0\.?0*|\./,"").length>15)throw new TypeError("Cannot implicitly convert a number with >15 significant digits to BigNumber (value: "+r+"). Use function bignumber(x) to convert to BigNumber.");return new t(r)}},{from:"number",to:"Complex",convert:function(r){return U||Qr(r),new U(r,0)}},{from:"BigNumber",to:"Complex",convert:function(r){return U||Qr(r),new U(r.toNumber(),0)}},{from:"Fraction",to:"BigNumber",convert:function(r){throw new TypeError("Cannot implicitly convert a Fraction to BigNumber or vice versa. Use function bignumber(x) to convert to BigNumber or fraction(x) to convert to Fraction.")}},{from:"Fraction",to:"Complex",convert:function(r){return U||Qr(r),new U(r.valueOf(),0)}},{from:"number",to:"Fraction",convert:function(r){Z||Wr(r);var t=new Z(r);if(t.valueOf()!==r)throw new TypeError("Cannot implicitly convert a number to a Fraction when there will be a loss of precision (value: "+r+"). Use function fraction(x) to convert to Fraction.");return t}},{from:"string",to:"number",convert:function(r){var t=Number(r);if(isNaN(t))throw new Error('Cannot convert "'+r+'" to a number');return t}},{from:"string",to:"BigNumber",convert:function(r){t||$r(r);try{return new t(r)}catch(t){throw new Error('Cannot convert "'+r+'" to BigNumber')}}},{from:"string",to:"Fraction",convert:function(r){Z||Wr(r);try{return new Z(r)}catch(t){throw new Error('Cannot convert "'+r+'" to Fraction')}}},{from:"string",to:"Complex",convert:function(r){U||Qr(r);try{return new U(r)}catch(t){throw new Error('Cannot convert "'+r+'" to Complex')}}},{from:"boolean",to:"number",convert:function(r){return+r}},{from:"boolean",to:"BigNumber",convert:function(r){return t||$r(r),new t(+r)}},{from:"boolean",to:"Fraction",convert:function(r){return Z||Wr(r),new Z(+r)}},{from:"boolean",to:"string",convert:function(r){return String(r)}},{from:"Array",to:"Matrix",convert:function(r){return L||function(){throw new Error("Cannot convert array into a Matrix: no class 'DenseMatrix' provided")}(),new L(r)}},{from:"Matrix",to:"Array",convert:function(r){return r.valueOf()}}]),V.onMismatch=(r,t,e)=>{var n=V.createError(r,t,e);if(["wrongType","mismatch"].includes(n.data.category)&&1===t.length&&c(t[0])&&e.some((r=>!r.params.includes(",")))){var i=new TypeError("Function '".concat(r,"' doesn't apply to matrices. To call it ")+"elementwise on a matrix 'M', try 'map(M, ".concat(r,")'."));throw i.data=n.data,i}throw n},V.onMismatch=(r,t,e)=>{var n=V.createError(r,t,e);if(["wrongType","mismatch"].includes(n.data.category)&&1===t.length&&c(t[0])&&e.some((r=>!r.params.includes(",")))){var i=new TypeError("Function '".concat(r,"' doesn't apply to matrices. To call it ")+"elementwise on a matrix 'M', try 'map(M, ".concat(r,")'."));throw i.data=n.data,i}throw n},V}));function $r(r){throw new Error("Cannot convert value ".concat(r," into a BigNumber: no class 'BigNumber' provided"))}function Qr(r){throw new Error("Cannot convert value ".concat(r," into a Complex number: no class 'Complex' provided"))}function Wr(r){throw new Error("Cannot convert value ".concat(r," into a Fraction, no class 'Fraction' provided."))}
 /*!
@@ -6072,12 +6650,12 @@ void function( module ) { var exports = module.exports = this; function require(
 
 ;
 
-$node[ "../mpds/cifplayer/lib/math/_math" ] = $node[ "../mpds/cifplayer/lib/math/_math.js" ] = module.exports }.call( {} , {} )
+$node[ "../optimade/cifplayer/lib/math/_math" ] = $node[ "../optimade/cifplayer/lib/math/_math.js" ] = module.exports }.call( {} , {} )
 ;
 "use strict";
 var $;
 (function ($) {
-    $.$mpds_cifplayer_lib_math = require('../mpds/cifplayer/lib/math/_math.js');
+    $.$optimade_cifplayer_lib_math = require('../optimade/cifplayer/lib/math/_math.js');
 })($ || ($ = {}));
 
 ;
@@ -6123,11 +6701,11 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    const math = $mpds_cifplayer_lib_math;
+    const math = $optimade_cifplayer_lib_math;
     function unit(vec) {
         return math.divide(vec, math.norm(vec));
     }
-    function $mpds_cifplayer_matinfio_cell_to_matrix(cell) {
+    function $optimade_cifplayer_matinfio_cell_to_matrix(cell) {
         const { a, b, c, alpha, beta, gamma } = cell;
         if (!a || !b || !c || !alpha || !beta || !gamma) {
             return this.$mol_fail(new $mol_data_error('Error: invalid cell definition'));
@@ -6150,36 +6728,34 @@ var $;
         const t = [X, Y, Z];
         return math.multiply(abc, t);
     }
-    $.$mpds_cifplayer_matinfio_cell_to_matrix = $mpds_cifplayer_matinfio_cell_to_matrix;
-    function $mpds_cifplayer_matinfio_cell_params_from_matrix(matrix) {
+    $.$optimade_cifplayer_matinfio_cell_to_matrix = $optimade_cifplayer_matinfio_cell_to_matrix;
+    function $optimade_cifplayer_matinfio_cell_params_from_matrix(matrix) {
         const norms = matrix.map(vec => math.norm(vec));
         const angles = [];
-        let j = -1;
-        let k = -2;
         for (let i = 0; i < 3; i++) {
-            j = i - 1;
-            k = i - 2;
-            const lenmult = norms[j] * norms[k];
+            const j = i - 1;
+            const k = i - 2;
+            const lenmult = norms.at(j) * norms.at(k);
             const tau = lenmult > 1e-16
-                ? 180 / Math.PI * Math.acos(math.dot(matrix[j], matrix[k]) / lenmult)
+                ? 180 / Math.PI * Math.acos(math.dot(matrix.at(j), matrix.at(k)) / lenmult)
                 : 90.0;
             angles.push(tau);
         }
         return norms.concat(angles);
     }
-    $.$mpds_cifplayer_matinfio_cell_params_from_matrix = $mpds_cifplayer_matinfio_cell_params_from_matrix;
+    $.$optimade_cifplayer_matinfio_cell_params_from_matrix = $optimade_cifplayer_matinfio_cell_params_from_matrix;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    const math = $mpds_cifplayer_lib_math;
-    function $mpds_cifplayer_matinfio_player_from_obj(crystal) {
+    const math = $optimade_cifplayer_lib_math;
+    function $optimade_cifplayer_matinfio_player_from_obj(crystal) {
         let cell_matrix;
         let descr = false;
         if (crystal.cell && Object.keys(crystal.cell).length == 6) {
-            cell_matrix = this.$mpds_cifplayer_matinfio_cell_to_matrix(crystal.cell);
+            cell_matrix = this.$optimade_cifplayer_matinfio_cell_to_matrix(crystal.cell);
             descr = crystal.cell;
             var symlabel = (crystal.sg_name || crystal.ng_name) ? ((crystal.sg_name ? crystal.sg_name : "") + (crystal.ng_name ? (" (" + crystal.ng_name + ")") : "")) : false;
             if (symlabel)
@@ -6188,12 +6764,12 @@ var $;
         else {
             cell_matrix = crystal.cell_matrix;
             if (cell_matrix) {
-                const [a, b, c, alpha, beta, gamma] = $mpds_cifplayer_matinfio_cell_params_from_matrix(cell_matrix);
+                const [a, b, c, alpha, beta, gamma] = $optimade_cifplayer_matinfio_cell_params_from_matrix(cell_matrix);
                 descr = { a, b, c, alpha, beta, gamma };
             }
         }
         if (!crystal.atoms.length)
-            this.$mpds_cifplayer_matinfio_log.warning("Note: no atomic coordinates supplied");
+            this.$optimade_cifplayer_matinfio_log.warning("Note: no atomic coordinates supplied");
         const render = {
             atoms: [],
             cell_matrix: cell_matrix,
@@ -6230,8 +6806,8 @@ var $;
                 }
             }
             else {
-                const color = $mpds_cifplayer_matinfio_chemical_elements.JmolColors[crystal.atoms[i].symbol] || '#FFFF00';
-                const radius = $mpds_cifplayer_matinfio_chemical_elements.AseRadii[crystal.atoms[i].symbol] || 0.66;
+                const color = $optimade_cifplayer_matinfio_chemical_elements.JmolColors[crystal.atoms[i].symbol] || '#FFFF00';
+                const radius = $optimade_cifplayer_matinfio_chemical_elements.AseRadii[crystal.atoms[i].symbol] || 0.66;
                 const overlays = {
                     "S": crystal.atoms[i].symbol,
                     "N": i + 1,
@@ -6256,32 +6832,32 @@ var $;
             }
         }
         for (let oprop in crystal.atoms.at(-1).overlays) {
-            render.overlayed[oprop] = $mpds_cifplayer_matinfio_custom_atom_loop_props[oprop];
+            render.overlayed[oprop] = $optimade_cifplayer_matinfio_custom_atom_loop_props[oprop];
         }
         return render;
     }
-    $.$mpds_cifplayer_matinfio_player_from_obj = $mpds_cifplayer_matinfio_player_from_obj;
+    $.$optimade_cifplayer_matinfio_player_from_obj = $optimade_cifplayer_matinfio_player_from_obj;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    $.$mpds_cifplayer_matinfio_chemical_elements = {
+    $.$optimade_cifplayer_matinfio_chemical_elements = {
         JmolColors: { "D": "#FFFFC0", "H": "#FFFFFF", "He": "#D9FFFF", "Li": "#CC80FF", "Be": "#C2FF00", "B": "#FFB5B5", "C": "#909090", "N": "#3050F8", "O": "#FF0D0D", "F": "#90E050", "Ne": "#B3E3F5", "Na": "#AB5CF2", "Mg": "#8AFF00", "Al": "#BFA6A6", "Si": "#F0C8A0", "P": "#FF8000", "S": "#FFFF30", "Cl": "#1FF01F", "Ar": "#80D1E3", "K": "#8F40D4", "Ca": "#3DFF00", "Sc": "#E6E6E6", "Ti": "#BFC2C7", "V": "#A6A6AB", "Cr": "#8A99C7", "Mn": "#9C7AC7", "Fe": "#E06633", "Co": "#F090A0", "Ni": "#50D050", "Cu": "#C88033", "Zn": "#7D80B0", "Ga": "#C28F8F", "Ge": "#668F8F", "As": "#BD80E3", "Se": "#FFA100", "Br": "#A62929", "Kr": "#5CB8D1", "Rb": "#702EB0", "Sr": "#00FF00", "Y": "#94FFFF", "Zr": "#94E0E0", "Nb": "#73C2C9", "Mo": "#54B5B5", "Tc": "#3B9E9E", "Ru": "#248F8F", "Rh": "#0A7D8C", "Pd": "#006985", "Ag": "#C0C0C0", "Cd": "#FFD98F", "In": "#A67573", "Sn": "#668080", "Sb": "#9E63B5", "Te": "#D47A00", "I": "#940094", "Xe": "#429EB0", "Cs": "#57178F", "Ba": "#00C900", "La": "#70D4FF", "Ce": "#FFFFC7", "Pr": "#D9FFC7", "Nd": "#C7FFC7", "Pm": "#A3FFC7", "Sm": "#8FFFC7", "Eu": "#61FFC7", "Gd": "#45FFC7", "Tb": "#30FFC7", "Dy": "#1FFFC7", "Ho": "#00FF9C", "Er": "#00E675", "Tm": "#00D452", "Yb": "#00BF38", "Lu": "#00AB24", "Hf": "#4DC2FF", "Ta": "#4DA6FF", "W": "#2194D6", "Re": "#267DAB", "Os": "#266696", "Ir": "#175487", "Pt": "#D0D0E0", "Au": "#FFD123", "Hg": "#B8B8D0", "Tl": "#A6544D", "Pb": "#575961", "Bi": "#9E4FB5", "Po": "#AB5C00", "At": "#754F45", "Rn": "#428296", "Fr": "#420066", "Ra": "#007D00", "Ac": "#70ABFA", "Th": "#00BAFF", "Pa": "#00A1FF", "U": "#008FFF", "Np": "#0080FF", "Pu": "#006BFF", "Am": "#545CF2", "Cm": "#785CE3", "Bk": "#8A4FE3", "Cf": "#A136D4", "Es": "#B31FD4", "Fm": "#B31FBA", "Md": "#B30DA6", "No": "#BD0D87", "Lr": "#C70066", "Rf": "#CC0059", "Db": "#D1004F", "Sg": "#D90045", "Bh": "#E00038", "Hs": "#E6002E", "Mt": "#EB0026" },
         AseRadii: { "X": 0.66, "H": 0.31, "He": 0.28, "Li": 1.28, "Be": 0.96, "B": 0.84, "C": 0.76, "N": 0.71, "O": 0.66, "F": 0.57, "Ne": 0.58, "Na": 1.66, "Mg": 1.41, "Al": 1.21, "Si": 1.11, "P": 1.07, "S": 1.05, "Cl": 1.02, "Ar": 1.06, "K": 2.03, "Ca": 1.76, "Sc": 1.70, "Ti": 1.60, "V": 1.53, "Cr": 1.39, "Mn": 1.39, "Fe": 1.32, "Co": 1.26, "Ni": 1.24, "Cu": 1.32, "Zn": 1.22, "Ga": 1.22, "Ge": 1.20, "As": 1.19, "Se": 1.20, "Br": 1.20, "Kr": 1.16, "Rb": 2.20, "Sr": 1.95, "Y": 1.90, "Zr": 1.75, "Nb": 1.64, "Mo": 1.54, "Tc": 1.47, "Ru": 1.46, "Rh": 1.42, "Pd": 1.39, "Ag": 1.45, "Cd": 1.44, "In": 1.42, "Sn": 1.39, "Sb": 1.39, "Te": 1.38, "I": 1.39, "Xe": 1.40, "Cs": 2.44, "Ba": 2.15, "La": 2.07, "Ce": 2.04, "Pr": 2.03, "Nd": 2.01, "Pm": 1.99, "Sm": 1.98, "Eu": 1.98, "Gd": 1.96, "Tb": 1.94, "Dy": 1.92, "Ho": 1.92, "Er": 1.89, "Tm": 1.90, "Yb": 1.87, "Lu": 1.87, "Hf": 1.75, "Ta": 1.70, "W": 1.62, "Re": 1.51, "Os": 1.44, "Ir": 1.41, "Pt": 1.36, "Au": 1.36, "Hg": 1.32, "Tl": 1.45, "Pb": 1.46, "Bi": 1.48, "Po": 1.40, "At": 1.50, "Rn": 1.50, "Fr": 2.60, "Ra": 2.21, "Ac": 2.15, "Th": 2.06, "Pa": 2.00, "U": 1.96, "Np": 1.90, "Pu": 1.87, "Am": 1.80, "Cm": 1.69, "Bk": 3.0, "Cf": 3.0, "Es": 3.0, "Fm": 3.0, "Md": 3.0, "No": 3.0, "Lr": 3.0, "Rf": 3.0, "Db": 3.0, "Sg": 3.0, "Bh": 3.0, "Hs": 3.0, "Mt": 3.0 },
     };
-    $.$mpds_cifplayer_matinfio_custom_atom_loop_props = {
+    $.$optimade_cifplayer_matinfio_custom_atom_loop_props = {
         '_atom_site_occupancy': 'site occupancies',
         '_atom_site_charge': 'formal charges',
         'label': 'labels'
     };
-    $.$mpds_cifplayer_matinfio_log = {
+    $.$optimade_cifplayer_matinfio_log = {
         error: console.error,
         warning: console.warn,
     };
-    class $mpds_cifplayer_matinfio extends $mol_object2 {
-        static log = this.$.$mpds_cifplayer_matinfio_log;
+    class $optimade_cifplayer_matinfio extends $mol_object2 {
+        static log = this.$.$optimade_cifplayer_matinfio_log;
         static detect_format(data) {
             if (!data)
                 throw new Error("No input data provided");
@@ -6305,71 +6881,71 @@ var $;
             super();
             this.source = {
                 data,
-                format: format ?? $mpds_cifplayer_matinfio.detect_format(data)
+                format: format ?? $optimade_cifplayer_matinfio.detect_format(data)
             };
         }
         internal_obj() {
             switch (this.source.format) {
-                case 'CIF': return this.$.$mpds_cifplayer_matinfio_cif_to_obj(this.source.data);
-                case 'POSCAR': return this.$.$mpds_cifplayer_matinfio_poscar_to_obj(this.source.data);
-                case 'OPTIMADE': return this.$.$mpds_cifplayer_matinfio_optimade_to_obj(this.source.data);
-                case 'OPTIMADE_str': return this.$.$mpds_cifplayer_matinfio_optimade_str_to_obj(this.source.data);
+                case 'CIF': return this.$.$optimade_cifplayer_matinfio_cif_to_obj(this.source.data);
+                case 'POSCAR': return this.$.$optimade_cifplayer_matinfio_poscar_to_obj(this.source.data);
+                case 'OPTIMADE': return this.$.$optimade_cifplayer_matinfio_optimade_to_obj(this.source.data);
+                case 'OPTIMADE_str': return this.$.$optimade_cifplayer_matinfio_optimade_str_to_obj(this.source.data);
             }
             return this.$.$mol_fail(new $mol_data_error('Error: file format not recognized'));
         }
         player() {
-            return this.$.$mpds_cifplayer_matinfio_player_from_obj(this.internal_obj());
+            return this.$.$optimade_cifplayer_matinfio_player_from_obj(this.internal_obj());
         }
         flatten() {
             if (this.source.format == 'OPTIMADE') {
                 return this.$.$mol_fail(new $mol_data_error('OPTIMADE not supported'));
             }
-            return this.$.$mpds_cifplayer_matinfio_flatten_from_obj(this.internal_obj());
+            return this.$.$optimade_cifplayer_matinfio_flatten_from_obj(this.internal_obj());
         }
         cif() {
             if (this.source.format == 'CIF')
                 return this.source.data;
-            return this.$.$mpds_cifplayer_matinfio_cif_from_obj(this.internal_obj());
+            return this.$.$optimade_cifplayer_matinfio_cif_from_obj(this.internal_obj());
         }
     }
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio.prototype, "internal_obj", null);
+    ], $optimade_cifplayer_matinfio.prototype, "internal_obj", null);
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio.prototype, "player", null);
+    ], $optimade_cifplayer_matinfio.prototype, "player", null);
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio.prototype, "flatten", null);
+    ], $optimade_cifplayer_matinfio.prototype, "flatten", null);
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio.prototype, "cif", null);
-    $.$mpds_cifplayer_matinfio = $mpds_cifplayer_matinfio;
+    ], $optimade_cifplayer_matinfio.prototype, "cif", null);
+    $.$optimade_cifplayer_matinfio = $optimade_cifplayer_matinfio;
 })($ || ($ = {}));
 
 ;
 
 var $node = $node || {}
-void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../mpds/cifplayer/lib/spacegroups/" ) ] }; 
+void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../optimade/cifplayer/lib/spacegroups/" ) ] }; 
 ;
 "use strict";"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self&&self;var y={exports:{}};"undefined"!=typeof self&&self;var x=y.exports=function(y){var x={};function z(s){if(x[s])return x[s].exports;var h=x[s]={i:s,l:!1,exports:{}};return y[s].call(h.exports,h,h.exports,z),h.l=!0,h.exports}return z.m=y,z.c=x,z.d=function(y,x,s){z.o(y,x)||Object.defineProperty(y,x,{enumerable:!0,get:s})},z.r=function(y){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(y,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(y,"__esModule",{value:!0})},z.t=function(y,x){if(1&x&&(y=z(y)),8&x)return y;if(4&x&&"object"==typeof y&&y&&y.__esModule)return y;var s=Object.create(null);if(z.r(s),Object.defineProperty(s,"default",{enumerable:!0,value:y}),2&x&&"string"!=typeof y)for(var h in y)z.d(s,h,function(x){return y[x]}.bind(null,h));return s},z.n=function(y){var x=y&&y.__esModule?function(){return y.default}:function(){return y};return z.d(x,"a",x),x},z.o=function(y,x){return Object.prototype.hasOwnProperty.call(y,x)},z.p="",z(z.s=1)}([function(y,x,z){Object.defineProperty(x,"__esModule",{value:!0}),x.SpaceGroupsData=[{id:1,hm:"P 1",hs:"P 1",o:1,s:["x,y,z"]},{id:2,hm:"P -1",hs:"-P 1",o:1,s:["x,y,z","-x,-y,-z"]},{id:3,hm:"P 1 2 1",hs:"P 2y",o:2,s:["x,y,z","-x,y,-z"]},{id:3,hm:"P 1 1 2",hs:"P 2",o:2,s:["x,y,z","-x,-y,z"]},{id:3,hm:"P 2 1 1",hs:"P 2x",o:2,s:["x,y,z","x,-y,-z"]},{id:4,hm:"P 1 21 1",hs:"P 2yb",o:2,s:["x,y,z","-x,y+1/2,-z"]},{id:4,hm:"P 1 1 21",hs:"P 2c",o:2,s:["x,y,z","-x,-y,z+1/2"]},{id:4,hm:"P 21 1 1",hs:"P 2xa",o:2,s:["x,y,z","x+1/2,-y,-z"]},{id:5,hm:"C 1 2 1",hs:"C 2y",o:2,s:["x,y,z","-x,y,-z","x+1/2,y+1/2,z","-x+1/2,y+1/2,-z"]},{id:5,hm:"A 1 2 1",hs:"A 2y",o:2,s:["x,y,z","-x,y,-z","x,y+1/2,z+1/2","-x,y+1/2,-z+1/2"]},{id:5,hm:"I 1 2 1",hs:"I 2y",o:2,s:["x,y,z","-x,y,-z","x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:5,hm:"A 1 1 2",hs:"A 2",o:2,s:["x,y,z","-x,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2"]},{id:5,hm:"B 1 1 2",hs:"B 2",o:2,s:["x,y,z","-x,-y,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2"]},{id:5,hm:"I 1 1 2",hs:"I 2",o:2,s:["x,y,z","-x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2"]},{id:5,hm:"B 2 1 1",hs:"B 2x",o:2,s:["x,y,z","x,-y,-z","x+1/2,y,z+1/2","x+1/2,-y,-z+1/2"]},{id:5,hm:"C 2 1 1",hs:"C 2x",o:2,s:["x,y,z","x,-y,-z","x+1/2,y+1/2,z","x+1/2,-y+1/2,-z"]},{id:5,hm:"I 2 1 1",hs:"I 2x",o:2,s:["x,y,z","x,-y,-z","x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2"]},{id:6,hm:"P 1 m 1",hs:"P -2y",o:2,s:["x,y,z","x,-y,z"]},{id:6,hm:"P 1 1 m",hs:"P -2",o:2,s:["x,y,z","x,y,-z"]},{id:6,hm:"P m 1 1",hs:"P -2x",o:2,s:["x,y,z","-x,y,z"]},{id:7,hm:"P 1 c 1",hs:"P -2yc",o:2,s:["x,y,z","x,-y,z+1/2"]},{id:7,hm:"P 1 n 1",hs:"P -2yac",o:2,s:["x,y,z","x+1/2,-y,z+1/2"]},{id:7,hm:"P 1 a 1",hs:"P -2ya",o:2,s:["x,y,z","x+1/2,-y,z"]},{id:7,hm:"P 1 1 a",hs:"P -2a",o:2,s:["x,y,z","x+1/2,y,-z"]},{id:7,hm:"P 1 1 n",hs:"P -2ab",o:2,s:["x,y,z","x+1/2,y+1/2,-z"]},{id:7,hm:"P 1 1 b",hs:"P -2b",o:2,s:["x,y,z","x,y+1/2,-z"]},{id:7,hm:"P b 1 1",hs:"P -2xb",o:2,s:["x,y,z","-x,y+1/2,z"]},{id:7,hm:"P n 1 1",hs:"P -2xbc",o:2,s:["x,y,z","-x,y+1/2,z+1/2"]},{id:7,hm:"P c 1 1",hs:"P -2xc",o:2,s:["x,y,z","-x,y,z+1/2"]},{id:8,hm:"C 1 m 1",hs:"C -2y",o:2,s:["x,y,z","x,-y,z","x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:8,hm:"A 1 m 1",hs:"A -2y",o:2,s:["x,y,z","x,-y,z","x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:8,hm:"I 1 m 1",hs:"I -2y",o:2,s:["x,y,z","x,-y,z","x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:8,hm:"A 1 1 m",hs:"A -2",o:2,s:["x,y,z","x,y,-z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2"]},{id:8,hm:"B 1 1 m",hs:"B -2",o:2,s:["x,y,z","x,y,-z","x+1/2,y,z+1/2","x+1/2,y,-z+1/2"]},{id:8,hm:"I 1 1 m",hs:"I -2",o:2,s:["x,y,z","x,y,-z","x+1/2,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2"]},{id:8,hm:"B m 1 1",hs:"B -2x",o:2,s:["x,y,z","-x,y,z","x+1/2,y,z+1/2","-x+1/2,y,z+1/2"]},{id:8,hm:"C m 1 1",hs:"C -2x",o:2,s:["x,y,z","-x,y,z","x+1/2,y+1/2,z","-x+1/2,y+1/2,z"]},{id:8,hm:"I m 1 1",hs:"I -2x",o:2,s:["x,y,z","-x,y,z","x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,z+1/2"]},{id:9,hm:"C 1 c 1",hs:"C -2yc",o:2,s:["x,y,z","x,-y,z+1/2","x+1/2,y+1/2,z","x+1/2,-y+1/2,z+1/2"]},{id:9,hm:"A 1 n 1",hs:"A -2yab",o:2,s:["x,y,z","x+1/2,-y+1/2,z","x,y+1/2,z+1/2","x+1/2,-y+1,z+1/2"]},{id:9,hm:"I 1 a 1",hs:"I -2ya",o:2,s:["x,y,z","x+1/2,-y,z","x+1/2,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:9,hm:"A 1 a 1",hs:"A -2ya",o:2,s:["x,y,z","x+1/2,-y,z","x,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:9,hm:"C 1 n 1",hs:"C -2yac",o:2,s:["x,y,z","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","x+1,-y+1/2,z+1/2"]},{id:9,hm:"I 1 c 1",hs:"I -2yc",o:2,s:["x,y,z","x,-y,z+1/2","x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1"]},{id:9,hm:"A 1 1 a",hs:"A -2a",o:2,s:["x,y,z","x+1/2,y,-z","x,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2"]},{id:9,hm:"B 1 1 n",hs:"B -2ab",o:2,s:["x,y,z","x+1/2,y+1/2,-z","x+1/2,y,z+1/2","x+1,y+1/2,-z+1/2"]},{id:9,hm:"I 1 1 b",hs:"I -2b",o:2,s:["x,y,z","x,y+1/2,-z","x+1/2,y+1/2,z+1/2","x+1/2,y+1,-z+1/2"]},{id:9,hm:"B 1 1 b",hs:"B -2b",o:2,s:["x,y,z","x,y+1/2,-z","x+1/2,y,z+1/2","x+1/2,y+1/2,-z+1/2"]},{id:9,hm:"A 1 1 n",hs:"A -2ab",o:2,s:["x,y,z","x+1/2,y+1/2,-z","x,y+1/2,z+1/2","x+1/2,y+1,-z+1/2"]},{id:9,hm:"I 1 1 a",hs:"I -2a",o:2,s:["x,y,z","x+1/2,y,-z","x+1/2,y+1/2,z+1/2","x+1,y+1/2,-z+1/2"]},{id:9,hm:"B b 1 1",hs:"B -2xb",o:2,s:["x,y,z","-x,y+1/2,z","x+1/2,y,z+1/2","-x+1/2,y+1/2,z+1/2"]},{id:9,hm:"C n 1 1",hs:"C -2xac",o:2,s:["x,y,z","-x+1/2,y,z+1/2","x+1/2,y+1/2,z","-x+1,y+1/2,z+1/2"]},{id:9,hm:"I c 1 1",hs:"I -2xc",o:2,s:["x,y,z","-x,y,z+1/2","x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,z+1"]},{id:9,hm:"C c 1 1",hs:"C -2xc",o:2,s:["x,y,z","-x,y,z+1/2","x+1/2,y+1/2,z","-x+1/2,y+1/2,z+1/2"]},{id:9,hm:"B n 1 1",hs:"B -2xab",o:2,s:["x,y,z","-x+1/2,y+1/2,z","x+1/2,y,z+1/2","-x+1,y+1/2,z+1/2"]},{id:9,hm:"I b 1 1",hs:"I -2xb",o:2,s:["x,y,z","-x,y+1/2,z","x+1/2,y+1/2,z+1/2","-x+1/2,y+1,z+1/2"]},{id:10,hm:"P 1 2/m 1",hs:"-P 2y",o:2,s:["x,y,z","-x,y,-z","-x,-y,-z","x,-y,z"]},{id:10,hm:"P 1 1 2/m",hs:"-P 2",o:2,s:["x,y,z","-x,-y,z","-x,-y,-z","x,y,-z"]},{id:10,hm:"P 2/m 1 1",hs:"-P 2x",o:2,s:["x,y,z","x,-y,-z","-x,-y,-z","-x,y,z"]},{id:11,hm:"P 1 21/m 1",hs:"-P 2yb",o:2,s:["x,y,z","-x,y+1/2,-z","-x,-y,-z","x,-y-1/2,z"]},{id:11,hm:"P 1 1 21/m",hs:"-P 2c",o:2,s:["x,y,z","-x,-y,z+1/2","-x,-y,-z","x,y,-z-1/2"]},{id:11,hm:"P 21/m 1 1",hs:"-P 2xa",o:2,s:["x,y,z","x+1/2,-y,-z","-x,-y,-z","-x-1/2,y,z"]},{id:12,hm:"C 1 2/m 1",hs:"-C 2y",o:2,s:["x,y,z","-x,y,-z","-x,-y,-z","x,-y,z","x+1/2,y+1/2,z","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x+1/2,-y+1/2,z"]},{id:12,hm:"A 1 2/m 1",hs:"-A 2y",o:2,s:["x,y,z","-x,y,-z","-x,-y,-z","x,-y,z","x,y+1/2,z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,-y+1/2,z+1/2"]},{id:12,hm:"I 1 2/m 1",hs:"-I 2y",o:2,s:["x,y,z","-x,y,-z","-x,-y,-z","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:12,hm:"A 1 1 2/m",hs:"-A 2",o:2,s:["x,y,z","-x,-y,z","-x,-y,-z","x,y,-z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2"]},{id:12,hm:"B 1 1 2/m",hs:"-B 2",o:2,s:["x,y,z","-x,-y,z","-x,-y,-z","x,y,-z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2"]},{id:12,hm:"I 1 1 2/m",hs:"-I 2",o:2,s:["x,y,z","-x,-y,z","-x,-y,-z","x,y,-z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2"]},{id:12,hm:"B 2/m 1 1",hs:"-B 2x",o:2,s:["x,y,z","x,-y,-z","-x,-y,-z","-x,y,z","x+1/2,y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,-y,-z+1/2","-x+1/2,y,z+1/2"]},{id:12,hm:"C 2/m 1 1",hs:"-C 2x",o:2,s:["x,y,z","x,-y,-z","-x,-y,-z","-x,y,z","x+1/2,y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,-y+1/2,-z","-x+1/2,y+1/2,z"]},{id:12,hm:"I 2/m 1 1",hs:"-I 2x",o:2,s:["x,y,z","x,-y,-z","-x,-y,-z","-x,y,z","x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2"]},{id:13,hm:"P 1 2/c 1",hs:"-P 2yc",o:2,s:["x,y,z","-x,y,-z+1/2","-x,-y,-z","x,-y,z-1/2"]},{id:13,hm:"P 1 2/n 1",hs:"-P 2yac",o:2,s:["x,y,z","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,-y,z-1/2"]},{id:13,hm:"P 1 2/a 1",hs:"-P 2ya",o:2,s:["x,y,z","-x+1/2,y,-z","-x,-y,-z","x-1/2,-y,z"]},{id:13,hm:"P 1 1 2/a",hs:"-P 2a",o:2,s:["x,y,z","-x+1/2,-y,z","-x,-y,-z","x-1/2,y,-z"]},{id:13,hm:"P 1 1 2/n",hs:"-P 2ab",o:2,s:["x,y,z","-x+1/2,-y+1/2,z","-x,-y,-z","x-1/2,y-1/2,-z"]},{id:13,hm:"P 1 1 2/b",hs:"-P 2b",o:2,s:["x,y,z","-x,-y+1/2,z","-x,-y,-z","x,y-1/2,-z"]},{id:13,hm:"P 2/b 1 1",hs:"-P 2xb",o:2,s:["x,y,z","x,-y+1/2,-z","-x,-y,-z","-x,y-1/2,z"]},{id:13,hm:"P 2/n 1 1",hs:"-P 2xbc",o:2,s:["x,y,z","x,-y+1/2,-z+1/2","-x,-y,-z","-x,y-1/2,z-1/2"]},{id:13,hm:"P 2/c 1 1",hs:"-P 2xc",o:2,s:["x,y,z","x,-y,-z+1/2","-x,-y,-z","-x,y,z-1/2"]},{id:14,hm:"P 1 21/c 1",hs:"-P 2ybc",o:2,s:["x,y,z","-x,y+1/2,-z+1/2","-x,-y,-z","x,-y-1/2,z-1/2"]},{id:14,hm:"P 1 21/n 1",hs:"-P 2yn",o:2,s:["x,y,z","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x-1/2,-y-1/2,z-1/2"]},{id:14,hm:"P 1 21/a 1",hs:"-P 2yab",o:2,s:["x,y,z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,-y-1/2,z"]},{id:14,hm:"P 1 1 21/a",hs:"-P 2ac",o:2,s:["x,y,z","-x+1/2,-y,z+1/2","-x,-y,-z","x-1/2,y,-z-1/2"]},{id:14,hm:"P 1 1 21/n",hs:"-P 2n",o:2,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","-x,-y,-z","x-1/2,y-1/2,-z-1/2"]},{id:14,hm:"P 1 1 21/b",hs:"-P 2bc",o:2,s:["x,y,z","-x,-y+1/2,z+1/2","-x,-y,-z","x,y-1/2,-z-1/2"]},{id:14,hm:"P 21/b 1 1",hs:"-P 2xab",o:2,s:["x,y,z","x+1/2,-y+1/2,-z","-x,-y,-z","-x-1/2,y-1/2,z"]},{id:14,hm:"P 21/n 1 1",hs:"-P 2xn",o:2,s:["x,y,z","x+1/2,-y+1/2,-z+1/2","-x,-y,-z","-x-1/2,y-1/2,z-1/2"]},{id:14,hm:"P 21/c 1 1",hs:"-P 2xac",o:2,s:["x,y,z","x+1/2,-y,-z+1/2","-x,-y,-z","-x-1/2,y,z-1/2"]},{id:15,hm:"C 1 2/c 1",hs:"-C 2yc",o:2,s:["x,y,z","-x,y,-z+1/2","-x,-y,-z","x,-y,z-1/2","x+1/2,y+1/2,z","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x+1/2,-y+1/2,z-1/2"]},{id:15,hm:"A 1 2/n 1",hs:"-A 2yab",o:2,s:["x,y,z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,-y-1/2,z","x,y+1/2,z+1/2","-x+1/2,y+1,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,-y,z+1/2"]},{id:15,hm:"I 1 2/a 1",hs:"-I 2ya",o:2,s:["x,y,z","-x+1/2,y,-z","-x,-y,-z","x-1/2,-y,z","x+1/2,y+1/2,z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x,-y+1/2,z+1/2"]},{id:15,hm:"A 1 2/a 1",hs:"-A 2ya",o:2,s:["x,y,z","-x+1/2,y,-z","-x,-y,-z","x-1/2,-y,z","x,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,-y+1/2,z+1/2"]},{id:15,hm:"C 1 2/n 1",hs:"-C 2yac",o:2,s:["x,y,z","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,-y,z-1/2","x+1/2,y+1/2,z","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x,-y+1/2,z-1/2"]},{id:15,hm:"I 1 2/c 1",hs:"-I 2yc",o:2,s:["x,y,z","-x,y,-z+1/2","-x,-y,-z","x,-y,z-1/2","x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1","-x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1/2,z"]},{id:15,hm:"A 1 1 2/a",hs:"-A 2a",o:2,s:["x,y,z","-x+1/2,-y,z","-x,-y,-z","x-1/2,y,-z","x,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y+1/2,-z+1/2"]},{id:15,hm:"B 1 1 2/n",hs:"-B 2ab",o:2,s:["x,y,z","-x+1/2,-y+1/2,z","-x,-y,-z","x-1/2,y-1/2,-z","x+1/2,y,z+1/2","-x+1,-y+1/2,z+1/2","-x+1/2,-y,-z+1/2","x,y-1/2,-z+1/2"]},{id:15,hm:"I 1 1 2/b",hs:"-I 2b",o:2,s:["x,y,z","-x,-y+1/2,z","-x,-y,-z","x,y-1/2,-z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y,-z+1/2"]},{id:15,hm:"B 1 1 2/b",hs:"-B 2b",o:2,s:["x,y,z","-x,-y+1/2,z","-x,-y,-z","x,y-1/2,-z","x+1/2,y,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y-1/2,-z+1/2"]},{id:15,hm:"A 1 1 2/n",hs:"-A 2ab",o:2,s:["x,y,z","-x+1/2,-y+1/2,z","-x,-y,-z","x-1/2,y-1/2,-z","x,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y,-z+1/2"]},{id:15,hm:"I 1 1 2/a",hs:"-I 2a",o:2,s:["x,y,z","-x+1/2,-y,z","-x,-y,-z","x-1/2,y,-z","x+1/2,y+1/2,z+1/2","-x+1,-y+1/2,z+1/2","-x+1/2,-y+1/2,-z+1/2","x,y+1/2,-z+1/2"]},{id:15,hm:"B 2/b 1 1",hs:"-B 2xb",o:2,s:["x,y,z","x,-y+1/2,-z","-x,-y,-z","-x,y-1/2,z","x+1/2,y,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","-x+1/2,y-1/2,z+1/2"]},{id:15,hm:"C 2/n 1 1",hs:"-C 2xac",o:2,s:["x,y,z","x+1/2,-y,-z+1/2","-x,-y,-z","-x-1/2,y,z-1/2","x+1/2,y+1/2,z","x+1,-y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","-x,y+1/2,z-1/2"]},{id:15,hm:"I 2/c 1 1",hs:"-I 2xc",o:2,s:["x,y,z","x,-y,-z+1/2","-x,-y,-z","-x,y,z-1/2","x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,z"]},{id:15,hm:"C 2/c 1 1",hs:"-C 2xc",o:2,s:["x,y,z","x,-y,-z+1/2","-x,-y,-z","-x,y,z-1/2","x+1/2,y+1/2,z","x+1/2,-y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","-x+1/2,y+1/2,z-1/2"]},{id:15,hm:"B 2/n 1 1",hs:"-B 2xab",o:2,s:["x,y,z","x+1/2,-y+1/2,-z","-x,-y,-z","-x-1/2,y-1/2,z","x+1/2,y,z+1/2","x+1,-y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","-x,y-1/2,z+1/2"]},{id:15,hm:"I 2/b 1 1",hs:"-I 2xb",o:2,s:["x,y,z","x,-y+1/2,-z","-x,-y,-z","-x,y-1/2,z","x+1/2,y+1/2,z+1/2","x+1/2,-y+1,-z+1/2","-x+1/2,-y+1/2,-z+1/2","-x+1/2,y,z+1/2"]},{id:16,hm:"P 2 2 2",hs:"P 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z"]},{id:17,hm:"P 2 2 21",hs:"P 2c 2",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z","-x,y,-z+1/2"]},{id:17,hm:"P 21 2 2",hs:"P 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z"]},{id:17,hm:"P 2 21 2",hs:"P 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z"]},{id:18,hm:"P 21 21 2",hs:"P 2 2ab",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z"]},{id:18,hm:"P 2 21 21",hs:"P 2bc 2",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y,-z","-x,y+1/2,-z+1/2"]},{id:18,hm:"P 21 2 21",hs:"P 2ac 2ac",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x,y,-z"]},{id:19,hm:"P 21 21 21",hs:"P 2ac 2ab",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z","-x,y+1/2,-z+1/2"]},{id:20,hm:"C 2 2 21",hs:"C 2c 2",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z","-x,y,-z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z+1/2"]},{id:20,hm:"A 21 2 2",hs:"A 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z","x,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2"]},{id:20,hm:"B 2 21 2",hs:"B 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:21,hm:"C 2 2 2",hs:"C 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z"]},{id:21,hm:"A 2 2 2",hs:"A 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2"]},{id:21,hm:"B 2 2 2",hs:"B 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2"]},{id:22,hm:"F 2 2 2",hs:"F 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z"]},{id:23,hm:"I 2 2 2",hs:"I 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:24,hm:"I 21 21 21",hs:"I 2b 2c",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z+1/2","-x,y+1/2,-z+1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,y+1,-z+1"]},{id:25,hm:"P m m 2",hs:"P 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z"]},{id:25,hm:"P 2 m m",hs:"P -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z"]},{id:25,hm:"P m 2 m",hs:"P -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z"]},{id:26,hm:"P m c 21",hs:"P 2c -2",o:4,s:["x,y,z","-x,-y,z+1/2","-x,y,z","x,-y,z+1/2"]},{id:26,hm:"P c m 21",hs:"P 2c -2c",o:4,s:["x,y,z","-x,-y,z+1/2","-x,y,z+1/2","x,-y,z"]},{id:26,hm:"P 21 m a",hs:"P -2a 2a",o:4,s:["x,y,z","x+1/2,y,-z","x+1/2,-y,-z","x,-y,z"]},{id:26,hm:"P 21 a m",hs:"P -2 2a",o:4,s:["x,y,z","x,y,-z","x+1/2,-y,-z","x+1/2,-y,z"]},{id:26,hm:"P b 21 m",hs:"P -2 -2b",o:4,s:["x,y,z","x,y,-z","-x,y+1/2,z","-x,y+1/2,-z"]},{id:26,hm:"P m 21 b",hs:"P -2b -2",o:4,s:["x,y,z","x,y+1/2,-z","-x,y,z","-x,y+1/2,-z"]},{id:27,hm:"P c c 2",hs:"P 2 -2c",o:4,s:["x,y,z","-x,-y,z","-x,y,z+1/2","x,-y,z+1/2"]},{id:27,hm:"P 2 a a",hs:"P -2a 2",o:4,s:["x,y,z","x+1/2,y,-z","x,-y,-z","x+1/2,-y,z"]},{id:27,hm:"P b 2 b",hs:"P -2b -2b",o:4,s:["x,y,z","x,y+1/2,-z","-x,y+1/2,z","-x,y,-z"]},{id:28,hm:"P m a 2",hs:"P 2 -2a",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y,z","x+1/2,-y,z"]},{id:28,hm:"P b m 2",hs:"P 2 -2b",o:4,s:["x,y,z","-x,-y,z","-x,y+1/2,z","x,-y+1/2,z"]},{id:28,hm:"P 2 m b",hs:"P -2b 2",o:4,s:["x,y,z","x,y+1/2,-z","x,-y,-z","x,-y+1/2,z"]},{id:28,hm:"P 2 c m",hs:"P -2c 2",o:4,s:["x,y,z","x,y,-z+1/2","x,-y,-z","x,-y,z+1/2"]},{id:28,hm:"P c 2 m",hs:"P -2c -2c",o:4,s:["x,y,z","x,y,-z+1/2","-x,y,z+1/2","-x,y,-z"]},{id:28,hm:"P m 2 a",hs:"P -2a -2a",o:4,s:["x,y,z","x+1/2,y,-z","-x+1/2,y,z","-x,y,-z"]},{id:29,hm:"P c a 21",hs:"P 2c -2ac",o:4,s:["x,y,z","-x,-y,z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z"]},{id:29,hm:"P b c 21",hs:"P 2c -2b",o:4,s:["x,y,z","-x,-y,z+1/2","-x,y+1/2,z","x,-y+1/2,z+1/2"]},{id:29,hm:"P 21 a b",hs:"P -2b 2a",o:4,s:["x,y,z","x,y+1/2,-z","x+1/2,-y,-z","x+1/2,-y+1/2,z"]},{id:29,hm:"P 21 c a",hs:"P -2ac 2a",o:4,s:["x,y,z","x+1/2,y,-z+1/2","x+1/2,-y,-z","x,-y,z+1/2"]},{id:29,hm:"P c 21 b",hs:"P -2bc -2c",o:4,s:["x,y,z","x,y+1/2,-z+1/2","-x,y,z+1/2","-x,y+1/2,-z"]},{id:29,hm:"P b 21 a",hs:"P -2a -2ab",o:4,s:["x,y,z","x+1/2,y,-z","-x+1/2,y+1/2,z","-x,y+1/2,-z"]},{id:30,hm:"P n c 2",hs:"P 2 -2bc",o:4,s:["x,y,z","-x,-y,z","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:30,hm:"P c n 2",hs:"P 2 -2ac",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2"]},{id:30,hm:"P 2 n a",hs:"P -2ac 2",o:4,s:["x,y,z","x+1/2,y,-z+1/2","x,-y,-z","x+1/2,-y,z+1/2"]},{id:30,hm:"P 2 a n",hs:"P -2ab 2",o:4,s:["x,y,z","x+1/2,y+1/2,-z","x,-y,-z","x+1/2,-y+1/2,z"]},{id:30,hm:"P b 2 n",hs:"P -2ab -2ab",o:4,s:["x,y,z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","-x,y,-z"]},{id:30,hm:"P n 2 b",hs:"P -2bc -2bc",o:4,s:["x,y,z","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","-x,y,-z"]},{id:31,hm:"P m n 21",hs:"P 2ac -2",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","-x,y,z","x+1/2,-y,z+1/2"]},{id:31,hm:"P n m 21",hs:"P 2bc -2bc",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","-x,y+1/2,z+1/2","x,-y,z"]},{id:31,hm:"P 21 m n",hs:"P -2ab 2ab",o:4,s:["x,y,z","x+1/2,y+1/2,-z","x+1/2,-y+1/2,-z","x,-y,z"]},{id:31,hm:"P 21 n m",hs:"P -2 2ac",o:4,s:["x,y,z","x,y,-z","x+1/2,-y,-z+1/2","x+1/2,-y,z+1/2"]},{id:31,hm:"P n 21 m",hs:"P -2 -2bc",o:4,s:["x,y,z","x,y,-z","-x,y+1/2,z+1/2","-x,y+1/2,-z+1/2"]},{id:31,hm:"P m 21 n",hs:"P -2ab -2",o:4,s:["x,y,z","x+1/2,y+1/2,-z","-x,y,z","-x+1/2,y+1/2,-z"]},{id:32,hm:"P b a 2",hs:"P 2 -2ab",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:32,hm:"P 2 c b",hs:"P -2bc 2",o:4,s:["x,y,z","x,y+1/2,-z+1/2","x,-y,-z","x,-y+1/2,z+1/2"]},{id:32,hm:"P c 2 a",hs:"P -2ac -2ac",o:4,s:["x,y,z","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","-x,y,-z"]},{id:33,hm:"P n a 21",hs:"P 2c -2n",o:4,s:["x,y,z","-x,-y,z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z"]},{id:33,hm:"P b n 21",hs:"P 2c -2ab",o:4,s:["x,y,z","-x,-y,z+1/2","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z+1/2"]},{id:33,hm:"P 21 n b",hs:"P -2bc 2a",o:4,s:["x,y,z","x,y+1/2,-z+1/2","x+1/2,-y,-z","x+1/2,-y+1/2,z+1/2"]},{id:33,hm:"P 21 c n",hs:"P -2n 2a",o:4,s:["x,y,z","x+1/2,y+1/2,-z+1/2","x+1/2,-y,-z","x,-y+1/2,z+1/2"]},{id:33,hm:"P c 21 n",hs:"P -2n -2ac",o:4,s:["x,y,z","x+1/2,y+1/2,-z+1/2","-x+1/2,y,z+1/2","-x,y+1/2,-z"]},{id:33,hm:"P n 21 a",hs:"P -2ac -2n",o:4,s:["x,y,z","x+1/2,y,-z+1/2","-x+1/2,y+1/2,z+1/2","-x,y+1/2,-z"]},{id:34,hm:"P n n 2",hs:"P 2 -2n",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:34,hm:"P 2 n n",hs:"P -2n 2",o:4,s:["x,y,z","x+1/2,y+1/2,-z+1/2","x,-y,-z","x+1/2,-y+1/2,z+1/2"]},{id:34,hm:"P n 2 n",hs:"P -2n -2n",o:4,s:["x,y,z","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-x,y,-z"]},{id:35,hm:"C m m 2",hs:"C 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:35,hm:"A 2 m m",hs:"A -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2","x,-y+1/2,-z+1/2","x,-y+1/2,z+1/2"]},{id:35,hm:"B m 2 m",hs:"B -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z","x+1/2,y,z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","-x+1/2,y,-z+1/2"]},{id:36,hm:"C m c 21",hs:"C 2c -2",o:4,s:["x,y,z","-x,-y,z+1/2","-x,y,z","x,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z+1/2","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z+1/2"]},{id:36,hm:"C c m 21",hs:"C 2c -2c",o:4,s:["x,y,z","-x,-y,z+1/2","-x,y,z+1/2","x,-y,z","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z"]},{id:36,hm:"A 21 m a",hs:"A -2a 2a",o:4,s:["x,y,z","x+1/2,y,-z","x+1/2,-y,-z","x,-y,z","x,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","x,-y+1/2,z+1/2"]},{id:36,hm:"A 21 a m",hs:"A -2 2a",o:4,s:["x,y,z","x,y,-z","x+1/2,-y,-z","x+1/2,-y,z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:36,hm:"B b 21 m",hs:"B -2 -2b",o:4,s:["x,y,z","x,y,-z","-x,y+1/2,z","-x,y+1/2,-z","x+1/2,y,z+1/2","x+1/2,y,-z+1/2","-x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:36,hm:"B m 21 b",hs:"B -2b -2",o:4,s:["x,y,z","x,y+1/2,-z","-x,y,z","-x,y+1/2,-z","x+1/2,y,z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:37,hm:"C c c 2",hs:"C 2 -2c",o:4,s:["x,y,z","-x,-y,z","-x,y,z+1/2","x,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:37,hm:"A 2 a a",hs:"A -2a 2",o:4,s:["x,y,z","x+1/2,y,-z","x,-y,-z","x+1/2,-y,z","x,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2","x,-y+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:37,hm:"B b 2 b",hs:"B -2b -2b",o:4,s:["x,y,z","x,y+1/2,-z","-x,y+1/2,z","-x,y,-z","x+1/2,y,z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-x+1/2,y,-z+1/2"]},{id:38,hm:"A m m 2",hs:"A 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:38,hm:"B m m 2",hs:"B 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2"]},{id:38,hm:"B 2 m m",hs:"B -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z","x+1/2,y,z+1/2","x+1/2,y,-z+1/2","x+1/2,-y,-z+1/2","x+1/2,-y,z+1/2"]},{id:38,hm:"C 2 m m",hs:"C -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z","x+1/2,y+1/2,z","x+1/2,y+1/2,-z","x+1/2,-y+1/2,-z","x+1/2,-y+1/2,z"]},{id:38,hm:"C m 2 m",hs:"C -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z","x+1/2,y+1/2,z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","-x+1/2,y+1/2,-z"]},{id:38,hm:"A m 2 m",hs:"A -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","-x,y+1/2,-z+1/2"]},{id:39,hm:"A b m 2",hs:"A 2 -2b",o:4,s:["x,y,z","-x,-y,z","-x,y+1/2,z","x,-y+1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x,y+1,z+1/2","x,-y+1,z+1/2"]},{id:39,hm:"B m a 2",hs:"B 2 -2a",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y,z","x+1/2,-y,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1,y,z+1/2","x+1,-y,z+1/2"]},{id:39,hm:"B 2 c m",hs:"B -2a 2",o:4,s:["x,y,z","x+1/2,y,-z","x,-y,-z","x+1/2,-y,z","x+1/2,y,z+1/2","x+1,y,-z+1/2","x+1/2,-y,-z+1/2","x+1,-y,z+1/2"]},{id:39,hm:"C 2 m b",hs:"C -2a 2",o:4,s:["x,y,z","x+1/2,y,-z","x,-y,-z","x+1/2,-y,z","x+1/2,y+1/2,z","x+1,y+1/2,-z","x+1/2,-y+1/2,-z","x+1,-y+1/2,z"]},{id:39,hm:"C m 2 a",hs:"C -2a -2a",o:4,s:["x,y,z","x+1/2,y,-z","-x+1/2,y,z","-x,y,-z","x+1/2,y+1/2,z","x+1,y+1/2,-z","-x+1,y+1/2,z","-x+1/2,y+1/2,-z"]},{id:39,hm:"A c 2 m",hs:"A -2b -2b",o:4,s:["x,y,z","x,y+1/2,-z","-x,y+1/2,z","-x,y,-z","x,y+1/2,z+1/2","x,y+1,-z+1/2","-x,y+1,z+1/2","-x,y+1/2,-z+1/2"]},{id:40,hm:"A m a 2",hs:"A 2 -2a",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y,z","x+1/2,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:40,hm:"B b m 2",hs:"B 2 -2b",o:4,s:["x,y,z","-x,-y,z","-x,y+1/2,z","x,-y+1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:40,hm:"B 2 m b",hs:"B -2b 2",o:4,s:["x,y,z","x,y+1/2,-z","x,-y,-z","x,-y+1/2,z","x+1/2,y,z+1/2","x+1/2,y+1/2,-z+1/2","x+1/2,-y,-z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:40,hm:"C 2 c m",hs:"C -2c 2",o:4,s:["x,y,z","x,y,-z+1/2","x,-y,-z","x,-y,z+1/2","x+1/2,y+1/2,z","x+1/2,y+1/2,-z+1/2","x+1/2,-y+1/2,-z","x+1/2,-y+1/2,z+1/2"]},{id:40,hm:"C c 2 m",hs:"C -2c -2c",o:4,s:["x,y,z","x,y,-z+1/2","-x,y,z+1/2","-x,y,-z","x+1/2,y+1/2,z","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z"]},{id:40,hm:"A m 2 a",hs:"A -2a -2a",o:4,s:["x,y,z","x+1/2,y,-z","-x+1/2,y,z","-x,y,-z","x,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-x,y+1/2,-z+1/2"]},{id:41,hm:"A b a 2",hs:"A 2 -2ab",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x+1/2,y+1,z+1/2","x+1/2,-y+1,z+1/2"]},{id:41,hm:"B b a 2",hs:"B 2 -2ab",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:41,hm:"B 2 c b",hs:"B -2ab 2",o:4,s:["x,y,z","x+1/2,y+1/2,-z","x,-y,-z","x+1/2,-y+1/2,z","x+1/2,y,z+1/2","x+1,y+1/2,-z+1/2","x+1/2,-y,-z+1/2","x+1,-y+1/2,z+1/2"]},{id:41,hm:"C 2 c b",hs:"C -2ac 2",o:4,s:["x,y,z","x+1/2,y,-z+1/2","x,-y,-z","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","x+1,y+1/2,-z+1/2","x+1/2,-y+1/2,-z","x+1,-y+1/2,z+1/2"]},{id:41,hm:"C c 2 a",hs:"C -2ac -2ac",o:4,s:["x,y,z","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","-x,y,-z","x+1/2,y+1/2,z","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","-x+1/2,y+1/2,-z"]},{id:41,hm:"A c 2 a",hs:"A -2ab -2ab",o:4,s:["x,y,z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","-x,y,-z","x,y+1/2,z+1/2","x+1/2,y+1,-z+1/2","-x+1/2,y+1,z+1/2","-x,y+1/2,-z+1/2"]},{id:42,hm:"F m m 2",hs:"F 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:42,hm:"F 2 m m",hs:"F -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2","x,-y+1/2,-z+1/2","x,-y+1/2,z+1/2","x+1/2,y,z+1/2","x+1/2,y,-z+1/2","x+1/2,-y,-z+1/2","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","x+1/2,y+1/2,-z","x+1/2,-y+1/2,-z","x+1/2,-y+1/2,z"]},{id:42,hm:"F m 2 m",hs:"F -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z","x,y+1/2,z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","-x,y+1/2,-z+1/2","x+1/2,y,z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","-x+1/2,y,-z+1/2","x+1/2,y+1/2,z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","-x+1/2,y+1/2,-z"]},{id:43,hm:"F d d 2",hs:"F 2 -2d",o:4,s:["x,y,z","-x,-y,z","-x+1/4,y+1/4,z+1/4","x+3/4,-y+3/4,z+1/4","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","-x+1/4,y+3/4,z+3/4","x+3/4,-y+5/4,z+3/4","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","-x+3/4,y+1/4,z+3/4","x+5/4,-y+3/4,z+3/4","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","-x+3/4,y+3/4,z+1/4","x+5/4,-y+5/4,z+1/4"]},{id:43,hm:"F 2 d d",hs:"F -2d 2",o:4,s:["x,y,z","x+1/4,y+1/4,-z+1/4","x,-y,-z","x+1/4,-y+1/4,z+1/4","x,y+1/2,z+1/2","x+1/4,y+3/4,-z+3/4","x,-y+1/2,-z+1/2","x+1/4,-y+3/4,z+3/4","x+1/2,y,z+1/2","x+3/4,y+1/4,-z+3/4","x+1/2,-y,-z+1/2","x+3/4,-y+1/4,z+3/4","x+1/2,y+1/2,z","x+3/4,y+3/4,-z+1/4","x+1/2,-y+1/2,-z","x+3/4,-y+3/4,z+1/4"]},{id:43,hm:"F d 2 d",hs:"F -2d -2d",o:4,s:["x,y,z","x+1/4,y+1/4,-z+1/4","-x+1/4,y+1/4,z+1/4","-x+1/2,y+1/2,-z","x,y+1/2,z+1/2","x+1/4,y+3/4,-z+3/4","-x+1/4,y+3/4,z+3/4","-x+1/2,y+1,-z+1/2","x+1/2,y,z+1/2","x+3/4,y+1/4,-z+3/4","-x+3/4,y+1/4,z+3/4","-x+1,y+1/2,-z+1/2","x+1/2,y+1/2,z","x+3/4,y+3/4,-z+1/4","-x+3/4,y+3/4,z+1/4","-x+1,y+1,-z"]},{id:44,hm:"I m m 2",hs:"I 2 -2",o:4,s:["x,y,z","-x,-y,z","-x,y,z","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:44,hm:"I 2 m m",hs:"I -2 2",o:4,s:["x,y,z","x,y,-z","x,-y,-z","x,-y,z","x+1/2,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:44,hm:"I m 2 m",hs:"I -2 -2",o:4,s:["x,y,z","x,y,-z","-x,y,z","-x,y,-z","x+1/2,y+1/2,z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:45,hm:"I b a 2",hs:"I 2 -2c",o:4,s:["x,y,z","-x,-y,z","-x,y,z+1/2","x,-y,z+1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1/2,y+1/2,z+1","x+1/2,-y+1/2,z+1"]},{id:45,hm:"I 2 c b",hs:"I -2a 2",o:4,s:["x,y,z","x+1/2,y,-z","x,-y,-z","x+1/2,-y,z","x+1/2,y+1/2,z+1/2","x+1,y+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","x+1,-y+1/2,z+1/2"]},{id:45,hm:"I c 2 a",hs:"I -2b -2b",o:4,s:["x,y,z","x,y+1/2,-z","-x,y+1/2,z","-x,y,-z","x+1/2,y+1/2,z+1/2","x+1/2,y+1,-z+1/2","-x+1/2,y+1,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:46,hm:"I m a 2",hs:"I 2 -2a",o:4,s:["x,y,z","-x,-y,z","-x+1/2,y,z","x+1/2,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:46,hm:"I b m 2",hs:"I 2 -2b",o:4,s:["x,y,z","-x,-y,z","-x,y+1/2,z","x,-y+1/2,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","-x+1/2,y+1,z+1/2","x+1/2,-y+1,z+1/2"]},{id:46,hm:"I 2 m b",hs:"I -2b 2",o:4,s:["x,y,z","x,y+1/2,-z","x,-y,-z","x,-y+1/2,z","x+1/2,y+1/2,z+1/2","x+1/2,y+1,-z+1/2","x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1,z+1/2"]},{id:46,hm:"I 2 c m",hs:"I -2c 2",o:4,s:["x,y,z","x,y,-z+1/2","x,-y,-z","x,-y,z+1/2","x+1/2,y+1/2,z+1/2","x+1/2,y+1/2,-z+1","x+1/2,-y+1/2,-z+1/2","x+1/2,-y+1/2,z+1"]},{id:46,hm:"I c 2 m",hs:"I -2c -2c",o:4,s:["x,y,z","x,y,-z+1/2","-x,y,z+1/2","-x,y,-z","x+1/2,y+1/2,z+1/2","x+1/2,y+1/2,-z+1","-x+1/2,y+1/2,z+1","-x+1/2,y+1/2,-z+1/2"]},{id:46,hm:"I m 2 a",hs:"I -2a -2a",o:4,s:["x,y,z","x+1/2,y,-z","-x+1/2,y,z","-x,y,-z","x+1/2,y+1/2,z+1/2","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2"]},{id:47,hm:"P m m m",hs:"-P 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z"]},{id:48,hm:"P n n n",hs:"P 2 2 -1n",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:48,hm:"P n n n",hs:"-P 2ab 2bc",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y+1/2,-z+1/2","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z","-x,y-1/2,z-1/2","x-1/2,-y,z-1/2"]},{id:49,hm:"P c c m",hs:"-P 2 2c",o:4,s:["x,y,z","-x,-y,z","x,-y,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x,y,-z","-x,y,z-1/2","x,-y,z-1/2"]},{id:49,hm:"P m a a",hs:"-P 2a 2",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z","-x,y,z","x-1/2,-y,z"]},{id:49,hm:"P b m b",hs:"-P 2b 2b",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y+1/2,-z","-x,y,-z","-x,-y,-z","x,y-1/2,-z","-x,y-1/2,z","x,-y,z"]},{id:50,hm:"P b a n",hs:"P 2 2 -1ab",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:50,hm:"P b a n",hs:"-P 2ab 2b",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y+1/2,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x,y-1/2,z","x-1/2,-y,z"]},{id:50,hm:"P n c b",hs:"P 2 2 -1bc",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:50,hm:"P n c b",hs:"-P 2b 2bc",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y+1/2,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x,y-1/2,-z","-x,y-1/2,z-1/2","x,-y,z-1/2"]},{id:50,hm:"P c n a",hs:"P 2 2 -1ac",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2"]},{id:50,hm:"P c n a",hs:"-P 2a 2c",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z+1/2","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x,y,z-1/2","x-1/2,-y,z-1/2"]},{id:51,hm:"P m m a",hs:"-P 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z","x,-y,z"]},{id:51,hm:"P m m b",hs:"-P 2b 2",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z","-x,y+1/2,-z","-x,-y,-z","x,y-1/2,-z","-x,y,z","x,-y-1/2,z"]},{id:51,hm:"P b m m",hs:"-P 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z","-x,-y,-z","x,y,-z","-x,y-1/2,z","x,-y-1/2,z"]},{id:51,hm:"P c m m",hs:"-P 2c 2c",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z+1/2","-x,y,-z","-x,-y,-z","x,y,-z-1/2","-x,y,z-1/2","x,-y,z"]},{id:51,hm:"P m c m",hs:"-P 2c 2",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z","-x,y,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x,y,z","x,-y,z-1/2"]},{id:51,hm:"P m a m",hs:"-P 2 2a",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y,-z","-x+1/2,y,-z","-x,-y,-z","x,y,-z","-x-1/2,y,z","x-1/2,-y,z"]},{id:52,hm:"P n n a",hs:"-P 2a 2bc",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x,y-1/2,z-1/2","x-1/2,-y-1/2,z-1/2"]},{id:52,hm:"P n n b",hs:"-P 2b 2n",o:4,s:["x,y,z","-x,-y+1/2,z","x+1/2,-y+1/2,-z+1/2","-x+1/2,y,-z+1/2","-x,-y,-z","x,y-1/2,-z","-x-1/2,y-1/2,z-1/2","x-1/2,-y,z-1/2"]},{id:52,hm:"P b n n",hs:"-P 2n 2b",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x,-y+1/2,-z","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x,y-1/2,z","x-1/2,-y,z-1/2"]},{id:52,hm:"P c n n",hs:"-P 2ab 2c",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z","-x,y,z-1/2","x-1/2,-y-1/2,z-1/2"]},{id:52,hm:"P n c n",hs:"-P 2ab 2n",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z","-x-1/2,y-1/2,z-1/2","x,-y,z-1/2"]},{id:52,hm:"P n a n",hs:"-P 2n 2bc",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x+1/2,y,-z","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x,y-1/2,z-1/2","x-1/2,-y,z"]},{id:53,hm:"P m n a",hs:"-P 2ac 2",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x,-y,-z","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x,y,z","x-1/2,-y,z-1/2"]},{id:53,hm:"P n m b",hs:"-P 2bc 2bc",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y,-z","-x,-y,-z","x,y-1/2,-z-1/2","-x,y-1/2,z-1/2","x,-y,z"]},{id:53,hm:"P b m n",hs:"-P 2ab 2ab",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x,y,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x-1/2,y-1/2,z","x,-y,z"]},{id:53,hm:"P c n m",hs:"-P 2 2ac",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x,-y,-z","x,y,-z","-x-1/2,y,z-1/2","x-1/2,-y,z-1/2"]},{id:53,hm:"P n c m",hs:"-P 2 2bc",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x,-y,-z","x,y,-z","-x,y-1/2,z-1/2","x,-y-1/2,z-1/2"]},{id:53,hm:"P m a n",hs:"-P 2ab 2",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x,y,z","x-1/2,-y-1/2,z"]},{id:54,hm:"P c c a",hs:"-P 2a 2ac",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z-1/2","x,-y,z-1/2"]},{id:54,hm:"P c c b",hs:"-P 2b 2c",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z+1/2","-x,y+1/2,-z+1/2","-x,-y,-z","x,y-1/2,-z","-x,y,z-1/2","x,-y-1/2,z-1/2"]},{id:54,hm:"P b a a",hs:"-P 2a 2b",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y,-z","-x,y-1/2,z","x-1/2,-y-1/2,z"]},{id:54,hm:"P c a a",hs:"-P 2ac 2c",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x,-y,-z+1/2","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z-1/2","-x,y,z-1/2","x-1/2,-y,z"]},{id:54,hm:"P b c b",hs:"-P 2bc 2b",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y+1/2,-z","-x,y,-z+1/2","-x,-y,-z","x,y-1/2,-z-1/2","-x,y-1/2,z","x,-y,z-1/2"]},{id:54,hm:"P b a b",hs:"-P 2b 2ab",o:4,s:["x,y,z","-x,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y,-z","-x,-y,-z","x,y-1/2,-z","-x-1/2,y-1/2,z","x-1/2,-y,z"]},{id:55,hm:"P b a m",hs:"-P 2 2ab",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x,y,-z","-x-1/2,y-1/2,z","x-1/2,-y-1/2,z"]},{id:55,hm:"P m c b",hs:"-P 2bc 2",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y,-z","-x,y+1/2,-z+1/2","-x,-y,-z","x,y-1/2,-z-1/2","-x,y,z","x,-y-1/2,z-1/2"]},{id:55,hm:"P c m a",hs:"-P 2ac 2ac",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x,y,-z","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y,z-1/2","x,-y,z"]},{id:56,hm:"P c c n",hs:"-P 2ab 2ac",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x+1/2,-y,-z+1/2","-x,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z","-x-1/2,y,z-1/2","x,-y-1/2,z-1/2"]},{id:56,hm:"P n a a",hs:"-P 2ac 2bc",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y,-z-1/2","-x,y-1/2,z-1/2","x-1/2,-y-1/2,z"]},{id:56,hm:"P b n b",hs:"-P 2bc 2ab",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x+1/2,-y+1/2,-z","-x+1/2,y,-z+1/2","-x,-y,-z","x,y-1/2,-z-1/2","-x-1/2,y-1/2,z","x-1/2,-y,z-1/2"]},{id:57,hm:"P b c m",hs:"-P 2c 2b",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y+1/2,-z","-x,y+1/2,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x,y-1/2,z","x,-y-1/2,z-1/2"]},{id:57,hm:"P c a m",hs:"-P 2c 2ac",o:4,s:["x,y,z","-x,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z","-x,-y,-z","x,y,-z-1/2","-x-1/2,y,z-1/2","x-1/2,-y,z"]},{id:57,hm:"P m c a",hs:"-P 2ac 2a",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y,-z","-x,y,-z+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y,z","x,-y,z-1/2"]},{id:57,hm:"P m a b",hs:"-P 2b 2a",o:4,s:["x,y,z","-x,-y+1/2,z","x+1/2,-y,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x,y-1/2,-z","-x-1/2,y,z","x-1/2,-y-1/2,z"]},{id:57,hm:"P b m a",hs:"-P 2a 2ab",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y+1/2,-z","-x,y+1/2,-z","-x,-y,-z","x-1/2,y,-z","-x-1/2,y-1/2,z","x,-y-1/2,z"]},{id:57,hm:"P c m b",hs:"-P 2bc 2c",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y,-z+1/2","-x,y+1/2,-z","-x,-y,-z","x,y-1/2,-z-1/2","-x,y,z-1/2","x,-y-1/2,z"]},{id:58,hm:"P n n m",hs:"-P 2 2n",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x,y,-z","-x-1/2,y-1/2,z-1/2","x-1/2,-y-1/2,z-1/2"]},{id:58,hm:"P m n n",hs:"-P 2n 2",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x,-y,-z","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x,y,z","x-1/2,-y-1/2,z-1/2"]},{id:58,hm:"P n m n",hs:"-P 2n 2n",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x,y,-z","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x-1/2,y-1/2,z-1/2","x,-y,z"]},{id:59,hm:"P m m n",hs:"P 2 2ab -1ab",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x,y,z","x,-y,z"]},{id:59,hm:"P m m n",hs:"-P 2ab 2a",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x+1/2,-y,-z","-x,y+1/2,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x-1/2,y,z","x,-y-1/2,z"]},{id:59,hm:"P n m m",hs:"P 2bc 2 -1bc",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x,-y,-z","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,y,-z","-x,y+1/2,z+1/2","x,-y,z"]},{id:59,hm:"P n m m",hs:"-P 2c 2bc",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z","-x,-y,-z","x,y,-z-1/2","-x,y-1/2,z-1/2","x,-y-1/2,z"]},{id:59,hm:"P m n m",hs:"P 2ac 2ac -1ac",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x,y,-z","-x+1/2,-y,-z+1/2","x,y,-z","-x,y,z","x+1/2,-y,z+1/2"]},{id:59,hm:"P m n m",hs:"-P 2c 2a",o:4,s:["x,y,z","-x,-y,z+1/2","x+1/2,-y,-z","-x+1/2,y,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x-1/2,y,z","x-1/2,-y,z-1/2"]},{id:60,hm:"P b c n",hs:"-P 2n 2ab",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z","-x,y,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x-1/2,y-1/2,z","x,-y,z-1/2"]},{id:60,hm:"P c a n",hs:"-P 2n 2c",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x,-y,-z+1/2","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x,y,z-1/2","x-1/2,-y-1/2,z"]},{id:60,hm:"P n c a",hs:"-P 2a 2n",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x-1/2,y-1/2,z-1/2","x,-y-1/2,z-1/2"]},{id:60,hm:"P n a b",hs:"-P 2bc 2n",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y,-z","-x,-y,-z","x,y-1/2,-z-1/2","-x-1/2,y-1/2,z-1/2","x-1/2,-y,z"]},{id:60,hm:"P b n a",hs:"-P 2ac 2b",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x,-y+1/2,-z","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x,y-1/2,z","x-1/2,-y-1/2,z-1/2"]},{id:60,hm:"P c n b",hs:"-P 2b 2ac",o:4,s:["x,y,z","-x,-y+1/2,z","x+1/2,-y,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x,y-1/2,-z","-x-1/2,y,z-1/2","x-1/2,-y-1/2,z-1/2"]},{id:61,hm:"P b c a",hs:"-P 2ac 2ab",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z","-x,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y-1/2,z","x,-y-1/2,z-1/2"]},{id:61,hm:"P c a b",hs:"-P 2bc 2ac",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y+1/2,-z","-x,-y,-z","x,y-1/2,-z-1/2","-x-1/2,y,z-1/2","x-1/2,-y-1/2,z"]},{id:62,hm:"P n m a",hs:"-P 2ac 2n",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z+1/2","-x,y+1/2,-z","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y-1/2,z-1/2","x,-y-1/2,z"]},{id:62,hm:"P m n b",hs:"-P 2bc 2a",o:4,s:["x,y,z","-x,-y+1/2,z+1/2","x+1/2,-y,-z","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x,y-1/2,-z-1/2","-x-1/2,y,z","x-1/2,-y-1/2,z-1/2"]},{id:62,hm:"P b n m",hs:"-P 2c 2ab",o:4,s:["x,y,z","-x,-y,z+1/2","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x-1/2,y-1/2,z","x-1/2,-y-1/2,z-1/2"]},{id:62,hm:"P c m n",hs:"-P 2n 2ac",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y,-z+1/2","-x,y+1/2,-z","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x-1/2,y,z-1/2","x,-y-1/2,z"]},{id:62,hm:"P m c n",hs:"-P 2n 2a",o:4,s:["x,y,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y,-z","-x,y+1/2,-z+1/2","-x,-y,-z","x-1/2,y-1/2,-z-1/2","-x-1/2,y,z","x,-y-1/2,z-1/2"]},{id:62,hm:"P n a m",hs:"-P 2c 2n",o:4,s:["x,y,z","-x,-y,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z","-x,-y,-z","x,y,-z-1/2","-x-1/2,y-1/2,z-1/2","x-1/2,-y-1/2,z"]},{id:63,hm:"C m c m",hs:"-C 2c 2",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z","-x,y,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x,y,z","x,-y,z-1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z-1/2","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z-1/2"]},{id:63,hm:"C c m m",hs:"-C 2c 2c",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z+1/2","-x,y,-z","-x,-y,-z","x,y,-z-1/2","-x,y,z-1/2","x,-y,z","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z-1/2","-x+1/2,y+1/2,z-1/2","x+1/2,-y+1/2,z"]},{id:63,hm:"A m m a",hs:"-A 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z","x,-y,z","x,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y+1/2,-z+1/2","-x-1/2,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:63,hm:"A m a m",hs:"-A 2 2a",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y,-z","-x+1/2,y,-z","-x,-y,-z","x,y,-z","-x-1/2,y,z","x-1/2,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x-1/2,y+1/2,z+1/2","x-1/2,-y+1/2,z+1/2"]},{id:63,hm:"B b m m",hs:"-B 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z","-x,-y,-z","x,y,-z","-x,y-1/2,z","x,-y-1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y-1/2,z+1/2","x+1/2,-y-1/2,z+1/2"]},{id:63,hm:"B m m b",hs:"-B 2b 2",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z","-x,y+1/2,-z","-x,-y,-z","x,y-1/2,-z","-x,y,z","x,-y-1/2,z","x+1/2,y,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y-1/2,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y-1/2,z+1/2"]},{id:64,hm:"C m c a",hs:"-C 2ac 2",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x,-y,-z","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x,y,z","x-1/2,-y,z-1/2","x+1/2,y+1/2,z","-x+1,-y+1/2,z+1/2","x+1/2,-y+1/2,-z","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x,y+1/2,-z-1/2","-x+1/2,y+1/2,z","x,-y+1/2,z-1/2"]},{id:64,hm:"C c m b",hs:"-C 2ac 2ac",o:4,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x,y,-z","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y,z-1/2","x,-y,z","x+1/2,y+1/2,z","-x+1,-y+1/2,z+1/2","x+1,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x,y+1/2,-z-1/2","-x,y+1/2,z-1/2","x+1/2,-y+1/2,z"]},{id:64,hm:"A b m a",hs:"-A 2ab 2ab",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x,y,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x-1/2,y-1/2,z","x,-y,z","x,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1,-z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y,-z+1/2","-x-1/2,y,z+1/2","x,-y+1/2,z+1/2"]},{id:64,hm:"A c a m",hs:"-A 2 2ab",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x,y,-z","-x-1/2,y-1/2,z","x-1/2,-y-1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x+1/2,-y+1,-z+1/2","-x+1/2,y+1,-z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x-1/2,y,z+1/2","x-1/2,-y,z+1/2"]},{id:64,hm:"B b c m",hs:"-B 2 2ab",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x,y,-z","-x-1/2,y-1/2,z","x-1/2,-y-1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1,-y+1/2,-z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x,y-1/2,z+1/2","x,-y-1/2,z+1/2"]},{id:64,hm:"B m a b",hs:"-B 2ab 2",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x,y,z","x-1/2,-y-1/2,z","x+1/2,y,z+1/2","-x+1,-y+1/2,z+1/2","x+1/2,-y,-z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y,-z+1/2","x,y-1/2,-z+1/2","-x+1/2,y,z+1/2","x,-y-1/2,z+1/2"]},{id:65,hm:"C m m m",hs:"-C 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:65,hm:"A m m m",hs:"-A 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:65,hm:"B m m m",hs:"-B 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2"]},{id:66,hm:"C c c m",hs:"-C 2 2c",o:4,s:["x,y,z","-x,-y,z","x,-y,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x,y,-z","-x,y,z-1/2","x,-y,z-1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z-1/2","x+1/2,-y+1/2,z-1/2"]},{id:66,hm:"A m a a",hs:"-A 2a 2",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z","-x,y,z","x-1/2,-y,z","x,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x-1/2,-y+1/2,z+1/2"]},{id:66,hm:"B b m b",hs:"-B 2b 2b",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y+1/2,-z","-x,y,-z","-x,-y,-z","x,y-1/2,-z","-x,y-1/2,z","x,-y,z","x+1/2,y,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y-1/2,-z+1/2","-x+1/2,y-1/2,z+1/2","x+1/2,-y,z+1/2"]},{id:67,hm:"C m m a",hs:"-C 2a 2",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z","-x,y,z","x-1/2,-y,z","x+1/2,y+1/2,z","-x+1,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1,y+1/2,-z","-x+1/2,-y+1/2,-z","x,y+1/2,-z","-x+1/2,y+1/2,z","x,-y+1/2,z"]},{id:67,hm:"C m m b",hs:"-C 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z","x,-y,z","x+1/2,y+1/2,z","-x+1,-y+1/2,z","x+1,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x,y+1/2,-z","-x,y+1/2,z","x+1/2,-y+1/2,z"]},{id:67,hm:"A b m m",hs:"-A 2b 2b",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y+1/2,-z","-x,y,-z","-x,-y,-z","x,y-1/2,-z","-x,y-1/2,z","x,-y,z","x,y+1/2,z+1/2","-x,-y+1,z+1/2","x,-y+1,-z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,y,-z+1/2","-x,y,z+1/2","x,-y+1/2,z+1/2"]},{id:67,hm:"A c m m",hs:"-A 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z","-x,-y,-z","x,y,-z","-x,y-1/2,z","x,-y-1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1,-z+1/2","-x,y+1,-z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y,z+1/2","x,-y,z+1/2"]},{id:67,hm:"B m c m",hs:"-B 2 2a",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y,-z","-x+1/2,y,-z","-x,-y,-z","x,y,-z","-x-1/2,y,z","x-1/2,-y,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1,-y,-z+1/2","-x+1,y,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x,y,z+1/2","x,-y,z+1/2"]},{id:67,hm:"B m a m",hs:"-B 2a 2",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z","-x,y,z","x-1/2,-y,z","x+1/2,y,z+1/2","-x+1,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1,y,-z+1/2","-x+1/2,-y,-z+1/2","x,y,-z+1/2","-x+1/2,y,z+1/2","x,-y,z+1/2"]},{id:68,hm:"C c c a",hs:"C 2 2 -1ac",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1,-y+1/2,-z+1/2","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:68,hm:"C c c a",hs:"-C 2a 2ac",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z-1/2","x,-y,z-1/2","x+1/2,y+1/2,z","-x+1,-y+1/2,z","x+1,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x,y+1/2,-z","-x,y+1/2,z-1/2","x+1/2,-y+1/2,z-1/2"]},{id:68,hm:"C c c b",hs:"C 2 2 -1ac",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1,-y+1/2,-z+1/2","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:68,hm:"C c c b",hs:"-C 2a 2c",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z+1/2","-x+1/2,y,-z+1/2","-x,-y,-z","x-1/2,y,-z","-x,y,z-1/2","x-1/2,-y,z-1/2","x+1/2,y+1/2,z","-x+1,-y+1/2,z","x+1/2,-y+1/2,-z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z","x,y+1/2,-z","-x+1/2,y+1/2,z-1/2","x,-y+1/2,z-1/2"]},{id:68,hm:"A b a a",hs:"A 2 2 -1ab",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x+1/2,-y+1,-z+1/2","x+1/2,y+1,-z+1/2","-x+1/2,y+1,z+1/2","x+1/2,-y+1,z+1/2"]},{id:68,hm:"A b a a",hs:"-A 2a 2b",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y,-z","-x,y-1/2,z","x-1/2,-y-1/2,z","x,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x,-y+1,-z+1/2","-x+1/2,y+1,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y+1/2,-z+1/2","-x,y,z+1/2","x-1/2,-y,z+1/2"]},{id:68,hm:"A c a a",hs:"A 2 2 -1ab",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x+1/2,-y+1,-z+1/2","x+1/2,y+1,-z+1/2","-x+1/2,y+1,z+1/2","x+1/2,-y+1,z+1/2"]},{id:68,hm:"A c a a",hs:"-A 2ab 2b",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y+1/2,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x,y-1/2,z","x-1/2,-y,z","x,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x,-y+1,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x-1/2,y,-z+1/2","-x,y,z+1/2","x-1/2,-y+1/2,z+1/2"]},{id:68,hm:"B b c b",hs:"B 2 2 -1ab",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x+1,-y+1/2,-z+1/2","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:68,hm:"B b c b",hs:"-B 2ab 2b",o:4,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y+1/2,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y-1/2,-z","-x,y-1/2,z","x-1/2,-y,z","x+1/2,y,z+1/2","-x+1,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1,y,-z+1/2","-x+1/2,-y,-z+1/2","x,y-1/2,-z+1/2","-x+1/2,y-1/2,z+1/2","x,-y,z+1/2"]},{id:68,hm:"B b a b",hs:"B 2 2 -1ab",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x+1,-y+1/2,-z+1/2","x+1,y+1/2,-z+1/2","-x+1,y+1/2,z+1/2","x+1,-y+1/2,z+1/2"]},{id:68,hm:"B b a b",hs:"-B 2b 2ab",o:4,s:["x,y,z","-x,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y,-z","-x,-y,-z","x,y-1/2,-z","-x-1/2,y-1/2,z","x-1/2,-y,z","x+1/2,y,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1,-y+1/2,-z+1/2","-x+1,y,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y-1/2,-z+1/2","-x,y-1/2,z+1/2","x,-y,z+1/2"]},{id:69,hm:"F m m m",hs:"-F 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:70,hm:"F d d d",hs:"F 2 2 -1d",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x+1/4,-y+1/4,-z+1/4","x+1/4,y+1/4,-z+1/4","-x+1/4,y+1/4,z+1/4","x+1/4,-y+1/4,z+1/4","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","-x+1/4,-y+3/4,-z+3/4","x+1/4,y+3/4,-z+3/4","-x+1/4,y+3/4,z+3/4","x+1/4,-y+3/4,z+3/4","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","-x+3/4,-y+1/4,-z+3/4","x+3/4,y+1/4,-z+3/4","-x+3/4,y+1/4,z+3/4","x+3/4,-y+1/4,z+3/4","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","-x+3/4,-y+3/4,-z+1/4","x+3/4,y+3/4,-z+1/4","-x+3/4,y+3/4,z+1/4","x+3/4,-y+3/4,z+1/4"]},{id:70,hm:"F d d d",hs:"-F 2uv 2vw",o:4,s:["x,y,z","-x+1/4,-y+1/4,z","x,-y+1/4,-z+1/4","-x+1/4,y,-z+1/4","-x,-y,-z","x-1/4,y-1/4,-z","-x,y-1/4,z-1/4","x-1/4,-y,z-1/4","x,y+1/2,z+1/2","-x+1/4,-y+3/4,z+1/2","x,-y+3/4,-z+3/4","-x+1/4,y+1/2,-z+3/4","-x,-y+1/2,-z+1/2","x-1/4,y+1/4,-z+1/2","-x,y+1/4,z+1/4","x-1/4,-y+1/2,z+1/4","x+1/2,y,z+1/2","-x+3/4,-y+1/4,z+1/2","x+1/2,-y+1/4,-z+3/4","-x+3/4,y,-z+3/4","-x+1/2,-y,-z+1/2","x+1/4,y-1/4,-z+1/2","-x+1/2,y-1/4,z+1/4","x+1/4,-y,z+1/4","x+1/2,y+1/2,z","-x+3/4,-y+3/4,z","x+1/2,-y+3/4,-z+1/4","-x+3/4,y+1/2,-z+1/4","-x+1/2,-y+1/2,-z","x+1/4,y+1/4,-z","-x+1/2,y+1/4,z-1/4","x+1/4,-y+1/2,z-1/4"]},{id:71,hm:"I m m m",hs:"-I 2 2",o:4,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:72,hm:"I b a m",hs:"-I 2 2c",o:4,s:["x,y,z","-x,-y,z","x,-y,-z+1/2","-x,y,-z+1/2","-x,-y,-z","x,y,-z","-x,y,z-1/2","x,-y,z-1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,y+1/2,-z+1","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z"]},{id:72,hm:"I m c b",hs:"-I 2a 2",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y,-z","-x+1/2,y,-z","-x,-y,-z","x-1/2,y,-z","-x,y,z","x-1/2,-y,z","x+1/2,y+1/2,z+1/2","-x+1,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:72,hm:"I c m a",hs:"-I 2b 2b",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y+1/2,-z","-x,y,-z","-x,-y,-z","x,y-1/2,-z","-x,y-1/2,z","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:73,hm:"I b c a",hs:"-I 2b 2c",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z+1/2","-x,y+1/2,-z+1/2","-x,-y,-z","x,y-1/2,-z","-x,y,z-1/2","x,-y-1/2,z-1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,y+1,-z+1","-x+1/2,-y+1/2,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y+1/2,z","x+1/2,-y,z"]},{id:73,hm:"I c a b",hs:"-I 2a 2b",o:4,s:["x,y,z","-x+1/2,-y,z","x,-y+1/2,-z","-x+1/2,y+1/2,-z","-x,-y,-z","x-1/2,y,-z","-x,y-1/2,z","x-1/2,-y-1/2,z","x+1/2,y+1/2,z+1/2","-x+1,-y+1/2,z+1/2","x+1/2,-y+1,-z+1/2","-x+1,y+1,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x+1/2,y,z+1/2","x,-y,z+1/2"]},{id:74,hm:"I m m a",hs:"-I 2b 2",o:4,s:["x,y,z","-x,-y+1/2,z","x,-y,-z","-x,y+1/2,-z","-x,-y,-z","x,y-1/2,-z","-x,y,z","x,-y-1/2,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y,z+1/2"]},{id:74,hm:"I m m b",hs:"-I 2a 2a",o:4,s:["x,y,z","-x+1/2,-y,z","x+1/2,-y,-z","-x,y,-z","-x,-y,-z","x-1/2,y,-z","-x-1/2,y,z","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1,-y+1/2,z+1/2","x+1,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2"]},{id:74,hm:"I b m m",hs:"-I 2c 2c",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z+1/2","-x,y,-z","-x,-y,-z","x,y,-z-1/2","-x,y,z-1/2","x,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1","x+1/2,-y+1/2,-z+1","-x+1/2,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z+1/2"]},{id:74,hm:"I c m m",hs:"-I 2 2b",o:4,s:["x,y,z","-x,-y,z","x,-y+1/2,-z","-x,y+1/2,-z","-x,-y,-z","x,y,-z","-x,y-1/2,z","x,-y-1/2,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1,-z+1/2","-x+1/2,y+1,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2"]},{id:74,hm:"I m c m",hs:"-I 2 2a",o:4,s:["x,y,z","-x,-y,z","x+1/2,-y,-z","-x+1/2,y,-z","-x,-y,-z","x,y,-z","-x-1/2,y,z","x-1/2,-y,z","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1,-y+1/2,-z+1/2","-x+1,y+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2"]},{id:74,hm:"I m a m",hs:"-I 2c 2",o:4,s:["x,y,z","-x,-y,z+1/2","x,-y,-z","-x,y,-z+1/2","-x,-y,-z","x,y,-z-1/2","-x,y,z","x,-y,z-1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z"]},{id:75,hm:"P 4",hs:"P 4",o:4,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z"]},{id:76,hm:"P 41",hs:"P 4w",o:4,s:["x,y,z","-y,x,z+1/4","-x,-y,z+1/2","y,-x,z+3/4"]},{id:77,hm:"P 42",hs:"P 4c",o:4,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2"]},{id:78,hm:"P 43",hs:"P 4cw",o:4,s:["x,y,z","-y,x,z+3/4","-x,-y,z+1/2","y,-x,z+1/4"]},{id:79,hm:"I 4",hs:"I 4",o:4,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2"]},{id:80,hm:"I 41",hs:"I 4bw",o:4,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4"]},{id:81,hm:"P -4",hs:"P -4",o:4,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z"]},{id:82,hm:"I -4",hs:"I -4",o:4,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2"]},{id:83,hm:"P 4/m",hs:"-P 4",o:4,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z"]},{id:84,hm:"P 42/m",hs:"-P 4c",o:4,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","-x,-y,-z","y,-x,-z-1/2","x,y,-z","-y,x,-z-1/2"]},{id:85,hm:"P 4/n",hs:"P 4ab -1ab",o:4,s:["x,y,z","-y+1/2,x+1/2,z","-x,-y,z","y+1/2,-x+1/2,z","-x+1/2,-y+1/2,-z","y,-x,-z","x+1/2,y+1/2,-z","-y,x,-z"]},{id:85,hm:"P 4/n",hs:"-P 4a",o:4,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z"]},{id:86,hm:"P 42/n",hs:"P 4n -1n",o:4,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z"]},{id:86,hm:"P 42/n",hs:"-P 4bc",o:4,s:["x,y,z","-y,x+1/2,z+1/2","-x+1/2,-y+1/2,z","y+1/2,-x,z+1/2","-x,-y,-z","y,-x-1/2,-z-1/2","x-1/2,y-1/2,-z","-y-1/2,x,-z-1/2"]},{id:87,hm:"I 4/m",hs:"-I 4",o:4,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2"]},{id:88,hm:"I 41/a",hs:"I 4bw -1bw",o:4,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","-x,-y+1/2,-z+1/4","y,-x,-z","x-1/2,y,-z-1/4","-y-1/2,x+1/2,-z-1/2","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","-x+1/2,-y+1,-z+3/4","y+1/2,-x+1/2,-z+1/2","x,y+1/2,-z+1/4","-y,x+1,-z"]},{id:88,hm:"I 41/a",hs:"-I 4ad",o:4,s:["x,y,z","-y+3/4,x+1/4,z+1/4","-x+1/2,-y,z+1/2","y+3/4,-x+3/4,z+3/4","-x,-y,-z","y-3/4,-x-1/4,-z-1/4","x-1/2,y,-z-1/2","-y-3/4,x-3/4,-z-3/4","x+1/2,y+1/2,z+1/2","-y+5/4,x+3/4,z+3/4","-x+1,-y+1/2,z+1","y+5/4,-x+5/4,z+5/4","-x+1/2,-y+1/2,-z+1/2","y-1/4,-x+1/4,-z+1/4","x,y+1/2,-z","-y-1/4,x-1/4,-z-1/4"]},{id:89,hm:"P 4 2 2",hs:"P 4 2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z"]},{id:90,hm:"P 4 21 2",hs:"P 4ab 2ab",o:8,s:["x,y,z","-y+1/2,x+1/2,z","-x,-y,z","y+1/2,-x+1/2,z","x+1/2,-y+1/2,-z","y,x,-z","-x+1/2,y+1/2,-z","-y,-x,-z"]},{id:91,hm:"P 41 2 2",hs:"P 4w 2c",o:8,s:["x,y,z","-y,x,z+1/4","-x,-y,z+1/2","y,-x,z+3/4","x,-y,-z+1/2","y,x,-z+3/4","-x,y,-z","-y,-x,-z+1/4"]},{id:92,hm:"P 41 21 2",hs:"P 4abw 2nw",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/4","-x,-y,z+1/2","y+1/2,-x+1/2,z+3/4","x+1/2,-y+1/2,-z+3/4","y,x,-z","-x+1/2,y+1/2,-z+1/4","-y,-x,-z+1/2"]},{id:93,hm:"P 42 2 2",hs:"P 4c 2",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","x,-y,-z","y,x,-z+1/2","-x,y,-z","-y,-x,-z+1/2"]},{id:94,hm:"P 42 21 2",hs:"P 4n 2n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y,x,-z","-x+1/2,y+1/2,-z+1/2","-y,-x,-z"]},{id:95,hm:"P 43 2 2",hs:"P 4cw 2c",o:8,s:["x,y,z","-y,x,z+3/4","-x,-y,z+1/2","y,-x,z+1/4","x,-y,-z+1/2","y,x,-z+1/4","-x,y,-z","-y,-x,-z+3/4"]},{id:96,hm:"P 43 21 2",hs:"P 4nw 2abw",o:8,s:["x,y,z","-y+1/2,x+1/2,z+3/4","-x,-y,z+1/2","y+1/2,-x+1/2,z+1/4","x+1/2,-y+1/2,-z+1/4","y,x,-z","-x+1/2,y+1/2,-z+3/4","-y,-x,-z+1/2"]},{id:97,hm:"I 4 2 2",hs:"I 4 2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2"]},{id:98,hm:"I 41 2 2",hs:"I 4bw 2bw",o:8,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","x,-y+1/2,-z+1/4","y+1/2,x+1/2,-z+1/2","-x+1/2,y,-z+3/4","-y,-x,-z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","x+1/2,-y+1,-z+3/4","y+1,x+1,-z+1","-x+1,y+1/2,-z+5/4","-y+1/2,-x+1/2,-z+1/2"]},{id:99,hm:"P 4 m m",hs:"P 4 -2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,y,z","-y,-x,z","x,-y,z","y,x,z"]},{id:100,hm:"P 4 b m",hs:"P 4 -2ab",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x+1/2,y+1/2,z","-y+1/2,-x+1/2,z","x+1/2,-y+1/2,z","y+1/2,x+1/2,z"]},{id:101,hm:"P 42 c m",hs:"P 4c -2c",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","-x,y,z+1/2","-y,-x,z","x,-y,z+1/2","y,x,z"]},{id:102,hm:"P 42 n m",hs:"P 4n -2n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,z+1/2","-y,-x,z","x+1/2,-y+1/2,z+1/2","y,x,z"]},{id:103,hm:"P 4 c c",hs:"P 4 -2c",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,y,z+1/2","-y,-x,z+1/2","x,-y,z+1/2","y,x,z+1/2"]},{id:104,hm:"P 4 n c",hs:"P 4 -2n",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2"]},{id:105,hm:"P 42 m c",hs:"P 4c -2",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","-x,y,z","-y,-x,z+1/2","x,-y,z","y,x,z+1/2"]},{id:106,hm:"P 42 b c",hs:"P 4c -2ab",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","-x+1/2,y+1/2,z","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z","y+1/2,x+1/2,z+1/2"]},{id:107,hm:"I 4 m m",hs:"I 4 -2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,y,z","-y,-x,z","x,-y,z","y,x,z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2"]},{id:108,hm:"I 4 c m",hs:"I 4 -2c",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","-x,y,z+1/2","-y,-x,z+1/2","x,-y,z+1/2","y,x,z+1/2","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,z+1","-y+1/2,-x+1/2,z+1","x+1/2,-y+1/2,z+1","y+1/2,x+1/2,z+1"]},{id:109,hm:"I 41 m d",hs:"I 4bw -2",o:8,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","-x,y,z","-y,-x+1/2,z+1/4","x+1/2,-y+1/2,z+1/2","y+1/2,x,z+3/4","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1,z+3/4","x+1,-y+1,z+1","y+1,x+1/2,z+5/4"]},{id:110,hm:"I 41 c d",hs:"I 4bw -2c",o:8,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","-x,y,z+1/2","-y,-x+1/2,z+3/4","x+1/2,-y+1/2,z","y+1/2,x,z+1/4","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","-x+1/2,y+1/2,z+1","-y+1/2,-x+1,z+5/4","x+1,-y+1,z+1/2","y+1,x+1/2,z+3/4"]},{id:111,hm:"P -4 2 m",hs:"P -4 2",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z","-y,-x,z","-x,y,-z","y,x,z"]},{id:112,hm:"P -4 2 c",hs:"P -4 2c",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z+1/2","-y,-x,z+1/2","-x,y,-z+1/2","y,x,z+1/2"]},{id:113,hm:"P -4 21 m",hs:"P -4 2ab",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x+1/2,-y+1/2,-z","-y+1/2,-x+1/2,z","-x+1/2,y+1/2,-z","y+1/2,x+1/2,z"]},{id:114,hm:"P -4 21 c",hs:"P -4 2n",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x+1/2,-y+1/2,-z+1/2","-y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2","y+1/2,x+1/2,z+1/2"]},{id:115,hm:"P -4 m 2",hs:"P -4 -2",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x,y,z","y,x,-z","x,-y,z","-y,-x,-z"]},{id:116,hm:"P -4 c 2",hs:"P -4 -2c",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x,y,z+1/2","y,x,-z+1/2","x,-y,z+1/2","-y,-x,-z+1/2"]},{id:117,hm:"P -4 b 2",hs:"P -4 -2ab",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x+1/2,y+1/2,z","y+1/2,x+1/2,-z","x+1/2,-y+1/2,z","-y+1/2,-x+1/2,-z"]},{id:118,hm:"P -4 n 2",hs:"P -4 -2n",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x+1/2,y+1/2,z+1/2","y+1/2,x+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2","-y+1/2,-x+1/2,-z+1/2"]},{id:119,hm:"I -4 m 2",hs:"I -4 -2",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x,y,z","y,x,-z","x,-y,z","-y,-x,-z","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","y+1/2,x+1/2,-z+1/2","x+1/2,-y+1/2,z+1/2","-y+1/2,-x+1/2,-z+1/2"]},{id:120,hm:"I -4 c 2",hs:"I -4 -2c",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","-x,y,z+1/2","y,x,-z+1/2","x,-y,z+1/2","-y,-x,-z+1/2","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1","y+1/2,x+1/2,-z+1","x+1/2,-y+1/2,z+1","-y+1/2,-x+1/2,-z+1"]},{id:121,hm:"I -4 2 m",hs:"I -4 2",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z","-y,-x,z","-x,y,-z","y,x,z","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","-y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2","y+1/2,x+1/2,z+1/2"]},{id:122,hm:"I -4 2 d",hs:"I -4 2bw",o:8,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y+1/2,-z+1/4","-y+1/2,-x,z+3/4","-x,y+1/2,-z+1/4","y+1/2,x,z+3/4","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","x+1/2,-y+1,-z+3/4","-y+1,-x+1/2,z+5/4","-x+1/2,y+1,-z+3/4","y+1,x+1/2,z+5/4"]},{id:123,hm:"P 4/m m m",hs:"-P 4 2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z","-y,-x,z","x,-y,z","y,x,z"]},{id:124,hm:"P 4/m c c",hs:"-P 4 2c",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z+1/2","y,x,-z+1/2","-x,y,-z+1/2","-y,-x,-z+1/2","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z-1/2","-y,-x,z-1/2","x,-y,z-1/2","y,x,z-1/2"]},{id:125,hm:"P 4/n b m",hs:"P 4 2 -1ab",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","-x+1/2,-y+1/2,-z","y+1/2,-x+1/2,-z","x+1/2,y+1/2,-z","-y+1/2,x+1/2,-z","-x+1/2,y+1/2,z","-y+1/2,-x+1/2,z","x+1/2,-y+1/2,z","y+1/2,x+1/2,z"]},{id:125,hm:"P 4/n b m",hs:"-P 4a 2b",o:8,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x,-y+1/2,-z","y,x,-z","-x+1/2,y,-z","-y+1/2,-x+1/2,-z","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x,y-1/2,z","-y,-x,z","x-1/2,-y,z","y-1/2,x-1/2,z"]},{id:126,hm:"P 4/n n c",hs:"P 4 2 -1n",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2"]},{id:126,hm:"P 4/n n c",hs:"-P 4a 2bc",o:8,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x,-y+1/2,-z+1/2","y,x,-z+1/2","-x+1/2,y,-z+1/2","-y+1/2,-x+1/2,-z+1/2","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x,y-1/2,z-1/2","-y,-x,z-1/2","x-1/2,-y,z-1/2","y-1/2,x-1/2,z-1/2"]},{id:127,hm:"P 4/m b m",hs:"-P 4 2ab",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x+1/2,-y+1/2,-z","y+1/2,x+1/2,-z","-x+1/2,y+1/2,-z","-y+1/2,-x+1/2,-z","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x-1/2,y-1/2,z","-y-1/2,-x-1/2,z","x-1/2,-y-1/2,z","y-1/2,x-1/2,z"]},{id:128,hm:"P 4/m n c",hs:"-P 4 2n",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x+1/2,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x-1/2,y-1/2,z-1/2","-y-1/2,-x-1/2,z-1/2","x-1/2,-y-1/2,z-1/2","y-1/2,x-1/2,z-1/2"]},{id:129,hm:"P 4/n m m",hs:"P 4ab 2ab -1ab",o:8,s:["x,y,z","-y+1/2,x+1/2,z","-x,-y,z","y+1/2,-x+1/2,z","x+1/2,-y+1/2,-z","y,x,-z","-x+1/2,y+1/2,-z","-y,-x,-z","-x+1/2,-y+1/2,-z","y,-x,-z","x+1/2,y+1/2,-z","-y,x,-z","-x,y,z","-y+1/2,-x+1/2,z","x,-y,z","y+1/2,x+1/2,z"]},{id:129,hm:"P 4/n m m",hs:"-P 4a 2a",o:8,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x+1/2,-y,-z","y+1/2,x+1/2,-z","-x,y+1/2,-z","-y,-x,-z","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x-1/2,y,z","-y-1/2,-x-1/2,z","x,-y-1/2,z","y,x,z"]},{id:130,hm:"P 4/n c c",hs:"P 4ab 2n -1ab",o:8,s:["x,y,z","-y+1/2,x+1/2,z","-x,-y,z","y+1/2,-x+1/2,z","x+1/2,-y+1/2,-z+1/2","y,x,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y,-x,-z+1/2","-x+1/2,-y+1/2,-z","y,-x,-z","x+1/2,y+1/2,-z","-y,x,-z","-x,y,z-1/2","-y+1/2,-x+1/2,z-1/2","x,-y,z-1/2","y+1/2,x+1/2,z-1/2"]},{id:130,hm:"P 4/n c c",hs:"-P 4a 2ac",o:8,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x+1/2,-y,-z+1/2","y+1/2,x+1/2,-z+1/2","-x,y+1/2,-z+1/2","-y,-x,-z+1/2","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x-1/2,y,z-1/2","-y-1/2,-x-1/2,z-1/2","x,-y-1/2,z-1/2","y,x,z-1/2"]},{id:131,hm:"P 42/m m c",hs:"-P 4c 2",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","x,-y,-z","y,x,-z+1/2","-x,y,-z","-y,-x,-z+1/2","-x,-y,-z","y,-x,-z-1/2","x,y,-z","-y,x,-z-1/2","-x,y,z","-y,-x,z-1/2","x,-y,z","y,x,z-1/2"]},{id:132,hm:"P 42/m c m",hs:"-P 4c 2c",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","x,-y,-z+1/2","y,x,-z","-x,y,-z+1/2","-y,-x,-z","-x,-y,-z","y,-x,-z-1/2","x,y,-z","-y,x,-z-1/2","-x,y,z-1/2","-y,-x,z","x,-y,z-1/2","y,x,z"]},{id:133,hm:"P 42/n b c",hs:"P 4n 2c -1n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x,-y,-z+1/2","y+1/2,x+1/2,-z","-x,y,-z+1/2","-y+1/2,-x+1/2,-z","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z","-x+1/2,y+1/2,z","-y,-x,z+1/2","x+1/2,-y+1/2,z","y,x,z+1/2"]},{id:133,hm:"P 42/n b c",hs:"-P 4ac 2b",o:8,s:["x,y,z","-y+1/2,x,z+1/2","-x+1/2,-y+1/2,z","y,-x+1/2,z+1/2","x,-y+1/2,-z","y,x,-z+1/2","-x+1/2,y,-z","-y+1/2,-x+1/2,-z+1/2","-x,-y,-z","y-1/2,-x,-z-1/2","x-1/2,y-1/2,-z","-y,x-1/2,-z-1/2","-x,y-1/2,z","-y,-x,z-1/2","x-1/2,-y,z","y-1/2,x-1/2,z-1/2"]},{id:134,hm:"P 42/n n m",hs:"P 4n 2 -1n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x,-y,-z","y+1/2,x+1/2,-z+1/2","-x,y,-z","-y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z","-x+1/2,y+1/2,z+1/2","-y,-x,z","x+1/2,-y+1/2,z+1/2","y,x,z"]},{id:134,hm:"P 42/n n m",hs:"-P 4ac 2bc",o:8,s:["x,y,z","-y+1/2,x,z+1/2","-x+1/2,-y+1/2,z","y,-x+1/2,z+1/2","x,-y+1/2,-z+1/2","y,x,-z","-x+1/2,y,-z+1/2","-y+1/2,-x+1/2,-z","-x,-y,-z","y-1/2,-x,-z-1/2","x-1/2,y-1/2,-z","-y,x-1/2,-z-1/2","-x,y-1/2,z-1/2","-y,-x,z","x-1/2,-y,z-1/2","y-1/2,x-1/2,z"]},{id:135,hm:"P 42/m b c",hs:"-P 4c 2ab",o:8,s:["x,y,z","-y,x,z+1/2","-x,-y,z","y,-x,z+1/2","x+1/2,-y+1/2,-z","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z","-y+1/2,-x+1/2,-z+1/2","-x,-y,-z","y,-x,-z-1/2","x,y,-z","-y,x,-z-1/2","-x-1/2,y-1/2,z","-y-1/2,-x-1/2,z-1/2","x-1/2,-y-1/2,z","y-1/2,x-1/2,z-1/2"]},{id:136,hm:"P 42/m n m",hs:"-P 4n 2n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y,x,-z","-x+1/2,y+1/2,-z+1/2","-y,-x,-z","-x,-y,-z","y-1/2,-x-1/2,-z-1/2","x,y,-z","-y-1/2,x-1/2,-z-1/2","-x-1/2,y-1/2,z-1/2","-y,-x,z","x-1/2,-y-1/2,z-1/2","y,x,z"]},{id:137,hm:"P 42/n m c",hs:"P 4n 2n -1n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y,x,-z","-x+1/2,y+1/2,-z+1/2","-y,-x,-z","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z","-x,y,z","-y+1/2,-x+1/2,z+1/2","x,-y,z","y+1/2,x+1/2,z+1/2"]},{id:137,hm:"P 42/n m c",hs:"-P 4ac 2a",o:8,s:["x,y,z","-y+1/2,x,z+1/2","-x+1/2,-y+1/2,z","y,-x+1/2,z+1/2","x+1/2,-y,-z","y+1/2,x+1/2,-z+1/2","-x,y+1/2,-z","-y,-x,-z+1/2","-x,-y,-z","y-1/2,-x,-z-1/2","x-1/2,y-1/2,-z","-y,x-1/2,-z-1/2","-x-1/2,y,z","-y-1/2,-x-1/2,z-1/2","x,-y-1/2,z","y,x,z-1/2"]},{id:138,hm:"P 42/n c m",hs:"P 4n 2ab -1n",o:8,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z","y,x,-z+1/2","-x+1/2,y+1/2,-z","-y,-x,-z+1/2","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z","-x,y,z+1/2","-y+1/2,-x+1/2,z","x,-y,z+1/2","y+1/2,x+1/2,z"]},{id:138,hm:"P 42/n c m",hs:"-P 4ac 2ac",o:8,s:["x,y,z","-y+1/2,x,z+1/2","-x+1/2,-y+1/2,z","y,-x+1/2,z+1/2","x+1/2,-y,-z+1/2","y+1/2,x+1/2,-z","-x,y+1/2,-z+1/2","-y,-x,-z","-x,-y,-z","y-1/2,-x,-z-1/2","x-1/2,y-1/2,-z","-y,x-1/2,-z-1/2","-x-1/2,y,z-1/2","-y-1/2,-x-1/2,z","x,-y-1/2,z-1/2","y,x,z"]},{id:139,hm:"I 4/m m m",hs:"-I 4 2",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z","-y,-x,z","x,-y,z","y,x,z","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2"]},{id:140,hm:"I 4/m c m",hs:"-I 4 2c",o:8,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z+1/2","y,x,-z+1/2","-x,y,-z+1/2","-y,-x,-z+1/2","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z-1/2","-y,-x,z-1/2","x,-y,z-1/2","y,x,z-1/2","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1","y+1/2,x+1/2,-z+1","-x+1/2,y+1/2,-z+1","-y+1/2,-x+1/2,-z+1","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z","-y+1/2,-x+1/2,z","x+1/2,-y+1/2,z","y+1/2,x+1/2,z"]},{id:141,hm:"I 41/a m d",hs:"I 4bw 2bw -1bw",o:8,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","x,-y+1/2,-z+1/4","y+1/2,x+1/2,-z+1/2","-x+1/2,y,-z+3/4","-y,-x,-z","-x,-y+1/2,-z+1/4","y,-x,-z","x-1/2,y,-z-1/4","-y-1/2,x+1/2,-z-1/2","-x,y,z","-y-1/2,-x,z-1/4","x-1/2,-y+1/2,z-1/2","y,x+1/2,z+1/4","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","x+1/2,-y+1,-z+3/4","y+1,x+1,-z+1","-x+1,y+1/2,-z+5/4","-y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1,-z+3/4","y+1/2,-x+1/2,-z+1/2","x,y+1/2,-z+1/4","-y,x+1,-z","-x+1/2,y+1/2,z+1/2","-y,-x+1/2,z+1/4","x,-y+1,z","y+1/2,x+1,z+3/4"]},{id:141,hm:"I 41/a m d",hs:"-I 4bd 2",o:8,s:["x,y,z","-y+1/4,x+3/4,z+1/4","-x+1/2,-y,z+1/2","y+1/4,-x+1/4,z+3/4","x,-y,-z","y+1/4,x+3/4,-z+1/4","-x+1/2,y,-z+1/2","-y+1/4,-x+1/4,-z+3/4","-x,-y,-z","y-1/4,-x-3/4,-z-1/4","x-1/2,y,-z-1/2","-y-1/4,x-1/4,-z-3/4","-x,y,z","-y-1/4,-x-3/4,z-1/4","x-1/2,-y,z-1/2","y-1/4,x-1/4,z-3/4","x+1/2,y+1/2,z+1/2","-y+3/4,x+5/4,z+3/4","-x+1,-y+1/2,z+1","y+3/4,-x+3/4,z+5/4","x+1/2,-y+1/2,-z+1/2","y+3/4,x+5/4,-z+3/4","-x+1,y+1/2,-z+1","-y+3/4,-x+3/4,-z+5/4","-x+1/2,-y+1/2,-z+1/2","y+1/4,-x-1/4,-z+1/4","x,y+1/2,-z","-y+1/4,x+1/4,-z-1/4","-x+1/2,y+1/2,z+1/2","-y+1/4,-x-1/4,z+1/4","x,-y+1/2,z","y+1/4,x+1/4,z-1/4"]},{id:142,hm:"I 41/a c d",hs:"I 4bw 2aw -1bw",o:8,s:["x,y,z","-y,x+1/2,z+1/4","-x+1/2,-y+1/2,z+1/2","y+1/2,-x,z+3/4","x+1/2,-y,-z+1/4","y,x,-z+1/2","-x,y+1/2,-z+3/4","-y+1/2,-x+1/2,-z","-x,-y+1/2,-z+1/4","y,-x,-z","x-1/2,y,-z-1/4","-y-1/2,x+1/2,-z-1/2","-x-1/2,y+1/2,z","-y,-x+1/2,z-1/4","x,-y,z-1/2","y-1/2,x,z+1/4","x+1/2,y+1/2,z+1/2","-y+1/2,x+1,z+3/4","-x+1,-y+1,z+1","y+1,-x+1/2,z+5/4","x+1,-y+1/2,-z+3/4","y+1/2,x+1/2,-z+1","-x+1/2,y+1,-z+5/4","-y+1,-x+1,-z+1/2","-x+1/2,-y+1,-z+3/4","y+1/2,-x+1/2,-z+1/2","x,y+1/2,-z+1/4","-y,x+1,-z","-x,y+1,z+1/2","-y+1/2,-x+1,z+1/4","x+1/2,-y+1/2,z","y,x+1/2,z+3/4"]},{id:142,hm:"I 41/a c d",hs:"-I 4bd 2c",o:8,s:["x,y,z","-y+1/4,x+3/4,z+1/4","-x+1/2,-y,z+1/2","y+1/4,-x+1/4,z+3/4","x,-y,-z+1/2","y+1/4,x+3/4,-z+3/4","-x+1/2,y,-z","-y+1/4,-x+1/4,-z+1/4","-x,-y,-z","y-1/4,-x-3/4,-z-1/4","x-1/2,y,-z-1/2","-y-1/4,x-1/4,-z-3/4","-x,y,z-1/2","-y-1/4,-x-3/4,z-3/4","x-1/2,-y,z","y-1/4,x-1/4,z-1/4","x+1/2,y+1/2,z+1/2","-y+3/4,x+5/4,z+3/4","-x+1,-y+1/2,z+1","y+3/4,-x+3/4,z+5/4","x+1/2,-y+1/2,-z+1","y+3/4,x+5/4,-z+5/4","-x+1,y+1/2,-z+1/2","-y+3/4,-x+3/4,-z+3/4","-x+1/2,-y+1/2,-z+1/2","y+1/4,-x-1/4,-z+1/4","x,y+1/2,-z","-y+1/4,x+1/4,-z-1/4","-x+1/2,y+1/2,z","-y+1/4,-x-1/4,z-1/4","x,-y+1/2,z+1/2","y+1/4,x+1/4,z+1/4"]},{id:143,hm:"P 3",hs:"P 3",o:3,s:["x,y,z","-y,x-y,z","-x+y,-x,z"]},{id:144,hm:"P 31",hs:"P 31",o:3,s:["x,y,z","-y,x-y,z+1/3","-x+y,-x,z+2/3"]},{id:145,hm:"P 32",hs:"P 32",o:3,s:["x,y,z","-y,x-y,z+2/3","-x+y,-x,z+1/3"]},{id:146,hm:"R 3",hs:"R 3",o:3,s:["x,y,z","-y,x-y,z","-x+y,-x,z","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3"]},{id:146,hm:"R 3",hs:"P 3*",o:3,s:["x,y,z","z,x,y","y,z,x"]},{id:147,hm:"P -3",hs:"-P 3",o:3,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-x,-y,-z","y,-x+y,-z","x-y,x,-z"]},{id:148,hm:"R -3",hs:"-R 3",o:3,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-x,-y,-z","y,-x+y,-z","x-y,x,-z","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","-x+2/3,-y+1/3,-z+1/3","y+2/3,-x+y+1/3,-z+1/3","x-y+2/3,x+1/3,-z+1/3","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","-x+1/3,-y+2/3,-z+2/3","y+1/3,-x+y+2/3,-z+2/3","x-y+1/3,x+2/3,-z+2/3"]},{id:148,hm:"R -3",hs:"-P 3*",o:3,s:["x,y,z","z,x,y","y,z,x","-x,-y,-z","-z,-x,-y","-y,-z,-x"]},{id:149,hm:"P 3 1 2",hs:"P 3 2",o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,-z","x,x-y,-z","-x+y,y,-z"]},{id:150,hm:"P 3 2 1",hs:'P 3 2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z","-x,-x+y,-z","x-y,-y,-z"]},{id:151,hm:"P 31 1 2",hs:"P 31 2 (0 0 4)",o:6,s:["x,y,z","-y,x-y,z+1/3","-x+y,-x,z+2/3","-y,-x,-z+2/3","x,x-y,-z","-x+y,y,-z+1/3"]},{id:152,hm:"P 31 2 1",hs:'P 31 2"',o:6,s:["x,y,z","-y,x-y,z+1/3","-x+y,-x,z+2/3","y,x,-z","-x,-x+y,-z+1/3","x-y,-y,-z+2/3"]},{id:153,hm:"P 32 1 2",hs:"P 32 2 (0 0 2)",o:6,s:["x,y,z","-y,x-y,z+2/3","-x+y,-x,z+1/3","-y,-x,-z+1/3","x,x-y,-z","-x+y,y,-z+2/3"]},{id:154,hm:"P 32 2 1",hs:'P 32 2"',o:6,s:["x,y,z","-y,x-y,z+2/3","-x+y,-x,z+1/3","y,x,-z","-x,-x+y,-z+2/3","x-y,-y,-z+1/3"]},{id:155,hm:"R 3 2",hs:'R 3 2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z","-x,-x+y,-z","x-y,-y,-z","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","y+2/3,x+1/3,-z+1/3","-x+2/3,-x+y+1/3,-z+1/3","x-y+2/3,-y+1/3,-z+1/3","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","y+1/3,x+2/3,-z+2/3","-x+1/3,-x+y+2/3,-z+2/3","x-y+1/3,-y+2/3,-z+2/3"]},{id:155,hm:"R 3 2",hs:"P 3* 2",o:6,s:["x,y,z","z,x,y","y,z,x","-y,-x,-z","-z,-y,-x","-x,-z,-y"]},{id:156,hm:"P 3 m 1",hs:'P 3 -2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,z","x,x-y,z","-x+y,y,z"]},{id:157,hm:"P 3 1 m",hs:"P 3 -2",o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,z","-x,-x+y,z","x-y,-y,z"]},{id:158,hm:"P 3 c 1",hs:'P 3 -2"c',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,z+1/2","x,x-y,z+1/2","-x+y,y,z+1/2"]},{id:159,hm:"P 3 1 c",hs:"P 3 -2c",o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,z+1/2","-x,-x+y,z+1/2","x-y,-y,z+1/2"]},{id:160,hm:"R 3 m",hs:'R 3 -2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,z","x,x-y,z","-x+y,y,z","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","-y+2/3,-x+1/3,z+1/3","x+2/3,x-y+1/3,z+1/3","-x+y+2/3,y+1/3,z+1/3","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","-y+1/3,-x+2/3,z+2/3","x+1/3,x-y+2/3,z+2/3","-x+y+1/3,y+2/3,z+2/3"]},{id:160,hm:"R 3 m",hs:"P 3* -2",o:6,s:["x,y,z","z,x,y","y,z,x","y,x,z","z,y,x","x,z,y"]},{id:161,hm:"R 3 c",hs:'R 3 -2"c',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,z+1/2","x,x-y,z+1/2","-x+y,y,z+1/2","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","-y+2/3,-x+1/3,z+5/6","x+2/3,x-y+1/3,z+5/6","-x+y+2/3,y+1/3,z+5/6","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","-y+1/3,-x+2/3,z+7/6","x+1/3,x-y+2/3,z+7/6","-x+y+1/3,y+2/3,z+7/6"]},{id:161,hm:"R 3 c",hs:"P 3* -2n",o:6,s:["x,y,z","z,x,y","y,z,x","y+1/2,x+1/2,z+1/2","z+1/2,y+1/2,x+1/2","x+1/2,z+1/2,y+1/2"]},{id:162,hm:"P -3 1 m",hs:"-P 3 2",o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,-z","x,x-y,-z","-x+y,y,-z","-x,-y,-z","y,-x+y,-z","x-y,x,-z","y,x,z","-x,-x+y,z","x-y,-y,z"]},{id:163,hm:"P -3 1 c",hs:"-P 3 2c",o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","-y,-x,-z+1/2","x,x-y,-z+1/2","-x+y,y,-z+1/2","-x,-y,-z","y,-x+y,-z","x-y,x,-z","y,x,z-1/2","-x,-x+y,z-1/2","x-y,-y,z-1/2"]},{id:164,hm:"P -3 m 1",hs:'-P 3 2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z","-x,-x+y,-z","x-y,-y,-z","-x,-y,-z","y,-x+y,-z","x-y,x,-z","-y,-x,z","x,x-y,z","-x+y,y,z"]},{id:165,hm:"P -3 c 1",hs:'-P 3 2"c',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z+1/2","-x,-x+y,-z+1/2","x-y,-y,-z+1/2","-x,-y,-z","y,-x+y,-z","x-y,x,-z","-y,-x,z-1/2","x,x-y,z-1/2","-x+y,y,z-1/2"]},{id:166,hm:"R -3 m",hs:'-R 3 2"',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z","-x,-x+y,-z","x-y,-y,-z","-x,-y,-z","y,-x+y,-z","x-y,x,-z","-y,-x,z","x,x-y,z","-x+y,y,z","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","y+2/3,x+1/3,-z+1/3","-x+2/3,-x+y+1/3,-z+1/3","x-y+2/3,-y+1/3,-z+1/3","-x+2/3,-y+1/3,-z+1/3","y+2/3,-x+y+1/3,-z+1/3","x-y+2/3,x+1/3,-z+1/3","-y+2/3,-x+1/3,z+1/3","x+2/3,x-y+1/3,z+1/3","-x+y+2/3,y+1/3,z+1/3","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","y+1/3,x+2/3,-z+2/3","-x+1/3,-x+y+2/3,-z+2/3","x-y+1/3,-y+2/3,-z+2/3","-x+1/3,-y+2/3,-z+2/3","y+1/3,-x+y+2/3,-z+2/3","x-y+1/3,x+2/3,-z+2/3","-y+1/3,-x+2/3,z+2/3","x+1/3,x-y+2/3,z+2/3","-x+y+1/3,y+2/3,z+2/3"]},{id:166,hm:"R -3 m",hs:"-P 3* 2",o:6,s:["x,y,z","z,x,y","y,z,x","-y,-x,-z","-z,-y,-x","-x,-z,-y","-x,-y,-z","-z,-x,-y","-y,-z,-x","y,x,z","z,y,x","x,z,y"]},{id:167,hm:"R -3 c",hs:'-R 3 2"c',o:6,s:["x,y,z","-y,x-y,z","-x+y,-x,z","y,x,-z+1/2","-x,-x+y,-z+1/2","x-y,-y,-z+1/2","-x,-y,-z","y,-x+y,-z","x-y,x,-z","-y,-x,z-1/2","x,x-y,z-1/2","-x+y,y,z-1/2","x+2/3,y+1/3,z+1/3","-y+2/3,x-y+1/3,z+1/3","-x+y+2/3,-x+1/3,z+1/3","y+2/3,x+1/3,-z+5/6","-x+2/3,-x+y+1/3,-z+5/6","x-y+2/3,-y+1/3,-z+5/6","-x+2/3,-y+1/3,-z+1/3","y+2/3,-x+y+1/3,-z+1/3","x-y+2/3,x+1/3,-z+1/3","-y+2/3,-x+1/3,z-1/6","x+2/3,x-y+1/3,z-1/6","-x+y+2/3,y+1/3,z-1/6","x+1/3,y+2/3,z+2/3","-y+1/3,x-y+2/3,z+2/3","-x+y+1/3,-x+2/3,z+2/3","y+1/3,x+2/3,-z+7/6","-x+1/3,-x+y+2/3,-z+7/6","x-y+1/3,-y+2/3,-z+7/6","-x+1/3,-y+2/3,-z+2/3","y+1/3,-x+y+2/3,-z+2/3","x-y+1/3,x+2/3,-z+2/3","-y+1/3,-x+2/3,z+1/6","x+1/3,x-y+2/3,z+1/6","-x+y+1/3,y+2/3,z+1/6"]},{id:167,hm:"R -3 c",hs:"-P 3* 2n",o:6,s:["x,y,z","z,x,y","y,z,x","-y+1/2,-x+1/2,-z+1/2","-z+1/2,-y+1/2,-x+1/2","-x+1/2,-z+1/2,-y+1/2","-x,-y,-z","-z,-x,-y","-y,-z,-x","y-1/2,x-1/2,z-1/2","z-1/2,y-1/2,x-1/2","x-1/2,z-1/2,y-1/2"]},{id:168,hm:"P 6",hs:"P 6",o:6,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z"]},{id:169,hm:"P 61",hs:"P 61",o:6,s:["x,y,z","x-y,x,z+1/6","-y,x-y,z+1/3","-x,-y,z+1/2","-x+y,-x,z+2/3","y,-x+y,z+5/6"]},{id:170,hm:"P 65",hs:"P 65",o:6,s:["x,y,z","x-y,x,z+5/6","-y,x-y,z+2/3","-x,-y,z+1/2","-x+y,-x,z+1/3","y,-x+y,z+1/6"]},{id:171,hm:"P 62",hs:"P 62",o:6,s:["x,y,z","x-y,x,z+1/3","-y,x-y,z+2/3","-x,-y,z","-x+y,-x,z+1/3","y,-x+y,z+2/3"]},{id:172,hm:"P 64",hs:"P 64",o:6,s:["x,y,z","x-y,x,z+2/3","-y,x-y,z+1/3","-x,-y,z","-x+y,-x,z+2/3","y,-x+y,z+1/3"]},{id:173,hm:"P 63",hs:"P 6c",o:6,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2"]},{id:174,hm:"P -6",hs:"P -6",o:6,s:["x,y,z","-x+y,-x,-z","-y,x-y,z","x,y,-z","-x+y,-x,z","-y,x-y,-z"]},{id:175,hm:"P 6/m",hs:"-P 6",o:6,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","-x,-y,-z","-x+y,-x,-z","y,-x+y,-z","x,y,-z","x-y,x,-z","-y,x-y,-z"]},{id:176,hm:"P 63/m",hs:"-P 6c",o:6,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","-x,-y,-z","-x+y,-x,-z-1/2","y,-x+y,-z","x,y,-z-1/2","x-y,x,-z","-y,x-y,-z-1/2"]},{id:177,hm:"P 6 2 2",hs:"P 6 2",o:12,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","-y,-x,-z","x-y,-y,-z","x,x-y,-z","y,x,-z","-x+y,y,-z","-x,-x+y,-z"]},{id:178,hm:"P 61 2 2",hs:"P 61 2 (0 0 5)",o:12,s:["x,y,z","x-y,x,z+1/6","-y,x-y,z+1/3","-x,-y,z+1/2","-x+y,-x,z+2/3","y,-x+y,z+5/6","-y,-x,-z+5/6","x-y,-y,-z","x,x-y,-z+1/6","y,x,-z+1/3","-x+y,y,-z+1/2","-x,-x+y,-z+2/3"]},{id:179,hm:"P 65 2 2",hs:"P 65 2 (0 0 1)",o:12,s:["x,y,z","x-y,x,z+5/6","-y,x-y,z+2/3","-x,-y,z+1/2","-x+y,-x,z+1/3","y,-x+y,z+1/6","-y,-x,-z+1/6","x-y,-y,-z","x,x-y,-z+5/6","y,x,-z+2/3","-x+y,y,-z+1/2","-x,-x+y,-z+1/3"]},{id:180,hm:"P 62 2 2",hs:"P 62 2 (0 0 4)",o:12,s:["x,y,z","x-y,x,z+1/3","-y,x-y,z+2/3","-x,-y,z","-x+y,-x,z+1/3","y,-x+y,z+2/3","-y,-x,-z+2/3","x-y,-y,-z","x,x-y,-z+1/3","y,x,-z+2/3","-x+y,y,-z","-x,-x+y,-z+1/3"]},{id:181,hm:"P 64 2 2",hs:"P 64 2 (0 0 2)",o:12,s:["x,y,z","x-y,x,z+2/3","-y,x-y,z+1/3","-x,-y,z","-x+y,-x,z+2/3","y,-x+y,z+1/3","-y,-x,-z+1/3","x-y,-y,-z","x,x-y,-z+2/3","y,x,-z+1/3","-x+y,y,-z","-x,-x+y,-z+2/3"]},{id:182,hm:"P 63 2 2",hs:"P 6c 2c",o:12,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","-y,-x,-z+1/2","x-y,-y,-z","x,x-y,-z+1/2","y,x,-z","-x+y,y,-z+1/2","-x,-x+y,-z"]},{id:183,hm:"P 6 m m",hs:"P 6 -2",o:12,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","y,x,z","-x+y,y,z","-x,-x+y,z","-y,-x,z","x-y,-y,z","x,x-y,z"]},{id:184,hm:"P 6 c c",hs:"P 6 -2c",o:12,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","y,x,z+1/2","-x+y,y,z+1/2","-x,-x+y,z+1/2","-y,-x,z+1/2","x-y,-y,z+1/2","x,x-y,z+1/2"]},{id:185,hm:"P 63 c m",hs:"P 6c -2",o:12,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","y,x,z","-x+y,y,z+1/2","-x,-x+y,z","-y,-x,z+1/2","x-y,-y,z","x,x-y,z+1/2"]},{id:186,hm:"P 63 m c",hs:"P 6c -2c",o:12,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","y,x,z+1/2","-x+y,y,z","-x,-x+y,z+1/2","-y,-x,z","x-y,-y,z+1/2","x,x-y,z"]},{id:187,hm:"P -6 m 2",hs:"P -6 2",o:12,s:["x,y,z","-x+y,-x,-z","-y,x-y,z","x,y,-z","-x+y,-x,z","-y,x-y,-z","-y,-x,-z","-x+y,y,z","x,x-y,-z","-y,-x,z","-x+y,y,-z","x,x-y,z"]},{id:188,hm:"P -6 c 2",hs:"P -6c 2",o:12,s:["x,y,z","-x+y,-x,-z+1/2","-y,x-y,z","x,y,-z+1/2","-x+y,-x,z","-y,x-y,-z+1/2","-y,-x,-z","-x+y,y,z+1/2","x,x-y,-z","-y,-x,z+1/2","-x+y,y,-z","x,x-y,z+1/2"]},{id:189,hm:"P -6 2 m",hs:"P -6 -2",o:12,s:["x,y,z","-x+y,-x,-z","-y,x-y,z","x,y,-z","-x+y,-x,z","-y,x-y,-z","y,x,z","x-y,-y,-z","-x,-x+y,z","y,x,-z","x-y,-y,z","-x,-x+y,-z"]},{id:190,hm:"P -6 2 c",hs:"P -6c -2c",o:12,s:["x,y,z","-x+y,-x,-z+1/2","-y,x-y,z","x,y,-z+1/2","-x+y,-x,z","-y,x-y,-z+1/2","y,x,z+1/2","x-y,-y,-z","-x,-x+y,z+1/2","y,x,-z","x-y,-y,z+1/2","-x,-x+y,-z"]},{id:191,hm:"P 6/m m m",hs:"-P 6 2",o:12,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","-y,-x,-z","x-y,-y,-z","x,x-y,-z","y,x,-z","-x+y,y,-z","-x,-x+y,-z","-x,-y,-z","-x+y,-x,-z","y,-x+y,-z","x,y,-z","x-y,x,-z","-y,x-y,-z","y,x,z","-x+y,y,z","-x,-x+y,z","-y,-x,z","x-y,-y,z","x,x-y,z"]},{id:192,hm:"P 6/m c c",hs:"-P 6 2c",o:12,s:["x,y,z","x-y,x,z","-y,x-y,z","-x,-y,z","-x+y,-x,z","y,-x+y,z","-y,-x,-z+1/2","x-y,-y,-z+1/2","x,x-y,-z+1/2","y,x,-z+1/2","-x+y,y,-z+1/2","-x,-x+y,-z+1/2","-x,-y,-z","-x+y,-x,-z","y,-x+y,-z","x,y,-z","x-y,x,-z","-y,x-y,-z","y,x,z-1/2","-x+y,y,z-1/2","-x,-x+y,z-1/2","-y,-x,z-1/2","x-y,-y,z-1/2","x,x-y,z-1/2"]},{id:193,hm:"P 63/m c m",hs:"-P 6c 2",o:12,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","-y,-x,-z","x-y,-y,-z+1/2","x,x-y,-z","y,x,-z+1/2","-x+y,y,-z","-x,-x+y,-z+1/2","-x,-y,-z","-x+y,-x,-z-1/2","y,-x+y,-z","x,y,-z-1/2","x-y,x,-z","-y,x-y,-z-1/2","y,x,z","-x+y,y,z-1/2","-x,-x+y,z","-y,-x,z-1/2","x-y,-y,z","x,x-y,z-1/2"]},{id:194,hm:"P 63/m m c",hs:"-P 6c 2c",o:12,s:["x,y,z","x-y,x,z+1/2","-y,x-y,z","-x,-y,z+1/2","-x+y,-x,z","y,-x+y,z+1/2","-y,-x,-z+1/2","x-y,-y,-z","x,x-y,-z+1/2","y,x,-z","-x+y,y,-z+1/2","-x,-x+y,-z","-x,-y,-z","-x+y,-x,-z-1/2","y,-x+y,-z","x,y,-z-1/2","x-y,x,-z","-y,x-y,-z-1/2","y,x,z-1/2","-x+y,y,z","-x,-x+y,z-1/2","-y,-x,z","x-y,-y,z-1/2","x,x-y,z"]},{id:195,hm:"P 2 3",hs:"P 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x"]},{id:196,hm:"F 2 3",hs:"F 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","z,x+1/2,y+1/2","-z,-x+1/2,y+1/2","z,-x+1/2,-y+1/2","-z,x+1/2,-y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","-y,z+1/2,-x+1/2","-y,-z+1/2,x+1/2","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","z+1/2,x,y+1/2","-z+1/2,-x,y+1/2","z+1/2,-x,-y+1/2","-z+1/2,x,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","-y+1/2,z,-x+1/2","-y+1/2,-z,x+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","z+1/2,x+1/2,y","-z+1/2,-x+1/2,y","z+1/2,-x+1/2,-y","-z+1/2,x+1/2,-y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","-y+1/2,z+1/2,-x","-y+1/2,-z+1/2,x"]},{id:197,hm:"I 2 3",hs:"I 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","z+1/2,x+1/2,y+1/2","-z+1/2,-x+1/2,y+1/2","z+1/2,-x+1/2,-y+1/2","-z+1/2,x+1/2,-y+1/2","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,-x+1/2","-y+1/2,-z+1/2,x+1/2"]},{id:198,hm:"P 21 3",hs:"P 2ac 2ab 3",o:12,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z","-x,y+1/2,-z+1/2","z,x,y","-z+1/2,-x,y+1/2","z+1/2,-x+1/2,-y","-z,x+1/2,-y+1/2","y,z,x","y+1/2,-z+1/2,-x","-y,z+1/2,-x+1/2","-y+1/2,-z,x+1/2"]},{id:199,hm:"I 21 3",hs:"I 2b 2c 3",o:12,s:["x,y,z","-x,-y+1/2,z","x,-y,-z+1/2","-x,y+1/2,-z+1/2","z,x,y","-z,-x+1/2,y","z,-x,-y+1/2","-z,x+1/2,-y+1/2","y,z,x","y,-z,-x+1/2","-y,z+1/2,-x+1/2","-y+1/2,-z,x+1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,y+1,-z+1","z+1/2,x+1/2,y+1/2","-z+1/2,-x+1,y+1/2","z+1/2,-x+1/2,-y+1","-z+1/2,x+1,-y+1","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","-y+1/2,z+1,-x+1","-y+1,-z+1/2,x+1"]},{id:200,hm:"P m -3",hs:"-P 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","-z,-x,-y","z,x,-y","-z,x,y","z,-x,y","-y,-z,-x","-y,z,x","y,-z,x","y,z,-x"]},{id:201,hm:"P n -3",hs:"P 2 2 3 -1n",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","-z+1/2,-x+1/2,-y+1/2","z+1/2,x+1/2,-y+1/2","-z+1/2,x+1/2,y+1/2","z+1/2,-x+1/2,y+1/2","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,x+1/2","y+1/2,z+1/2,-x+1/2"]},{id:201,hm:"P n -3",hs:"-P 2ab 2bc 3",o:12,s:["x,y,z","-x+1/2,-y+1/2,z","x,-y+1/2,-z+1/2","-x+1/2,y,-z+1/2","z,x,y","-z+1/2,-x+1/2,y","z,-x+1/2,-y+1/2","-z+1/2,x,-y+1/2","y,z,x","y,-z+1/2,-x+1/2","-y+1/2,z,-x+1/2","-y+1/2,-z+1/2,x","-x,-y,-z","x-1/2,y-1/2,-z","-x,y-1/2,z-1/2","x-1/2,-y,z-1/2","-z,-x,-y","z-1/2,x-1/2,-y","-z,x-1/2,y-1/2","z-1/2,-x,y-1/2","-y,-z,-x","-y,z-1/2,x-1/2","y-1/2,-z,x-1/2","y-1/2,z-1/2,-x"]},{id:202,hm:"F m -3",hs:"-F 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","-z,-x,-y","z,x,-y","-z,x,y","z,-x,y","-y,-z,-x","-y,z,x","y,-z,x","y,z,-x","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","z,x+1/2,y+1/2","-z,-x+1/2,y+1/2","z,-x+1/2,-y+1/2","-z,x+1/2,-y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","-y,z+1/2,-x+1/2","-y,-z+1/2,x+1/2","-x,-y+1/2,-z+1/2","x,y+1/2,-z+1/2","-x,y+1/2,z+1/2","x,-y+1/2,z+1/2","-z,-x+1/2,-y+1/2","z,x+1/2,-y+1/2","-z,x+1/2,y+1/2","z,-x+1/2,y+1/2","-y,-z+1/2,-x+1/2","-y,z+1/2,x+1/2","y,-z+1/2,x+1/2","y,z+1/2,-x+1/2","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","z+1/2,x,y+1/2","-z+1/2,-x,y+1/2","z+1/2,-x,-y+1/2","-z+1/2,x,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","-y+1/2,z,-x+1/2","-y+1/2,-z,x+1/2","-x+1/2,-y,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y,z+1/2","x+1/2,-y,z+1/2","-z+1/2,-x,-y+1/2","z+1/2,x,-y+1/2","-z+1/2,x,y+1/2","z+1/2,-x,y+1/2","-y+1/2,-z,-x+1/2","-y+1/2,z,x+1/2","y+1/2,-z,x+1/2","y+1/2,z,-x+1/2","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","z+1/2,x+1/2,y","-z+1/2,-x+1/2,y","z+1/2,-x+1/2,-y","-z+1/2,x+1/2,-y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","-y+1/2,z+1/2,-x","-y+1/2,-z+1/2,x","-x+1/2,-y+1/2,-z","x+1/2,y+1/2,-z","-x+1/2,y+1/2,z","x+1/2,-y+1/2,z","-z+1/2,-x+1/2,-y","z+1/2,x+1/2,-y","-z+1/2,x+1/2,y","z+1/2,-x+1/2,y","-y+1/2,-z+1/2,-x","-y+1/2,z+1/2,x","y+1/2,-z+1/2,x","y+1/2,z+1/2,-x"]},{id:203,hm:"F d -3",hs:"F 2 2 3 -1d",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","-x+1/4,-y+1/4,-z+1/4","x+1/4,y+1/4,-z+1/4","-x+1/4,y+1/4,z+1/4","x+1/4,-y+1/4,z+1/4","-z+1/4,-x+1/4,-y+1/4","z+1/4,x+1/4,-y+1/4","-z+1/4,x+1/4,y+1/4","z+1/4,-x+1/4,y+1/4","-y+1/4,-z+1/4,-x+1/4","-y+1/4,z+1/4,x+1/4","y+1/4,-z+1/4,x+1/4","y+1/4,z+1/4,-x+1/4","x,y+1/2,z+1/2","-x,-y+1/2,z+1/2","x,-y+1/2,-z+1/2","-x,y+1/2,-z+1/2","z,x+1/2,y+1/2","-z,-x+1/2,y+1/2","z,-x+1/2,-y+1/2","-z,x+1/2,-y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","-y,z+1/2,-x+1/2","-y,-z+1/2,x+1/2","-x+1/4,-y+3/4,-z+3/4","x+1/4,y+3/4,-z+3/4","-x+1/4,y+3/4,z+3/4","x+1/4,-y+3/4,z+3/4","-z+1/4,-x+3/4,-y+3/4","z+1/4,x+3/4,-y+3/4","-z+1/4,x+3/4,y+3/4","z+1/4,-x+3/4,y+3/4","-y+1/4,-z+3/4,-x+3/4","-y+1/4,z+3/4,x+3/4","y+1/4,-z+3/4,x+3/4","y+1/4,z+3/4,-x+3/4","x+1/2,y,z+1/2","-x+1/2,-y,z+1/2","x+1/2,-y,-z+1/2","-x+1/2,y,-z+1/2","z+1/2,x,y+1/2","-z+1/2,-x,y+1/2","z+1/2,-x,-y+1/2","-z+1/2,x,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","-y+1/2,z,-x+1/2","-y+1/2,-z,x+1/2","-x+3/4,-y+1/4,-z+3/4","x+3/4,y+1/4,-z+3/4","-x+3/4,y+1/4,z+3/4","x+3/4,-y+1/4,z+3/4","-z+3/4,-x+1/4,-y+3/4","z+3/4,x+1/4,-y+3/4","-z+3/4,x+1/4,y+3/4","z+3/4,-x+1/4,y+3/4","-y+3/4,-z+1/4,-x+3/4","-y+3/4,z+1/4,x+3/4","y+3/4,-z+1/4,x+3/4","y+3/4,z+1/4,-x+3/4","x+1/2,y+1/2,z","-x+1/2,-y+1/2,z","x+1/2,-y+1/2,-z","-x+1/2,y+1/2,-z","z+1/2,x+1/2,y","-z+1/2,-x+1/2,y","z+1/2,-x+1/2,-y","-z+1/2,x+1/2,-y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","-y+1/2,z+1/2,-x","-y+1/2,-z+1/2,x","-x+3/4,-y+3/4,-z+1/4","x+3/4,y+3/4,-z+1/4","-x+3/4,y+3/4,z+1/4","x+3/4,-y+3/4,z+1/4","-z+3/4,-x+3/4,-y+1/4","z+3/4,x+3/4,-y+1/4","-z+3/4,x+3/4,y+1/4","z+3/4,-x+3/4,y+1/4","-y+3/4,-z+3/4,-x+1/4","-y+3/4,z+3/4,x+1/4","y+3/4,-z+3/4,x+1/4","y+3/4,z+3/4,-x+1/4"]},{id:203,hm:"F d -3",hs:"-F 2uv 2vw 3",o:12,s:["x,y,z","-x+1/4,-y+1/4,z","x,-y+1/4,-z+1/4","-x+1/4,y,-z+1/4","z,x,y","-z+1/4,-x+1/4,y","z,-x+1/4,-y+1/4","-z+1/4,x,-y+1/4","y,z,x","y,-z+1/4,-x+1/4","-y+1/4,z,-x+1/4","-y+1/4,-z+1/4,x","-x,-y,-z","x-1/4,y-1/4,-z","-x,y-1/4,z-1/4","x-1/4,-y,z-1/4","-z,-x,-y","z-1/4,x-1/4,-y","-z,x-1/4,y-1/4","z-1/4,-x,y-1/4","-y,-z,-x","-y,z-1/4,x-1/4","y-1/4,-z,x-1/4","y-1/4,z-1/4,-x","x,y+1/2,z+1/2","-x+1/4,-y+3/4,z+1/2","x,-y+3/4,-z+3/4","-x+1/4,y+1/2,-z+3/4","z,x+1/2,y+1/2","-z+1/4,-x+3/4,y+1/2","z,-x+3/4,-y+3/4","-z+1/4,x+1/2,-y+3/4","y,z+1/2,x+1/2","y,-z+3/4,-x+3/4","-y+1/4,z+1/2,-x+3/4","-y+1/4,-z+3/4,x+1/2","-x,-y+1/2,-z+1/2","x-1/4,y+1/4,-z+1/2","-x,y+1/4,z+1/4","x-1/4,-y+1/2,z+1/4","-z,-x+1/2,-y+1/2","z-1/4,x+1/4,-y+1/2","-z,x+1/4,y+1/4","z-1/4,-x+1/2,y+1/4","-y,-z+1/2,-x+1/2","-y,z+1/4,x+1/4","y-1/4,-z+1/2,x+1/4","y-1/4,z+1/4,-x+1/2","x+1/2,y,z+1/2","-x+3/4,-y+1/4,z+1/2","x+1/2,-y+1/4,-z+3/4","-x+3/4,y,-z+3/4","z+1/2,x,y+1/2","-z+3/4,-x+1/4,y+1/2","z+1/2,-x+1/4,-y+3/4","-z+3/4,x,-y+3/4","y+1/2,z,x+1/2","y+1/2,-z+1/4,-x+3/4","-y+3/4,z,-x+3/4","-y+3/4,-z+1/4,x+1/2","-x+1/2,-y,-z+1/2","x+1/4,y-1/4,-z+1/2","-x+1/2,y-1/4,z+1/4","x+1/4,-y,z+1/4","-z+1/2,-x,-y+1/2","z+1/4,x-1/4,-y+1/2","-z+1/2,x-1/4,y+1/4","z+1/4,-x,y+1/4","-y+1/2,-z,-x+1/2","-y+1/2,z-1/4,x+1/4","y+1/4,-z,x+1/4","y+1/4,z-1/4,-x+1/2","x+1/2,y+1/2,z","-x+3/4,-y+3/4,z","x+1/2,-y+3/4,-z+1/4","-x+3/4,y+1/2,-z+1/4","z+1/2,x+1/2,y","-z+3/4,-x+3/4,y","z+1/2,-x+3/4,-y+1/4","-z+3/4,x+1/2,-y+1/4","y+1/2,z+1/2,x","y+1/2,-z+3/4,-x+1/4","-y+3/4,z+1/2,-x+1/4","-y+3/4,-z+3/4,x","-x+1/2,-y+1/2,-z","x+1/4,y+1/4,-z","-x+1/2,y+1/4,z-1/4","x+1/4,-y+1/2,z-1/4","-z+1/2,-x+1/2,-y","z+1/4,x+1/4,-y","-z+1/2,x+1/4,y-1/4","z+1/4,-x+1/2,y-1/4","-y+1/2,-z+1/2,-x","-y+1/2,z+1/4,x-1/4","y+1/4,-z+1/2,x-1/4","y+1/4,z+1/4,-x"]},{id:204,hm:"I m -3",hs:"-I 2 2 3",o:12,s:["x,y,z","-x,-y,z","x,-y,-z","-x,y,-z","z,x,y","-z,-x,y","z,-x,-y","-z,x,-y","y,z,x","y,-z,-x","-y,z,-x","-y,-z,x","-x,-y,-z","x,y,-z","-x,y,z","x,-y,z","-z,-x,-y","z,x,-y","-z,x,y","z,-x,y","-y,-z,-x","-y,z,x","y,-z,x","y,z,-x","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","z+1/2,x+1/2,y+1/2","-z+1/2,-x+1/2,y+1/2","z+1/2,-x+1/2,-y+1/2","-z+1/2,x+1/2,-y+1/2","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,-x+1/2","-y+1/2,-z+1/2,x+1/2","-x+1/2,-y+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","-z+1/2,-x+1/2,-y+1/2","z+1/2,x+1/2,-y+1/2","-z+1/2,x+1/2,y+1/2","z+1/2,-x+1/2,y+1/2","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,x+1/2","y+1/2,z+1/2,-x+1/2"]},{id:205,hm:"P a -3",hs:"-P 2ac 2ab 3",o:12,s:["x,y,z","-x+1/2,-y,z+1/2","x+1/2,-y+1/2,-z","-x,y+1/2,-z+1/2","z,x,y","-z+1/2,-x,y+1/2","z+1/2,-x+1/2,-y","-z,x+1/2,-y+1/2","y,z,x","y+1/2,-z+1/2,-x","-y,z+1/2,-x+1/2","-y+1/2,-z,x+1/2","-x,-y,-z","x-1/2,y,-z-1/2","-x-1/2,y-1/2,z","x,-y-1/2,z-1/2","-z,-x,-y","z-1/2,x,-y-1/2","-z-1/2,x-1/2,y","z,-x-1/2,y-1/2","-y,-z,-x","-y-1/2,z-1/2,x","y,-z-1/2,x-1/2","y-1/2,z,-x-1/2"]},{id:206,hm:"I a -3",hs:"-I 2b 2c 3",o:12,s:["x,y,z","-x,-y+1/2,z","x,-y,-z+1/2","-x,y+1/2,-z+1/2","z,x,y","-z,-x+1/2,y","z,-x,-y+1/2","-z,x+1/2,-y+1/2","y,z,x","y,-z,-x+1/2","-y,z+1/2,-x+1/2","-y+1/2,-z,x+1/2","-x,-y,-z","x,y-1/2,-z","-x,y,z-1/2","x,-y-1/2,z-1/2","-z,-x,-y","z,x-1/2,-y","-z,x,y-1/2","z,-x-1/2,y-1/2","-y,-z,-x","-y,z,x-1/2","y,-z-1/2,x-1/2","y-1/2,z,-x-1/2","x+1/2,y+1/2,z+1/2","-x+1/2,-y+1,z+1/2","x+1/2,-y+1/2,-z+1","-x+1/2,y+1,-z+1","z+1/2,x+1/2,y+1/2","-z+1/2,-x+1,y+1/2","z+1/2,-x+1/2,-y+1","-z+1/2,x+1,-y+1","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","-y+1/2,z+1,-x+1","-y+1,-z+1/2,x+1","-x+1/2,-y+1/2,-z+1/2","x+1/2,y,-z+1/2","-x+1/2,y+1/2,z","x+1/2,-y,z","-z+1/2,-x+1/2,-y+1/2","z+1/2,x,-y+1/2","-z+1/2,x+1/2,y","z+1/2,-x,y","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x","y+1/2,-z,x","y,z+1/2,-x"]},{id:207,hm:"P 4 3 2",hs:"P 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x"]},{id:208,hm:"P 42 3 2",hs:"P 4n 2 3",o:24,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x,-y,-z","y+1/2,x+1/2,-z+1/2","-x,y,-z","-y+1/2,-x+1/2,-z+1/2","z,x,y","-x+1/2,z+1/2,y+1/2","-z,-x,y","x+1/2,-z+1/2,y+1/2","z,-x,-y","x+1/2,z+1/2,-y+1/2","-z,x,-y","-x+1/2,-z+1/2,-y+1/2","y,z,x","y,-z,-x","z+1/2,y+1/2,-x+1/2","-y,z,-x","-z+1/2,-y+1/2,-x+1/2","-y,-z,x","z+1/2,-y+1/2,x+1/2","-z+1/2,y+1/2,x+1/2"]},{id:209,hm:"F 4 3 2",hs:"F 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","x,y+1/2,z+1/2","-y,x+1/2,z+1/2","-x,-y+1/2,z+1/2","y,-x+1/2,z+1/2","x,-y+1/2,-z+1/2","y,x+1/2,-z+1/2","-x,y+1/2,-z+1/2","-y,-x+1/2,-z+1/2","z,x+1/2,y+1/2","-x,z+1/2,y+1/2","-z,-x+1/2,y+1/2","x,-z+1/2,y+1/2","z,-x+1/2,-y+1/2","x,z+1/2,-y+1/2","-z,x+1/2,-y+1/2","-x,-z+1/2,-y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","z,y+1/2,-x+1/2","-y,z+1/2,-x+1/2","-z,-y+1/2,-x+1/2","-y,-z+1/2,x+1/2","z,-y+1/2,x+1/2","-z,y+1/2,x+1/2","x+1/2,y,z+1/2","-y+1/2,x,z+1/2","-x+1/2,-y,z+1/2","y+1/2,-x,z+1/2","x+1/2,-y,-z+1/2","y+1/2,x,-z+1/2","-x+1/2,y,-z+1/2","-y+1/2,-x,-z+1/2","z+1/2,x,y+1/2","-x+1/2,z,y+1/2","-z+1/2,-x,y+1/2","x+1/2,-z,y+1/2","z+1/2,-x,-y+1/2","x+1/2,z,-y+1/2","-z+1/2,x,-y+1/2","-x+1/2,-z,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","z+1/2,y,-x+1/2","-y+1/2,z,-x+1/2","-z+1/2,-y,-x+1/2","-y+1/2,-z,x+1/2","z+1/2,-y,x+1/2","-z+1/2,y,x+1/2","x+1/2,y+1/2,z","-y+1/2,x+1/2,z","-x+1/2,-y+1/2,z","y+1/2,-x+1/2,z","x+1/2,-y+1/2,-z","y+1/2,x+1/2,-z","-x+1/2,y+1/2,-z","-y+1/2,-x+1/2,-z","z+1/2,x+1/2,y","-x+1/2,z+1/2,y","-z+1/2,-x+1/2,y","x+1/2,-z+1/2,y","z+1/2,-x+1/2,-y","x+1/2,z+1/2,-y","-z+1/2,x+1/2,-y","-x+1/2,-z+1/2,-y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","z+1/2,y+1/2,-x","-y+1/2,z+1/2,-x","-z+1/2,-y+1/2,-x","-y+1/2,-z+1/2,x","z+1/2,-y+1/2,x","-z+1/2,y+1/2,x"]},{id:210,hm:"F 41 3 2",hs:"F 4d 2 3",o:24,s:["x,y,z","-y+1/4,x+1/4,z+1/4","-x,-y+1/2,z+1/2","y+3/4,-x+1/4,z+3/4","x,-y,-z","y+1/4,x+1/4,-z+1/4","-x,y+1/2,-z+1/2","-y+3/4,-x+1/4,-z+3/4","z,x,y","-x+1/4,z+1/4,y+1/4","-z,-x+1/2,y+1/2","x+3/4,-z+1/4,y+3/4","z,-x,-y","x+1/4,z+1/4,-y+1/4","-z,x+1/2,-y+1/2","-x+3/4,-z+1/4,-y+3/4","y,z,x","y+1/2,-z,-x+1/2","z+1/4,y+3/4,-x+3/4","-y+1/2,z+1/2,-x","-z+1/4,-y+1/4,-x+1/4","-y,-z,x","z+1/4,-y+3/4,x+3/4","-z+3/4,y+3/4,x+1/4","x,y+1/2,z+1/2","-y+1/4,x+3/4,z+3/4","-x,-y+1,z+1","y+3/4,-x+3/4,z+5/4","x,-y+1/2,-z+1/2","y+1/4,x+3/4,-z+3/4","-x,y+1,-z+1","-y+3/4,-x+3/4,-z+5/4","z,x+1/2,y+1/2","-x+1/4,z+3/4,y+3/4","-z,-x+1,y+1","x+3/4,-z+3/4,y+5/4","z,-x+1/2,-y+1/2","x+1/4,z+3/4,-y+3/4","-z,x+1,-y+1","-x+3/4,-z+3/4,-y+5/4","y,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","z+1/4,y+5/4,-x+5/4","-y+1/2,z+1,-x+1/2","-z+1/4,-y+3/4,-x+3/4","-y,-z+1/2,x+1/2","z+1/4,-y+5/4,x+5/4","-z+3/4,y+5/4,x+3/4","x+1/2,y,z+1/2","-y+3/4,x+1/4,z+3/4","-x+1/2,-y+1/2,z+1","y+5/4,-x+1/4,z+5/4","x+1/2,-y,-z+1/2","y+3/4,x+1/4,-z+3/4","-x+1/2,y+1/2,-z+1","-y+5/4,-x+1/4,-z+5/4","z+1/2,x,y+1/2","-x+3/4,z+1/4,y+3/4","-z+1/2,-x+1/2,y+1","x+5/4,-z+1/4,y+5/4","z+1/2,-x,-y+1/2","x+3/4,z+1/4,-y+3/4","-z+1/2,x+1/2,-y+1","-x+5/4,-z+1/4,-y+5/4","y+1/2,z,x+1/2","y+1,-z,-x+1","z+3/4,y+3/4,-x+5/4","-y+1,z+1/2,-x+1/2","-z+3/4,-y+1/4,-x+3/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+5/4","-z+5/4,y+3/4,x+3/4","x+1/2,y+1/2,z","-y+3/4,x+3/4,z+1/4","-x+1/2,-y+1,z+1/2","y+5/4,-x+3/4,z+3/4","x+1/2,-y+1/2,-z","y+3/4,x+3/4,-z+1/4","-x+1/2,y+1,-z+1/2","-y+5/4,-x+3/4,-z+3/4","z+1/2,x+1/2,y","-x+3/4,z+3/4,y+1/4","-z+1/2,-x+1,y+1/2","x+5/4,-z+3/4,y+3/4","z+1/2,-x+1/2,-y","x+3/4,z+3/4,-y+1/4","-z+1/2,x+1,-y+1/2","-x+5/4,-z+3/4,-y+3/4","y+1/2,z+1/2,x","y+1,-z+1/2,-x+1/2","z+3/4,y+5/4,-x+3/4","-y+1,z+1,-x","-z+3/4,-y+3/4,-x+1/4","-y+1/2,-z+1/2,x","z+3/4,-y+5/4,x+3/4","-z+5/4,y+5/4,x+1/4"]},{id:211,hm:"I 4 3 2",hs:"I 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2","z+1/2,x+1/2,y+1/2","-x+1/2,z+1/2,y+1/2","-z+1/2,-x+1/2,y+1/2","x+1/2,-z+1/2,y+1/2","z+1/2,-x+1/2,-y+1/2","x+1/2,z+1/2,-y+1/2","-z+1/2,x+1/2,-y+1/2","-x+1/2,-z+1/2,-y+1/2","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1/2","z+1/2,y+1/2,-x+1/2","-y+1/2,z+1/2,-x+1/2","-z+1/2,-y+1/2,-x+1/2","-y+1/2,-z+1/2,x+1/2","z+1/2,-y+1/2,x+1/2","-z+1/2,y+1/2,x+1/2"]},{id:212,hm:"P 43 3 2",hs:"P 4acd 2ab 3",o:24,s:["x,y,z","-y+3/4,x+1/4,z+3/4","-x+1/2,-y,z+1/2","y+3/4,-x+3/4,z+1/4","x+1/2,-y+1/2,-z","y+1/4,x+3/4,-z+3/4","-x,y+1/2,-z+1/2","-y+1/4,-x+1/4,-z+1/4","z,x,y","-x+3/4,z+1/4,y+3/4","-z+1/2,-x,y+1/2","x+3/4,-z+3/4,y+1/4","z+1/2,-x+1/2,-y","x+1/4,z+3/4,-y+3/4","-z,x+1/2,-y+1/2","-x+1/4,-z+1/4,-y+1/4","y,z,x","y+1/2,-z+1/2,-x","z+1/4,y+3/4,-x+3/4","-y,z+1/2,-x+1/2","-z+1/4,-y+1/4,-x+1/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+1/4","-z+3/4,y+1/4,x+3/4"]},{id:213,hm:"P 41 3 2",hs:"P 4bd 2ab 3",o:24,s:["x,y,z","-y+1/4,x+3/4,z+1/4","-x+1/2,-y,z+1/2","y+1/4,-x+1/4,z+3/4","x+1/2,-y+1/2,-z","y+3/4,x+1/4,-z+1/4","-x,y+1/2,-z+1/2","-y+3/4,-x+3/4,-z+3/4","z,x,y","-x+1/4,z+3/4,y+1/4","-z+1/2,-x,y+1/2","x+1/4,-z+1/4,y+3/4","z+1/2,-x+1/2,-y","x+3/4,z+1/4,-y+1/4","-z,x+1/2,-y+1/2","-x+3/4,-z+3/4,-y+3/4","y,z,x","y+1/2,-z+1/2,-x","z+3/4,y+1/4,-x+1/4","-y,z+1/2,-x+1/2","-z+3/4,-y+3/4,-x+3/4","-y+1/2,-z,x+1/2","z+1/4,-y+1/4,x+3/4","-z+1/4,y+3/4,x+1/4"]},{id:214,hm:"I 41 3 2",hs:"I 4bd 2c 3",o:24,s:["x,y,z","-y+1/4,x+3/4,z+1/4","-x+1/2,-y,z+1/2","y+1/4,-x+1/4,z+3/4","x,-y,-z+1/2","y+1/4,x+3/4,-z+3/4","-x+1/2,y,-z","-y+1/4,-x+1/4,-z+1/4","z,x,y","-x+1/4,z+3/4,y+1/4","-z+1/2,-x,y+1/2","x+1/4,-z+1/4,y+3/4","z,-x,-y+1/2","x+1/4,z+3/4,-y+3/4","-z+1/2,x,-y","-x+1/4,-z+1/4,-y+1/4","y,z,x","y+1/2,-z+1/2,-x","z+3/4,y+1/4,-x+1/4","-y,z+1/2,-x+1/2","-z+1/4,-y+1/4,-x+1/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+1/4","-z+3/4,y+1/4,x+3/4","x+1/2,y+1/2,z+1/2","-y+3/4,x+5/4,z+3/4","-x+1,-y+1/2,z+1","y+3/4,-x+3/4,z+5/4","x+1/2,-y+1/2,-z+1","y+3/4,x+5/4,-z+5/4","-x+1,y+1/2,-z+1/2","-y+3/4,-x+3/4,-z+3/4","z+1/2,x+1/2,y+1/2","-x+3/4,z+5/4,y+3/4","-z+1,-x+1/2,y+1","x+3/4,-z+3/4,y+5/4","z+1/2,-x+1/2,-y+1","x+3/4,z+5/4,-y+5/4","-z+1,x+1/2,-y+1/2","-x+3/4,-z+3/4,-y+3/4","y+1/2,z+1/2,x+1/2","y+1,-z+1,-x+1/2","z+5/4,y+3/4,-x+3/4","-y+1/2,z+1,-x+1","-z+3/4,-y+3/4,-x+3/4","-y+1,-z+1/2,x+1","z+5/4,-y+5/4,x+3/4","-z+5/4,y+3/4,x+5/4"]},{id:215,hm:"P -4 3 m",hs:"P -4 2 3",o:24,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z","-y,-x,z","-x,y,-z","y,x,z","z,x,y","x,-z,-y","-z,-x,y","-x,z,-y","z,-x,-y","-x,-z,y","-z,x,-y","x,z,y","y,z,x","y,-z,-x","-z,-y,x","-y,z,-x","z,y,x","-y,-z,x","-z,y,-x","z,-y,-x"]},{id:216,hm:"F -4 3 m",hs:"F -4 2 3",o:24,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z","-y,-x,z","-x,y,-z","y,x,z","z,x,y","x,-z,-y","-z,-x,y","-x,z,-y","z,-x,-y","-x,-z,y","-z,x,-y","x,z,y","y,z,x","y,-z,-x","-z,-y,x","-y,z,-x","z,y,x","-y,-z,x","-z,y,-x","z,-y,-x","x,y+1/2,z+1/2","y,-x+1/2,-z+1/2","-x,-y+1/2,z+1/2","-y,x+1/2,-z+1/2","x,-y+1/2,-z+1/2","-y,-x+1/2,z+1/2","-x,y+1/2,-z+1/2","y,x+1/2,z+1/2","z,x+1/2,y+1/2","x,-z+1/2,-y+1/2","-z,-x+1/2,y+1/2","-x,z+1/2,-y+1/2","z,-x+1/2,-y+1/2","-x,-z+1/2,y+1/2","-z,x+1/2,-y+1/2","x,z+1/2,y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","-z,-y+1/2,x+1/2","-y,z+1/2,-x+1/2","z,y+1/2,x+1/2","-y,-z+1/2,x+1/2","-z,y+1/2,-x+1/2","z,-y+1/2,-x+1/2","x+1/2,y,z+1/2","y+1/2,-x,-z+1/2","-x+1/2,-y,z+1/2","-y+1/2,x,-z+1/2","x+1/2,-y,-z+1/2","-y+1/2,-x,z+1/2","-x+1/2,y,-z+1/2","y+1/2,x,z+1/2","z+1/2,x,y+1/2","x+1/2,-z,-y+1/2","-z+1/2,-x,y+1/2","-x+1/2,z,-y+1/2","z+1/2,-x,-y+1/2","-x+1/2,-z,y+1/2","-z+1/2,x,-y+1/2","x+1/2,z,y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","-z+1/2,-y,x+1/2","-y+1/2,z,-x+1/2","z+1/2,y,x+1/2","-y+1/2,-z,x+1/2","-z+1/2,y,-x+1/2","z+1/2,-y,-x+1/2","x+1/2,y+1/2,z","y+1/2,-x+1/2,-z","-x+1/2,-y+1/2,z","-y+1/2,x+1/2,-z","x+1/2,-y+1/2,-z","-y+1/2,-x+1/2,z","-x+1/2,y+1/2,-z","y+1/2,x+1/2,z","z+1/2,x+1/2,y","x+1/2,-z+1/2,-y","-z+1/2,-x+1/2,y","-x+1/2,z+1/2,-y","z+1/2,-x+1/2,-y","-x+1/2,-z+1/2,y","-z+1/2,x+1/2,-y","x+1/2,z+1/2,y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","-z+1/2,-y+1/2,x","-y+1/2,z+1/2,-x","z+1/2,y+1/2,x","-y+1/2,-z+1/2,x","-z+1/2,y+1/2,-x","z+1/2,-y+1/2,-x"]},{id:217,hm:"I -4 3 m",hs:"I -4 2 3",o:24,s:["x,y,z","y,-x,-z","-x,-y,z","-y,x,-z","x,-y,-z","-y,-x,z","-x,y,-z","y,x,z","z,x,y","x,-z,-y","-z,-x,y","-x,z,-y","z,-x,-y","-x,-z,y","-z,x,-y","x,z,y","y,z,x","y,-z,-x","-z,-y,x","-y,z,-x","z,y,x","-y,-z,x","-z,y,-x","z,-y,-x","x+1/2,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","x+1/2,-y+1/2,-z+1/2","-y+1/2,-x+1/2,z+1/2","-x+1/2,y+1/2,-z+1/2","y+1/2,x+1/2,z+1/2","z+1/2,x+1/2,y+1/2","x+1/2,-z+1/2,-y+1/2","-z+1/2,-x+1/2,y+1/2","-x+1/2,z+1/2,-y+1/2","z+1/2,-x+1/2,-y+1/2","-x+1/2,-z+1/2,y+1/2","-z+1/2,x+1/2,-y+1/2","x+1/2,z+1/2,y+1/2","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1/2","-z+1/2,-y+1/2,x+1/2","-y+1/2,z+1/2,-x+1/2","z+1/2,y+1/2,x+1/2","-y+1/2,-z+1/2,x+1/2","-z+1/2,y+1/2,-x+1/2","z+1/2,-y+1/2,-x+1/2"]},{id:218,hm:"P -4 3 n",hs:"P -4n 2 3",o:24,s:["x,y,z","y+1/2,-x+1/2,-z+1/2","-x,-y,z","-y+1/2,x+1/2,-z+1/2","x,-y,-z","-y+1/2,-x+1/2,z+1/2","-x,y,-z","y+1/2,x+1/2,z+1/2","z,x,y","x+1/2,-z+1/2,-y+1/2","-z,-x,y","-x+1/2,z+1/2,-y+1/2","z,-x,-y","-x+1/2,-z+1/2,y+1/2","-z,x,-y","x+1/2,z+1/2,y+1/2","y,z,x","y,-z,-x","-z+1/2,-y+1/2,x+1/2","-y,z,-x","z+1/2,y+1/2,x+1/2","-y,-z,x","-z+1/2,y+1/2,-x+1/2","z+1/2,-y+1/2,-x+1/2"]},{id:219,hm:"F -4 3 c",hs:"F -4a 2 3",o:24,s:["x,y,z","y+1/2,-x,-z","-x+1/2,-y+1/2,z","-y,x+1/2,-z","x,-y,-z","-y+1/2,-x,z","-x+1/2,y+1/2,-z","y,x+1/2,z","z,x,y","x+1/2,-z,-y","-z+1/2,-x+1/2,y","-x,z+1/2,-y","z,-x,-y","-x+1/2,-z,y","-z+1/2,x+1/2,-y","x,z+1/2,y","y,z,x","y,-z+1/2,-x+1/2","-z,-y,x+1/2","-y+1/2,z,-x+1/2","z+1/2,y,x","-y,-z,x","-z,y,-x+1/2","z+1/2,-y+1/2,-x+1/2","x,y+1/2,z+1/2","y+1/2,-x+1/2,-z+1/2","-x+1/2,-y+1,z+1/2","-y,x+1,-z+1/2","x,-y+1/2,-z+1/2","-y+1/2,-x+1/2,z+1/2","-x+1/2,y+1,-z+1/2","y,x+1,z+1/2","z,x+1/2,y+1/2","x+1/2,-z+1/2,-y+1/2","-z+1/2,-x+1,y+1/2","-x,z+1,-y+1/2","z,-x+1/2,-y+1/2","-x+1/2,-z+1/2,y+1/2","-z+1/2,x+1,-y+1/2","x,z+1,y+1/2","y,z+1/2,x+1/2","y,-z+1,-x+1","-z,-y+1/2,x+1","-y+1/2,z+1/2,-x+1","z+1/2,y+1/2,x+1/2","-y,-z+1/2,x+1/2","-z,y+1/2,-x+1","z+1/2,-y+1,-x+1","x+1/2,y,z+1/2","y+1,-x,-z+1/2","-x+1,-y+1/2,z+1/2","-y+1/2,x+1/2,-z+1/2","x+1/2,-y,-z+1/2","-y+1,-x,z+1/2","-x+1,y+1/2,-z+1/2","y+1/2,x+1/2,z+1/2","z+1/2,x,y+1/2","x+1,-z,-y+1/2","-z+1,-x+1/2,y+1/2","-x+1/2,z+1/2,-y+1/2","z+1/2,-x,-y+1/2","-x+1,-z,y+1/2","-z+1,x+1/2,-y+1/2","x+1/2,z+1/2,y+1/2","y+1/2,z,x+1/2","y+1/2,-z+1/2,-x+1","-z+1/2,-y,x+1","-y+1,z,-x+1","z+1,y,x+1/2","-y+1/2,-z,x+1/2","-z+1/2,y,-x+1","z+1,-y+1/2,-x+1","x+1/2,y+1/2,z","y+1,-x+1/2,-z","-x+1,-y+1,z","-y+1/2,x+1,-z","x+1/2,-y+1/2,-z","-y+1,-x+1/2,z","-x+1,y+1,-z","y+1/2,x+1,z","z+1/2,x+1/2,y","x+1,-z+1/2,-y","-z+1,-x+1,y","-x+1/2,z+1,-y","z+1/2,-x+1/2,-y","-x+1,-z+1/2,y","-z+1,x+1,-y","x+1/2,z+1,y","y+1/2,z+1/2,x","y+1/2,-z+1,-x+1/2","-z+1/2,-y+1/2,x+1/2","-y+1,z+1/2,-x+1/2","z+1,y+1/2,x","-y+1/2,-z+1/2,x","-z+1/2,y+1/2,-x+1/2","z+1,-y+1,-x+1/2"]},{id:220,hm:"I -4 3 d",hs:"I -4bd 2c 3",o:24,s:["x,y,z","y+1/4,-x+3/4,-z+1/4","-x,-y+1/2,z","-y+3/4,x+3/4,-z+1/4","x,-y,-z+1/2","-y+1/4,-x+3/4,z+3/4","-x,y+1/2,-z+1/2","y+3/4,x+3/4,z+3/4","z,x,y","x+1/4,-z+3/4,-y+1/4","-z,-x+1/2,y","-x+3/4,z+3/4,-y+1/4","z,-x,-y+1/2","-x+1/4,-z+3/4,y+3/4","-z,x+1/2,-y+1/2","x+3/4,z+3/4,y+3/4","y,z,x","y,-z,-x+1/2","-z+1/4,-y+3/4,x+3/4","-y,z+1/2,-x+1/2","z+1/4,y+1/4,x+1/4","-y+1/2,-z,x+1/2","-z+1/4,y+1/4,-x+3/4","z+3/4,-y+1/4,-x+3/4","x+1/2,y+1/2,z+1/2","y+3/4,-x+5/4,-z+3/4","-x+1/2,-y+1,z+1/2","-y+5/4,x+5/4,-z+3/4","x+1/2,-y+1/2,-z+1","-y+3/4,-x+5/4,z+5/4","-x+1/2,y+1,-z+1","y+5/4,x+5/4,z+5/4","z+1/2,x+1/2,y+1/2","x+3/4,-z+5/4,-y+3/4","-z+1/2,-x+1,y+1/2","-x+5/4,z+5/4,-y+3/4","z+1/2,-x+1/2,-y+1","-x+3/4,-z+5/4,y+5/4","-z+1/2,x+1,-y+1","x+5/4,z+5/4,y+5/4","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","-z+3/4,-y+5/4,x+5/4","-y+1/2,z+1,-x+1","z+3/4,y+3/4,x+3/4","-y+1,-z+1/2,x+1","-z+3/4,y+3/4,-x+5/4","z+5/4,-y+3/4,-x+5/4"]},{id:221,hm:"P m -3 m",hs:"-P 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z","-y,-x,z","x,-y,z","y,x,z","-z,-x,-y","x,-z,-y","z,x,-y","-x,z,-y","-z,x,y","-x,-z,y","z,-x,y","x,z,y","-y,-z,-x","-y,z,x","-z,-y,x","y,-z,x","z,y,x","y,z,-x","-z,y,-x","z,-y,-x"]},{id:222,hm:"P n -3 n",hs:"P 4 2 3 -1n",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2","-z+1/2,-x+1/2,-y+1/2","x+1/2,-z+1/2,-y+1/2","z+1/2,x+1/2,-y+1/2","-x+1/2,z+1/2,-y+1/2","-z+1/2,x+1/2,y+1/2","-x+1/2,-z+1/2,y+1/2","z+1/2,-x+1/2,y+1/2","x+1/2,z+1/2,y+1/2","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x+1/2","-z+1/2,-y+1/2,x+1/2","y+1/2,-z+1/2,x+1/2","z+1/2,y+1/2,x+1/2","y+1/2,z+1/2,-x+1/2","-z+1/2,y+1/2,-x+1/2","z+1/2,-y+1/2,-x+1/2"]},{id:222,hm:"P n -3 n",hs:"-P 4a 2bc 3",o:24,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x,-y+1/2,-z+1/2","y,x,-z+1/2","-x+1/2,y,-z+1/2","-y+1/2,-x+1/2,-z+1/2","z,x,y","-x+1/2,z,y","-z+1/2,-x+1/2,y","x,-z+1/2,y","z,-x+1/2,-y+1/2","x,z,-y+1/2","-z+1/2,x,-y+1/2","-x+1/2,-z+1/2,-y+1/2","y,z,x","y,-z+1/2,-x+1/2","z,y,-x+1/2","-y+1/2,z,-x+1/2","-z+1/2,-y+1/2,-x+1/2","-y+1/2,-z+1/2,x","z,-y+1/2,x","-z+1/2,y,x","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x,y-1/2,z-1/2","-y,-x,z-1/2","x-1/2,-y,z-1/2","y-1/2,x-1/2,z-1/2","-z,-x,-y","x-1/2,-z,-y","z-1/2,x-1/2,-y","-x,z-1/2,-y","-z,x-1/2,y-1/2","-x,-z,y-1/2","z-1/2,-x,y-1/2","x-1/2,z-1/2,y-1/2","-y,-z,-x","-y,z-1/2,x-1/2","-z,-y,x-1/2","y-1/2,-z,x-1/2","z-1/2,y-1/2,x-1/2","y-1/2,z-1/2,-x","-z,y-1/2,-x","z-1/2,-y,-x"]},{id:223,hm:"P m -3 n",hs:"-P 4n 2 3",o:24,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x,-y,-z","y+1/2,x+1/2,-z+1/2","-x,y,-z","-y+1/2,-x+1/2,-z+1/2","z,x,y","-x+1/2,z+1/2,y+1/2","-z,-x,y","x+1/2,-z+1/2,y+1/2","z,-x,-y","x+1/2,z+1/2,-y+1/2","-z,x,-y","-x+1/2,-z+1/2,-y+1/2","y,z,x","y,-z,-x","z+1/2,y+1/2,-x+1/2","-y,z,-x","-z+1/2,-y+1/2,-x+1/2","-y,-z,x","z+1/2,-y+1/2,x+1/2","-z+1/2,y+1/2,x+1/2","-x,-y,-z","y-1/2,-x-1/2,-z-1/2","x,y,-z","-y-1/2,x-1/2,-z-1/2","-x,y,z","-y-1/2,-x-1/2,z-1/2","x,-y,z","y-1/2,x-1/2,z-1/2","-z,-x,-y","x-1/2,-z-1/2,-y-1/2","z,x,-y","-x-1/2,z-1/2,-y-1/2","-z,x,y","-x-1/2,-z-1/2,y-1/2","z,-x,y","x-1/2,z-1/2,y-1/2","-y,-z,-x","-y,z,x","-z-1/2,-y-1/2,x-1/2","y,-z,x","z-1/2,y-1/2,x-1/2","y,z,-x","-z-1/2,y-1/2,-x-1/2","z-1/2,-y-1/2,-x-1/2"]},{id:224,hm:"P n -3 m",hs:"P 4n 2 3 -1n",o:24,s:["x,y,z","-y+1/2,x+1/2,z+1/2","-x,-y,z","y+1/2,-x+1/2,z+1/2","x,-y,-z","y+1/2,x+1/2,-z+1/2","-x,y,-z","-y+1/2,-x+1/2,-z+1/2","z,x,y","-x+1/2,z+1/2,y+1/2","-z,-x,y","x+1/2,-z+1/2,y+1/2","z,-x,-y","x+1/2,z+1/2,-y+1/2","-z,x,-y","-x+1/2,-z+1/2,-y+1/2","y,z,x","y,-z,-x","z+1/2,y+1/2,-x+1/2","-y,z,-x","-z+1/2,-y+1/2,-x+1/2","-y,-z,x","z+1/2,-y+1/2,x+1/2","-z+1/2,y+1/2,x+1/2","-x+1/2,-y+1/2,-z+1/2","y,-x,-z","x+1/2,y+1/2,-z+1/2","-y,x,-z","-x+1/2,y+1/2,z+1/2","-y,-x,z","x+1/2,-y+1/2,z+1/2","y,x,z","-z+1/2,-x+1/2,-y+1/2","x,-z,-y","z+1/2,x+1/2,-y+1/2","-x,z,-y","-z+1/2,x+1/2,y+1/2","-x,-z,y","z+1/2,-x+1/2,y+1/2","x,z,y","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x+1/2","-z,-y,x","y+1/2,-z+1/2,x+1/2","z,y,x","y+1/2,z+1/2,-x+1/2","-z,y,-x","z,-y,-x"]},{id:224,hm:"P n -3 m",hs:"-P 4bc 2bc 3",o:24,s:["x,y,z","-y,x+1/2,z+1/2","-x+1/2,-y+1/2,z","y+1/2,-x,z+1/2","x,-y+1/2,-z+1/2","y+1/2,x+1/2,-z","-x+1/2,y,-z+1/2","-y,-x,-z","z,x,y","-x,z+1/2,y+1/2","-z+1/2,-x+1/2,y","x+1/2,-z,y+1/2","z,-x+1/2,-y+1/2","x+1/2,z+1/2,-y","-z+1/2,x,-y+1/2","-x,-z,-y","y,z,x","y,-z+1/2,-x+1/2","z+1/2,y+1/2,-x","-y+1/2,z,-x+1/2","-z,-y,-x","-y+1/2,-z+1/2,x","z+1/2,-y,x+1/2","-z,y+1/2,x+1/2","-x,-y,-z","y,-x-1/2,-z-1/2","x-1/2,y-1/2,-z","-y-1/2,x,-z-1/2","-x,y-1/2,z-1/2","-y-1/2,-x-1/2,z","x-1/2,-y,z-1/2","y,x,z","-z,-x,-y","x,-z-1/2,-y-1/2","z-1/2,x-1/2,-y","-x-1/2,z,-y-1/2","-z,x-1/2,y-1/2","-x-1/2,-z-1/2,y","z-1/2,-x,y-1/2","x,z,y","-y,-z,-x","-y,z-1/2,x-1/2","-z-1/2,-y-1/2,x","y-1/2,-z,x-1/2","z,y,x","y-1/2,z-1/2,-x","-z-1/2,y,-x-1/2","z,-y-1/2,-x-1/2"]},{id:225,hm:"F m -3 m",hs:"-F 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z","-y,-x,z","x,-y,z","y,x,z","-z,-x,-y","x,-z,-y","z,x,-y","-x,z,-y","-z,x,y","-x,-z,y","z,-x,y","x,z,y","-y,-z,-x","-y,z,x","-z,-y,x","y,-z,x","z,y,x","y,z,-x","-z,y,-x","z,-y,-x","x,y+1/2,z+1/2","-y,x+1/2,z+1/2","-x,-y+1/2,z+1/2","y,-x+1/2,z+1/2","x,-y+1/2,-z+1/2","y,x+1/2,-z+1/2","-x,y+1/2,-z+1/2","-y,-x+1/2,-z+1/2","z,x+1/2,y+1/2","-x,z+1/2,y+1/2","-z,-x+1/2,y+1/2","x,-z+1/2,y+1/2","z,-x+1/2,-y+1/2","x,z+1/2,-y+1/2","-z,x+1/2,-y+1/2","-x,-z+1/2,-y+1/2","y,z+1/2,x+1/2","y,-z+1/2,-x+1/2","z,y+1/2,-x+1/2","-y,z+1/2,-x+1/2","-z,-y+1/2,-x+1/2","-y,-z+1/2,x+1/2","z,-y+1/2,x+1/2","-z,y+1/2,x+1/2","-x,-y+1/2,-z+1/2","y,-x+1/2,-z+1/2","x,y+1/2,-z+1/2","-y,x+1/2,-z+1/2","-x,y+1/2,z+1/2","-y,-x+1/2,z+1/2","x,-y+1/2,z+1/2","y,x+1/2,z+1/2","-z,-x+1/2,-y+1/2","x,-z+1/2,-y+1/2","z,x+1/2,-y+1/2","-x,z+1/2,-y+1/2","-z,x+1/2,y+1/2","-x,-z+1/2,y+1/2","z,-x+1/2,y+1/2","x,z+1/2,y+1/2","-y,-z+1/2,-x+1/2","-y,z+1/2,x+1/2","-z,-y+1/2,x+1/2","y,-z+1/2,x+1/2","z,y+1/2,x+1/2","y,z+1/2,-x+1/2","-z,y+1/2,-x+1/2","z,-y+1/2,-x+1/2","x+1/2,y,z+1/2","-y+1/2,x,z+1/2","-x+1/2,-y,z+1/2","y+1/2,-x,z+1/2","x+1/2,-y,-z+1/2","y+1/2,x,-z+1/2","-x+1/2,y,-z+1/2","-y+1/2,-x,-z+1/2","z+1/2,x,y+1/2","-x+1/2,z,y+1/2","-z+1/2,-x,y+1/2","x+1/2,-z,y+1/2","z+1/2,-x,-y+1/2","x+1/2,z,-y+1/2","-z+1/2,x,-y+1/2","-x+1/2,-z,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z,-x+1/2","z+1/2,y,-x+1/2","-y+1/2,z,-x+1/2","-z+1/2,-y,-x+1/2","-y+1/2,-z,x+1/2","z+1/2,-y,x+1/2","-z+1/2,y,x+1/2","-x+1/2,-y,-z+1/2","y+1/2,-x,-z+1/2","x+1/2,y,-z+1/2","-y+1/2,x,-z+1/2","-x+1/2,y,z+1/2","-y+1/2,-x,z+1/2","x+1/2,-y,z+1/2","y+1/2,x,z+1/2","-z+1/2,-x,-y+1/2","x+1/2,-z,-y+1/2","z+1/2,x,-y+1/2","-x+1/2,z,-y+1/2","-z+1/2,x,y+1/2","-x+1/2,-z,y+1/2","z+1/2,-x,y+1/2","x+1/2,z,y+1/2","-y+1/2,-z,-x+1/2","-y+1/2,z,x+1/2","-z+1/2,-y,x+1/2","y+1/2,-z,x+1/2","z+1/2,y,x+1/2","y+1/2,z,-x+1/2","-z+1/2,y,-x+1/2","z+1/2,-y,-x+1/2","x+1/2,y+1/2,z","-y+1/2,x+1/2,z","-x+1/2,-y+1/2,z","y+1/2,-x+1/2,z","x+1/2,-y+1/2,-z","y+1/2,x+1/2,-z","-x+1/2,y+1/2,-z","-y+1/2,-x+1/2,-z","z+1/2,x+1/2,y","-x+1/2,z+1/2,y","-z+1/2,-x+1/2,y","x+1/2,-z+1/2,y","z+1/2,-x+1/2,-y","x+1/2,z+1/2,-y","-z+1/2,x+1/2,-y","-x+1/2,-z+1/2,-y","y+1/2,z+1/2,x","y+1/2,-z+1/2,-x","z+1/2,y+1/2,-x","-y+1/2,z+1/2,-x","-z+1/2,-y+1/2,-x","-y+1/2,-z+1/2,x","z+1/2,-y+1/2,x","-z+1/2,y+1/2,x","-x+1/2,-y+1/2,-z","y+1/2,-x+1/2,-z","x+1/2,y+1/2,-z","-y+1/2,x+1/2,-z","-x+1/2,y+1/2,z","-y+1/2,-x+1/2,z","x+1/2,-y+1/2,z","y+1/2,x+1/2,z","-z+1/2,-x+1/2,-y","x+1/2,-z+1/2,-y","z+1/2,x+1/2,-y","-x+1/2,z+1/2,-y","-z+1/2,x+1/2,y","-x+1/2,-z+1/2,y","z+1/2,-x+1/2,y","x+1/2,z+1/2,y","-y+1/2,-z+1/2,-x","-y+1/2,z+1/2,x","-z+1/2,-y+1/2,x","y+1/2,-z+1/2,x","z+1/2,y+1/2,x","y+1/2,z+1/2,-x","-z+1/2,y+1/2,-x","z+1/2,-y+1/2,-x"]},{id:226,hm:"F m -3 c",hs:"-F 4a 2 3",o:24,s:["x,y,z","-y+1/2,x,z","-x+1/2,-y+1/2,z","y,-x+1/2,z","x,-y,-z","y+1/2,x,-z","-x+1/2,y+1/2,-z","-y,-x+1/2,-z","z,x,y","-x+1/2,z,y","-z+1/2,-x+1/2,y","x,-z+1/2,y","z,-x,-y","x+1/2,z,-y","-z+1/2,x+1/2,-y","-x,-z+1/2,-y","y,z,x","y,-z+1/2,-x+1/2","z,y,-x+1/2","-y+1/2,z,-x+1/2","-z+1/2,-y,-x","-y,-z,x","z,-y,x+1/2","-z+1/2,y+1/2,x+1/2","-x,-y,-z","y-1/2,-x,-z","x-1/2,y-1/2,-z","-y,x-1/2,-z","-x,y,z","-y-1/2,-x,z","x-1/2,-y-1/2,z","y,x-1/2,z","-z,-x,-y","x-1/2,-z,-y","z-1/2,x-1/2,-y","-x,z-1/2,-y","-z,x,y","-x-1/2,-z,y","z-1/2,-x-1/2,y","x,z-1/2,y","-y,-z,-x","-y,z-1/2,x-1/2","-z,-y,x-1/2","y-1/2,-z,x-1/2","z-1/2,y,x","y,z,-x","-z,y,-x-1/2","z-1/2,-y-1/2,-x-1/2","x,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1,z+1/2","y,-x+1,z+1/2","x,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1,-z+1/2","-y,-x+1,-z+1/2","z,x+1/2,y+1/2","-x+1/2,z+1/2,y+1/2","-z+1/2,-x+1,y+1/2","x,-z+1,y+1/2","z,-x+1/2,-y+1/2","x+1/2,z+1/2,-y+1/2","-z+1/2,x+1,-y+1/2","-x,-z+1,-y+1/2","y,z+1/2,x+1/2","y,-z+1,-x+1","z,y+1/2,-x+1","-y+1/2,z+1/2,-x+1","-z+1/2,-y+1/2,-x+1/2","-y,-z+1/2,x+1/2","z,-y+1/2,x+1","-z+1/2,y+1,x+1","-x,-y+1/2,-z+1/2","y-1/2,-x+1/2,-z+1/2","x-1/2,y,-z+1/2","-y,x,-z+1/2","-x,y+1/2,z+1/2","-y-1/2,-x+1/2,z+1/2","x-1/2,-y,z+1/2","y,x,z+1/2","-z,-x+1/2,-y+1/2","x-1/2,-z+1/2,-y+1/2","z-1/2,x,-y+1/2","-x,z,-y+1/2","-z,x+1/2,y+1/2","-x-1/2,-z+1/2,y+1/2","z-1/2,-x,y+1/2","x,z,y+1/2","-y,-z+1/2,-x+1/2","-y,z,x","-z,-y+1/2,x","y-1/2,-z+1/2,x","z-1/2,y+1/2,x+1/2","y,z+1/2,-x+1/2","-z,y+1/2,-x","z-1/2,-y,-x","x+1/2,y,z+1/2","-y+1,x,z+1/2","-x+1,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y,-z+1/2","y+1,x,-z+1/2","-x+1,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2","z+1/2,x,y+1/2","-x+1,z,y+1/2","-z+1,-x+1/2,y+1/2","x+1/2,-z+1/2,y+1/2","z+1/2,-x,-y+1/2","x+1,z,-y+1/2","-z+1,x+1/2,-y+1/2","-x+1/2,-z+1/2,-y+1/2","y+1/2,z,x+1/2","y+1/2,-z+1/2,-x+1","z+1/2,y,-x+1","-y+1,z,-x+1","-z+1,-y,-x+1/2","-y+1/2,-z,x+1/2","z+1/2,-y,x+1","-z+1,y+1/2,x+1","-x+1/2,-y,-z+1/2","y,-x,-z+1/2","x,y-1/2,-z+1/2","-y+1/2,x-1/2,-z+1/2","-x+1/2,y,z+1/2","-y,-x,z+1/2","x,-y-1/2,z+1/2","y+1/2,x-1/2,z+1/2","-z+1/2,-x,-y+1/2","x,-z,-y+1/2","z,x-1/2,-y+1/2","-x+1/2,z-1/2,-y+1/2","-z+1/2,x,y+1/2","-x,-z,y+1/2","z,-x-1/2,y+1/2","x+1/2,z-1/2,y+1/2","-y+1/2,-z,-x+1/2","-y+1/2,z-1/2,x","-z+1/2,-y,x","y,-z,x","z,y,x+1/2","y+1/2,z,-x+1/2","-z+1/2,y,-x","z,-y-1/2,-x","x+1/2,y+1/2,z","-y+1,x+1/2,z","-x+1,-y+1,z","y+1/2,-x+1,z","x+1/2,-y+1/2,-z","y+1,x+1/2,-z","-x+1,y+1,-z","-y+1/2,-x+1,-z","z+1/2,x+1/2,y","-x+1,z+1/2,y","-z+1,-x+1,y","x+1/2,-z+1,y","z+1/2,-x+1/2,-y","x+1,z+1/2,-y","-z+1,x+1,-y","-x+1/2,-z+1,-y","y+1/2,z+1/2,x","y+1/2,-z+1,-x+1/2","z+1/2,y+1/2,-x+1/2","-y+1,z+1/2,-x+1/2","-z+1,-y+1/2,-x","-y+1/2,-z+1/2,x","z+1/2,-y+1/2,x+1/2","-z+1,y+1,x+1/2","-x+1/2,-y+1/2,-z","y,-x+1/2,-z","x,y,-z","-y+1/2,x,-z","-x+1/2,y+1/2,z","-y,-x+1/2,z","x,-y,z","y+1/2,x,z","-z+1/2,-x+1/2,-y","x,-z+1/2,-y","z,x,-y","-x+1/2,z,-y","-z+1/2,x+1/2,y","-x,-z+1/2,y","z,-x,y","x+1/2,z,y","-y+1/2,-z+1/2,-x","-y+1/2,z,x-1/2","-z+1/2,-y+1/2,x-1/2","y,-z+1/2,x-1/2","z,y+1/2,x","y+1/2,z+1/2,-x","-z+1/2,y+1/2,-x-1/2","z,-y,-x-1/2"]},{id:227,hm:"F d -3 m",hs:"F 4d 2 3 -1d",o:24,s:["x,y,z","-y+1/4,x+1/4,z+1/4","-x,-y+1/2,z+1/2","y+3/4,-x+1/4,z+3/4","x,-y,-z","y+1/4,x+1/4,-z+1/4","-x,y+1/2,-z+1/2","-y+3/4,-x+1/4,-z+3/4","z,x,y","-x+1/4,z+1/4,y+1/4","-z,-x+1/2,y+1/2","x+3/4,-z+1/4,y+3/4","z,-x,-y","x+1/4,z+1/4,-y+1/4","-z,x+1/2,-y+1/2","-x+3/4,-z+1/4,-y+3/4","y,z,x","y+1/2,-z,-x+1/2","z+1/4,y+3/4,-x+3/4","-y+1/2,z+1/2,-x","-z+1/4,-y+1/4,-x+1/4","-y,-z,x","z+1/4,-y+3/4,x+3/4","-z+3/4,y+3/4,x+1/4","-x+1/4,-y+1/4,-z+1/4","y,-x,-z","x+1/4,y-1/4,-z-1/4","-y-1/2,x,-z-1/2","-x+1/4,y+1/4,z+1/4","-y,-x,z","x+1/4,-y-1/4,z-1/4","y-1/2,x,z-1/2","-z+1/4,-x+1/4,-y+1/4","x,-z,-y","z+1/4,x-1/4,-y-1/4","-x-1/2,z,-y-1/2","-z+1/4,x+1/4,y+1/4","-x,-z,y","z+1/4,-x-1/4,y-1/4","x-1/2,z,y-1/2","-y+1/4,-z+1/4,-x+1/4","-y-1/4,z+1/4,x-1/4","-z,-y-1/2,x-1/2","y-1/4,-z-1/4,x+1/4","z,y,x","y+1/4,z+1/4,-x+1/4","-z,y-1/2,-x-1/2","z-1/2,-y-1/2,-x","x,y+1/2,z+1/2","-y+1/4,x+3/4,z+3/4","-x,-y+1,z+1","y+3/4,-x+3/4,z+5/4","x,-y+1/2,-z+1/2","y+1/4,x+3/4,-z+3/4","-x,y+1,-z+1","-y+3/4,-x+3/4,-z+5/4","z,x+1/2,y+1/2","-x+1/4,z+3/4,y+3/4","-z,-x+1,y+1","x+3/4,-z+3/4,y+5/4","z,-x+1/2,-y+1/2","x+1/4,z+3/4,-y+3/4","-z,x+1,-y+1","-x+3/4,-z+3/4,-y+5/4","y,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","z+1/4,y+5/4,-x+5/4","-y+1/2,z+1,-x+1/2","-z+1/4,-y+3/4,-x+3/4","-y,-z+1/2,x+1/2","z+1/4,-y+5/4,x+5/4","-z+3/4,y+5/4,x+3/4","-x+1/4,-y+3/4,-z+3/4","y,-x+1/2,-z+1/2","x+1/4,y+1/4,-z+1/4","-y-1/2,x+1/2,-z","-x+1/4,y+3/4,z+3/4","-y,-x+1/2,z+1/2","x+1/4,-y+1/4,z+1/4","y-1/2,x+1/2,z","-z+1/4,-x+3/4,-y+3/4","x,-z+1/2,-y+1/2","z+1/4,x+1/4,-y+1/4","-x-1/2,z+1/2,-y","-z+1/4,x+3/4,y+3/4","-x,-z+1/2,y+1/2","z+1/4,-x+1/4,y+1/4","x-1/2,z+1/2,y","-y+1/4,-z+3/4,-x+3/4","-y-1/4,z+3/4,x+1/4","-z,-y,x","y-1/4,-z+1/4,x+3/4","z,y+1/2,x+1/2","y+1/4,z+3/4,-x+3/4","-z,y,-x","z-1/2,-y,-x+1/2","x+1/2,y,z+1/2","-y+3/4,x+1/4,z+3/4","-x+1/2,-y+1/2,z+1","y+5/4,-x+1/4,z+5/4","x+1/2,-y,-z+1/2","y+3/4,x+1/4,-z+3/4","-x+1/2,y+1/2,-z+1","-y+5/4,-x+1/4,-z+5/4","z+1/2,x,y+1/2","-x+3/4,z+1/4,y+3/4","-z+1/2,-x+1/2,y+1","x+5/4,-z+1/4,y+5/4","z+1/2,-x,-y+1/2","x+3/4,z+1/4,-y+3/4","-z+1/2,x+1/2,-y+1","-x+5/4,-z+1/4,-y+5/4","y+1/2,z,x+1/2","y+1,-z,-x+1","z+3/4,y+3/4,-x+5/4","-y+1,z+1/2,-x+1/2","-z+3/4,-y+1/4,-x+3/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+5/4","-z+5/4,y+3/4,x+3/4","-x+3/4,-y+1/4,-z+3/4","y+1/2,-x,-z+1/2","x+3/4,y-1/4,-z+1/4","-y,x,-z","-x+3/4,y+1/4,z+3/4","-y+1/2,-x,z+1/2","x+3/4,-y-1/4,z+1/4","y,x,z","-z+3/4,-x+1/4,-y+3/4","x+1/2,-z,-y+1/2","z+3/4,x-1/4,-y+1/4","-x,z,-y","-z+3/4,x+1/4,y+3/4","-x+1/2,-z,y+1/2","z+3/4,-x-1/4,y+1/4","x,z,y","-y+3/4,-z+1/4,-x+3/4","-y+1/4,z+1/4,x+1/4","-z+1/2,-y-1/2,x","y+1/4,-z-1/4,x+3/4","z+1/2,y,x+1/2","y+3/4,z+1/4,-x+3/4","-z+1/2,y-1/2,-x","z,-y-1/2,-x+1/2","x+1/2,y+1/2,z","-y+3/4,x+3/4,z+1/4","-x+1/2,-y+1,z+1/2","y+5/4,-x+3/4,z+3/4","x+1/2,-y+1/2,-z","y+3/4,x+3/4,-z+1/4","-x+1/2,y+1,-z+1/2","-y+5/4,-x+3/4,-z+3/4","z+1/2,x+1/2,y","-x+3/4,z+3/4,y+1/4","-z+1/2,-x+1,y+1/2","x+5/4,-z+3/4,y+3/4","z+1/2,-x+1/2,-y","x+3/4,z+3/4,-y+1/4","-z+1/2,x+1,-y+1/2","-x+5/4,-z+3/4,-y+3/4","y+1/2,z+1/2,x","y+1,-z+1/2,-x+1/2","z+3/4,y+5/4,-x+3/4","-y+1,z+1,-x","-z+3/4,-y+3/4,-x+1/4","-y+1/2,-z+1/2,x","z+3/4,-y+5/4,x+3/4","-z+5/4,y+5/4,x+1/4","-x+3/4,-y+3/4,-z+1/4","y+1/2,-x+1/2,-z","x+3/4,y+1/4,-z-1/4","-y,x+1/2,-z-1/2","-x+3/4,y+3/4,z+1/4","-y+1/2,-x+1/2,z","x+3/4,-y+1/4,z-1/4","y,x+1/2,z-1/2","-z+3/4,-x+3/4,-y+1/4","x+1/2,-z+1/2,-y","z+3/4,x+1/4,-y-1/4","-x,z+1/2,-y-1/2","-z+3/4,x+3/4,y+1/4","-x+1/2,-z+1/2,y","z+3/4,-x+1/4,y-1/4","x,z+1/2,y-1/2","-y+3/4,-z+3/4,-x+1/4","-y+1/4,z+3/4,x-1/4","-z+1/2,-y,x-1/2","y+1/4,-z+1/4,x+1/4","z+1/2,y+1/2,x","y+3/4,z+3/4,-x+1/4","-z+1/2,y,-x-1/2","z,-y,-x"]},{id:227,hm:"F d -3 m",hs:"-F 4vw 2vw 3",o:24,s:["x,y,z","-y,x+1/4,z+1/4","-x+3/4,-y+1/4,z+1/2","y+3/4,-x,z+3/4","x,-y+1/4,-z+1/4","y+3/4,x+1/4,-z+1/2","-x+3/4,y,-z+3/4","-y,-x,-z","z,x,y","-x,z+1/4,y+1/4","-z+3/4,-x+1/4,y+1/2","x+3/4,-z,y+3/4","z,-x+1/4,-y+1/4","x+3/4,z+1/4,-y+1/2","-z+3/4,x,-y+3/4","-x,-z,-y","y,z,x","y+1/2,-z+3/4,-x+1/4","z+1/4,y+3/4,-x+1/2","-y+1/4,z+1/2,-x+3/4","-z,-y+1/2,-x+1/2","-y+1/4,-z+1/4,x","z+1/4,-y,x+1/4","-z+1/2,y+1/4,x+3/4","-x,-y,-z","y,-x-1/4,-z-1/4","x-3/4,y-1/4,-z-1/2","-y-3/4,x,-z-3/4","-x,y-1/4,z-1/4","-y-3/4,-x-1/4,z-1/2","x-3/4,-y,z-3/4","y,x,z","-z,-x,-y","x,-z-1/4,-y-1/4","z-3/4,x-1/4,-y-1/2","-x-3/4,z,-y-3/4","-z,x-1/4,y-1/4","-x-3/4,-z-1/4,y-1/2","z-3/4,-x,y-3/4","x,z,y","-y,-z,-x","-y-1/2,z-3/4,x-1/4","-z-1/4,-y-3/4,x-1/2","y-1/4,-z-1/2,x-3/4","z,y-1/2,x-1/2","y-1/4,z-1/4,-x","-z-1/4,y,-x-1/4","z-1/2,-y-1/4,-x-3/4","x,y+1/2,z+1/2","-y,x+3/4,z+3/4","-x+3/4,-y+3/4,z+1","y+3/4,-x+1/2,z+5/4","x,-y+3/4,-z+3/4","y+3/4,x+3/4,-z+1","-x+3/4,y+1/2,-z+5/4","-y,-x+1/2,-z+1/2","z,x+1/2,y+1/2","-x,z+3/4,y+3/4","-z+3/4,-x+3/4,y+1","x+3/4,-z+1/2,y+5/4","z,-x+3/4,-y+3/4","x+3/4,z+3/4,-y+1","-z+3/4,x+1/2,-y+5/4","-x,-z+1/2,-y+1/2","y,z+1/2,x+1/2","y+1/2,-z+5/4,-x+3/4","z+1/4,y+5/4,-x+1","-y+1/4,z+1,-x+5/4","-z,-y+1,-x+1","-y+1/4,-z+3/4,x+1/2","z+1/4,-y+1/2,x+3/4","-z+1/2,y+3/4,x+5/4","-x,-y+1/2,-z+1/2","y,-x+1/4,-z+1/4","x-3/4,y+1/4,-z","-y-3/4,x+1/2,-z-1/4","-x,y+1/4,z+1/4","-y-3/4,-x+1/4,z","x-3/4,-y+1/2,z-1/4","y,x+1/2,z+1/2","-z,-x+1/2,-y+1/2","x,-z+1/4,-y+1/4","z-3/4,x+1/4,-y","-x-3/4,z+1/2,-y-1/4","-z,x+1/4,y+1/4","-x-3/4,-z+1/4,y","z-3/4,-x+1/2,y-1/4","x,z+1/2,y+1/2","-y,-z+1/2,-x+1/2","-y-1/2,z-1/4,x+1/4","-z-1/4,-y-1/4,x","y-1/4,-z,x-1/4","z,y,x","y-1/4,z+1/4,-x+1/2","-z-1/4,y+1/2,-x+1/4","z-1/2,-y+1/4,-x-1/4","x+1/2,y,z+1/2","-y+1/2,x+1/4,z+3/4","-x+5/4,-y+1/4,z+1","y+5/4,-x,z+5/4","x+1/2,-y+1/4,-z+3/4","y+5/4,x+1/4,-z+1","-x+5/4,y,-z+5/4","-y+1/2,-x,-z+1/2","z+1/2,x,y+1/2","-x+1/2,z+1/4,y+3/4","-z+5/4,-x+1/4,y+1","x+5/4,-z,y+5/4","z+1/2,-x+1/4,-y+3/4","x+5/4,z+1/4,-y+1","-z+5/4,x,-y+5/4","-x+1/2,-z,-y+1/2","y+1/2,z,x+1/2","y+1,-z+3/4,-x+3/4","z+3/4,y+3/4,-x+1","-y+3/4,z+1/2,-x+5/4","-z+1/2,-y+1/2,-x+1","-y+3/4,-z+1/4,x+1/2","z+3/4,-y,x+3/4","-z+1,y+1/4,x+5/4","-x+1/2,-y,-z+1/2","y+1/2,-x-1/4,-z+1/4","x-1/4,y-1/4,-z","-y-1/4,x,-z-1/4","-x+1/2,y-1/4,z+1/4","-y-1/4,-x-1/4,z","x-1/4,-y,z-1/4","y+1/2,x,z+1/2","-z+1/2,-x,-y+1/2","x+1/2,-z-1/4,-y+1/4","z-1/4,x-1/4,-y","-x-1/4,z,-y-1/4","-z+1/2,x-1/4,y+1/4","-x-1/4,-z-1/4,y","z-1/4,-x,y-1/4","x+1/2,z,y+1/2","-y+1/2,-z,-x+1/2","-y,z-3/4,x+1/4","-z+1/4,-y-3/4,x","y+1/4,-z-1/2,x-1/4","z+1/2,y-1/2,x","y+1/4,z-1/4,-x+1/2","-z+1/4,y,-x+1/4","z,-y-1/4,-x-1/4","x+1/2,y+1/2,z","-y+1/2,x+3/4,z+1/4","-x+5/4,-y+3/4,z+1/2","y+5/4,-x+1/2,z+3/4","x+1/2,-y+3/4,-z+1/4","y+5/4,x+3/4,-z+1/2","-x+5/4,y+1/2,-z+3/4","-y+1/2,-x+1/2,-z","z+1/2,x+1/2,y","-x+1/2,z+3/4,y+1/4","-z+5/4,-x+3/4,y+1/2","x+5/4,-z+1/2,y+3/4","z+1/2,-x+3/4,-y+1/4","x+5/4,z+3/4,-y+1/2","-z+5/4,x+1/2,-y+3/4","-x+1/2,-z+1/2,-y","y+1/2,z+1/2,x","y+1,-z+5/4,-x+1/4","z+3/4,y+5/4,-x+1/2","-y+3/4,z+1,-x+3/4","-z+1/2,-y+1,-x+1/2","-y+3/4,-z+3/4,x","z+3/4,-y+1/2,x+1/4","-z+1,y+3/4,x+3/4","-x+1/2,-y+1/2,-z","y+1/2,-x+1/4,-z-1/4","x-1/4,y+1/4,-z-1/2","-y-1/4,x+1/2,-z-3/4","-x+1/2,y+1/4,z-1/4","-y-1/4,-x+1/4,z-1/2","x-1/4,-y+1/2,z-3/4","y+1/2,x+1/2,z","-z+1/2,-x+1/2,-y","x+1/2,-z+1/4,-y-1/4","z-1/4,x+1/4,-y-1/2","-x-1/4,z+1/2,-y-3/4","-z+1/2,x+1/4,y-1/4","-x-1/4,-z+1/4,y-1/2","z-1/4,-x+1/2,y-3/4","x+1/2,z+1/2,y","-y+1/2,-z+1/2,-x","-y,z-1/4,x-1/4","-z+1/4,-y-1/4,x-1/2","y+1/4,-z,x-3/4","z+1/2,y,x-1/2","y+1/4,z+1/4,-x","-z+1/4,y+1/2,-x-1/4","z,-y+1/4,-x-3/4"]},{id:228,hm:"F d -3 c",hs:"F 4d 2 3 -1ad",o:24,s:["x,y,z","-y+1/4,x+1/4,z+1/4","-x,-y+1/2,z+1/2","y+3/4,-x+1/4,z+3/4","x,-y,-z","y+1/4,x+1/4,-z+1/4","-x,y+1/2,-z+1/2","-y+3/4,-x+1/4,-z+3/4","z,x,y","-x+1/4,z+1/4,y+1/4","-z,-x+1/2,y+1/2","x+3/4,-z+1/4,y+3/4","z,-x,-y","x+1/4,z+1/4,-y+1/4","-z,x+1/2,-y+1/2","-x+3/4,-z+1/4,-y+3/4","y,z,x","y+1/2,-z,-x+1/2","z+1/4,y+3/4,-x+3/4","-y+1/2,z+1/2,-x","-z+1/4,-y+1/4,-x+1/4","-y,-z,x","z+1/4,-y+3/4,x+3/4","-z+3/4,y+3/4,x+1/4","-x+3/4,-y+1/4,-z+1/4","y+1/2,-x,-z","x+3/4,y-1/4,-z-1/4","-y,x,-z-1/2","-x+3/4,y+1/4,z+1/4","-y+1/2,-x,z","x+3/4,-y-1/4,z-1/4","y,x,z-1/2","-z+3/4,-x+1/4,-y+1/4","x+1/2,-z,-y","z+3/4,x-1/4,-y-1/4","-x,z,-y-1/2","-z+3/4,x+1/4,y+1/4","-x+1/2,-z,y","z+3/4,-x-1/4,y-1/4","x,z,y-1/2","-y+3/4,-z+1/4,-x+1/4","-y+1/4,z+1/4,x-1/4","-z+1/2,-y-1/2,x-1/2","y+1/4,-z-1/4,x+1/4","z+1/2,y,x","y+3/4,z+1/4,-x+1/4","-z+1/2,y-1/2,-x-1/2","z,-y-1/2,-x","x,y+1/2,z+1/2","-y+1/4,x+3/4,z+3/4","-x,-y+1,z+1","y+3/4,-x+3/4,z+5/4","x,-y+1/2,-z+1/2","y+1/4,x+3/4,-z+3/4","-x,y+1,-z+1","-y+3/4,-x+3/4,-z+5/4","z,x+1/2,y+1/2","-x+1/4,z+3/4,y+3/4","-z,-x+1,y+1","x+3/4,-z+3/4,y+5/4","z,-x+1/2,-y+1/2","x+1/4,z+3/4,-y+3/4","-z,x+1,-y+1","-x+3/4,-z+3/4,-y+5/4","y,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1","z+1/4,y+5/4,-x+5/4","-y+1/2,z+1,-x+1/2","-z+1/4,-y+3/4,-x+3/4","-y,-z+1/2,x+1/2","z+1/4,-y+5/4,x+5/4","-z+3/4,y+5/4,x+3/4","-x+3/4,-y+3/4,-z+3/4","y+1/2,-x+1/2,-z+1/2","x+3/4,y+1/4,-z+1/4","-y,x+1/2,-z","-x+3/4,y+3/4,z+3/4","-y+1/2,-x+1/2,z+1/2","x+3/4,-y+1/4,z+1/4","y,x+1/2,z","-z+3/4,-x+3/4,-y+3/4","x+1/2,-z+1/2,-y+1/2","z+3/4,x+1/4,-y+1/4","-x,z+1/2,-y","-z+3/4,x+3/4,y+3/4","-x+1/2,-z+1/2,y+1/2","z+3/4,-x+1/4,y+1/4","x,z+1/2,y","-y+3/4,-z+3/4,-x+3/4","-y+1/4,z+3/4,x+1/4","-z+1/2,-y,x","y+1/4,-z+1/4,x+3/4","z+1/2,y+1/2,x+1/2","y+3/4,z+3/4,-x+3/4","-z+1/2,y,-x","z,-y,-x+1/2","x+1/2,y,z+1/2","-y+3/4,x+1/4,z+3/4","-x+1/2,-y+1/2,z+1","y+5/4,-x+1/4,z+5/4","x+1/2,-y,-z+1/2","y+3/4,x+1/4,-z+3/4","-x+1/2,y+1/2,-z+1","-y+5/4,-x+1/4,-z+5/4","z+1/2,x,y+1/2","-x+3/4,z+1/4,y+3/4","-z+1/2,-x+1/2,y+1","x+5/4,-z+1/4,y+5/4","z+1/2,-x,-y+1/2","x+3/4,z+1/4,-y+3/4","-z+1/2,x+1/2,-y+1","-x+5/4,-z+1/4,-y+5/4","y+1/2,z,x+1/2","y+1,-z,-x+1","z+3/4,y+3/4,-x+5/4","-y+1,z+1/2,-x+1/2","-z+3/4,-y+1/4,-x+3/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+5/4","-z+5/4,y+3/4,x+3/4","-x+5/4,-y+1/4,-z+3/4","y+1,-x,-z+1/2","x+5/4,y-1/4,-z+1/4","-y+1/2,x,-z","-x+5/4,y+1/4,z+3/4","-y+1,-x,z+1/2","x+5/4,-y-1/4,z+1/4","y+1/2,x,z","-z+5/4,-x+1/4,-y+3/4","x+1,-z,-y+1/2","z+5/4,x-1/4,-y+1/4","-x+1/2,z,-y","-z+5/4,x+1/4,y+3/4","-x+1,-z,y+1/2","z+5/4,-x-1/4,y+1/4","x+1/2,z,y","-y+5/4,-z+1/4,-x+3/4","-y+3/4,z+1/4,x+1/4","-z+1,-y-1/2,x","y+3/4,-z-1/4,x+3/4","z+1,y,x+1/2","y+5/4,z+1/4,-x+3/4","-z+1,y-1/2,-x","z+1/2,-y-1/2,-x+1/2","x+1/2,y+1/2,z","-y+3/4,x+3/4,z+1/4","-x+1/2,-y+1,z+1/2","y+5/4,-x+3/4,z+3/4","x+1/2,-y+1/2,-z","y+3/4,x+3/4,-z+1/4","-x+1/2,y+1,-z+1/2","-y+5/4,-x+3/4,-z+3/4","z+1/2,x+1/2,y","-x+3/4,z+3/4,y+1/4","-z+1/2,-x+1,y+1/2","x+5/4,-z+3/4,y+3/4","z+1/2,-x+1/2,-y","x+3/4,z+3/4,-y+1/4","-z+1/2,x+1,-y+1/2","-x+5/4,-z+3/4,-y+3/4","y+1/2,z+1/2,x","y+1,-z+1/2,-x+1/2","z+3/4,y+5/4,-x+3/4","-y+1,z+1,-x","-z+3/4,-y+3/4,-x+1/4","-y+1/2,-z+1/2,x","z+3/4,-y+5/4,x+3/4","-z+5/4,y+5/4,x+1/4","-x+5/4,-y+3/4,-z+1/4","y+1,-x+1/2,-z","x+5/4,y+1/4,-z-1/4","-y+1/2,x+1/2,-z-1/2","-x+5/4,y+3/4,z+1/4","-y+1,-x+1/2,z","x+5/4,-y+1/4,z-1/4","y+1/2,x+1/2,z-1/2","-z+5/4,-x+3/4,-y+1/4","x+1,-z+1/2,-y","z+5/4,x+1/4,-y-1/4","-x+1/2,z+1/2,-y-1/2","-z+5/4,x+3/4,y+1/4","-x+1,-z+1/2,y","z+5/4,-x+1/4,y-1/4","x+1/2,z+1/2,y-1/2","-y+5/4,-z+3/4,-x+1/4","-y+3/4,z+3/4,x-1/4","-z+1,-y,x-1/2","y+3/4,-z+1/4,x+1/4","z+1,y+1/2,x","y+5/4,z+3/4,-x+1/4","-z+1,y,-x-1/2","z+1/2,-y,-x"]},{id:228,hm:"F d -3 c",hs:"-F 4ud 2vw 3",o:24,s:["x,y,z","-y+1/2,x+1/4,z+1/4","-x+1/4,-y+3/4,z+1/2","y+3/4,-x+1/2,z+3/4","x,-y+1/4,-z+1/4","y+1/4,x+1/4,-z+1/2","-x+1/4,y+1/2,-z+3/4","-y,-x+1/2,-z","z,x,y","-x+1/2,z+1/4,y+1/4","-z+1/4,-x+3/4,y+1/2","x+3/4,-z+1/2,y+3/4","z,-x+1/4,-y+1/4","x+1/4,z+1/4,-y+1/2","-z+1/4,x+1/2,-y+3/4","-x,-z+1/2,-y","y,z,x","y+1/2,-z+1/4,-x+3/4","z+1/4,y+3/4,-x","-y+3/4,z+1/2,-x+1/4","-z+1/2,-y+1/2,-x+1/2","-y+1/4,-z+1/4,x","z+1/4,-y,x+3/4","-z,y+3/4,x+1/4","-x,-y,-z","y-1/2,-x-1/4,-z-1/4","x-1/4,y-3/4,-z-1/2","-y-3/4,x-1/2,-z-3/4","-x,y-1/4,z-1/4","-y-1/4,-x-1/4,z-1/2","x-1/4,-y-1/2,z-3/4","y,x-1/2,z","-z,-x,-y","x-1/2,-z-1/4,-y-1/4","z-1/4,x-3/4,-y-1/2","-x-3/4,z-1/2,-y-3/4","-z,x-1/4,y-1/4","-x-1/4,-z-1/4,y-1/2","z-1/4,-x-1/2,y-3/4","x,z-1/2,y","-y,-z,-x","-y-1/2,z-1/4,x-3/4","-z-1/4,-y-3/4,x","y-3/4,-z-1/2,x-1/4","z-1/2,y-1/2,x-1/2","y-1/4,z-1/4,-x","-z-1/4,y,-x-3/4","z,-y-3/4,-x-1/4","x,y+1/2,z+1/2","-y+1/2,x+3/4,z+3/4","-x+1/4,-y+5/4,z+1","y+3/4,-x+1,z+5/4","x,-y+3/4,-z+3/4","y+1/4,x+3/4,-z+1","-x+1/4,y+1,-z+5/4","-y,-x+1,-z+1/2","z,x+1/2,y+1/2","-x+1/2,z+3/4,y+3/4","-z+1/4,-x+5/4,y+1","x+3/4,-z+1,y+5/4","z,-x+3/4,-y+3/4","x+1/4,z+3/4,-y+1","-z+1/4,x+1,-y+5/4","-x,-z+1,-y+1/2","y,z+1/2,x+1/2","y+1/2,-z+3/4,-x+5/4","z+1/4,y+5/4,-x+1/2","-y+3/4,z+1,-x+3/4","-z+1/2,-y+1,-x+1","-y+1/4,-z+3/4,x+1/2","z+1/4,-y+1/2,x+5/4","-z,y+5/4,x+3/4","-x,-y+1/2,-z+1/2","y-1/2,-x+1/4,-z+1/4","x-1/4,y-1/4,-z","-y-3/4,x,-z-1/4","-x,y+1/4,z+1/4","-y-1/4,-x+1/4,z","x-1/4,-y,z-1/4","y,x,z+1/2","-z,-x+1/2,-y+1/2","x-1/2,-z+1/4,-y+1/4","z-1/4,x-1/4,-y","-x-3/4,z,-y-1/4","-z,x+1/4,y+1/4","-x-1/4,-z+1/4,y","z-1/4,-x,y-1/4","x,z,y+1/2","-y,-z+1/2,-x+1/2","-y-1/2,z+1/4,x-1/4","-z-1/4,-y-1/4,x+1/2","y-3/4,-z,x+1/4","z-1/2,y,x","y-1/4,z+1/4,-x+1/2","-z-1/4,y+1/2,-x-1/4","z,-y-1/4,-x+1/4","x+1/2,y,z+1/2","-y+1,x+1/4,z+3/4","-x+3/4,-y+3/4,z+1","y+5/4,-x+1/2,z+5/4","x+1/2,-y+1/4,-z+3/4","y+3/4,x+1/4,-z+1","-x+3/4,y+1/2,-z+5/4","-y+1/2,-x+1/2,-z+1/2","z+1/2,x,y+1/2","-x+1,z+1/4,y+3/4","-z+3/4,-x+3/4,y+1","x+5/4,-z+1/2,y+5/4","z+1/2,-x+1/4,-y+3/4","x+3/4,z+1/4,-y+1","-z+3/4,x+1/2,-y+5/4","-x+1/2,-z+1/2,-y+1/2","y+1/2,z,x+1/2","y+1,-z+1/4,-x+5/4","z+3/4,y+3/4,-x+1/2","-y+5/4,z+1/2,-x+3/4","-z+1,-y+1/2,-x+1","-y+3/4,-z+1/4,x+1/2","z+3/4,-y,x+5/4","-z+1/2,y+3/4,x+3/4","-x+1/2,-y,-z+1/2","y,-x-1/4,-z+1/4","x+1/4,y-3/4,-z","-y-1/4,x-1/2,-z-1/4","-x+1/2,y-1/4,z+1/4","-y+1/4,-x-1/4,z","x+1/4,-y-1/2,z-1/4","y+1/2,x-1/2,z+1/2","-z+1/2,-x,-y+1/2","x,-z-1/4,-y+1/4","z+1/4,x-3/4,-y","-x-1/4,z-1/2,-y-1/4","-z+1/2,x-1/4,y+1/4","-x+1/4,-z-1/4,y","z+1/4,-x-1/2,y-1/4","x+1/2,z-1/2,y+1/2","-y+1/2,-z,-x+1/2","-y,z-1/4,x-1/4","-z+1/4,-y-3/4,x+1/2","y-1/4,-z-1/2,x+1/4","z,y-1/2,x","y+1/4,z-1/4,-x+1/2","-z+1/4,y,-x-1/4","z+1/2,-y-3/4,-x+1/4","x+1/2,y+1/2,z","-y+1,x+3/4,z+1/4","-x+3/4,-y+5/4,z+1/2","y+5/4,-x+1,z+3/4","x+1/2,-y+3/4,-z+1/4","y+3/4,x+3/4,-z+1/2","-x+3/4,y+1,-z+3/4","-y+1/2,-x+1,-z","z+1/2,x+1/2,y","-x+1,z+3/4,y+1/4","-z+3/4,-x+5/4,y+1/2","x+5/4,-z+1,y+3/4","z+1/2,-x+3/4,-y+1/4","x+3/4,z+3/4,-y+1/2","-z+3/4,x+1,-y+3/4","-x+1/2,-z+1,-y","y+1/2,z+1/2,x","y+1,-z+3/4,-x+3/4","z+3/4,y+5/4,-x","-y+5/4,z+1,-x+1/4","-z+1,-y+1,-x+1/2","-y+3/4,-z+3/4,x","z+3/4,-y+1/2,x+3/4","-z+1/2,y+5/4,x+1/4","-x+1/2,-y+1/2,-z","y,-x+1/4,-z-1/4","x+1/4,y-1/4,-z-1/2","-y-1/4,x,-z-3/4","-x+1/2,y+1/4,z-1/4","-y+1/4,-x+1/4,z-1/2","x+1/4,-y,z-3/4","y+1/2,x,z","-z+1/2,-x+1/2,-y","x,-z+1/4,-y-1/4","z+1/4,x-1/4,-y-1/2","-x-1/4,z,-y-3/4","-z+1/2,x+1/4,y-1/4","-x+1/4,-z+1/4,y-1/2","z+1/4,-x,y-3/4","x+1/2,z,y","-y+1/2,-z+1/2,-x","-y,z+1/4,x-3/4","-z+1/4,-y-1/4,x","y-1/4,-z,x-1/4","z,y,x-1/2","y+1/4,z+1/4,-x","-z+1/4,y+1/2,-x-3/4","z+1/2,-y-1/4,-x-1/4"]},{id:229,hm:"I m -3 m",hs:"-I 4 2 3",o:24,s:["x,y,z","-y,x,z","-x,-y,z","y,-x,z","x,-y,-z","y,x,-z","-x,y,-z","-y,-x,-z","z,x,y","-x,z,y","-z,-x,y","x,-z,y","z,-x,-y","x,z,-y","-z,x,-y","-x,-z,-y","y,z,x","y,-z,-x","z,y,-x","-y,z,-x","-z,-y,-x","-y,-z,x","z,-y,x","-z,y,x","-x,-y,-z","y,-x,-z","x,y,-z","-y,x,-z","-x,y,z","-y,-x,z","x,-y,z","y,x,z","-z,-x,-y","x,-z,-y","z,x,-y","-x,z,-y","-z,x,y","-x,-z,y","z,-x,y","x,z,y","-y,-z,-x","-y,z,x","-z,-y,x","y,-z,x","z,y,x","y,z,-x","-z,y,-x","z,-y,-x","x+1/2,y+1/2,z+1/2","-y+1/2,x+1/2,z+1/2","-x+1/2,-y+1/2,z+1/2","y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,-z+1/2","y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,-z+1/2","-y+1/2,-x+1/2,-z+1/2","z+1/2,x+1/2,y+1/2","-x+1/2,z+1/2,y+1/2","-z+1/2,-x+1/2,y+1/2","x+1/2,-z+1/2,y+1/2","z+1/2,-x+1/2,-y+1/2","x+1/2,z+1/2,-y+1/2","-z+1/2,x+1/2,-y+1/2","-x+1/2,-z+1/2,-y+1/2","y+1/2,z+1/2,x+1/2","y+1/2,-z+1/2,-x+1/2","z+1/2,y+1/2,-x+1/2","-y+1/2,z+1/2,-x+1/2","-z+1/2,-y+1/2,-x+1/2","-y+1/2,-z+1/2,x+1/2","z+1/2,-y+1/2,x+1/2","-z+1/2,y+1/2,x+1/2","-x+1/2,-y+1/2,-z+1/2","y+1/2,-x+1/2,-z+1/2","x+1/2,y+1/2,-z+1/2","-y+1/2,x+1/2,-z+1/2","-x+1/2,y+1/2,z+1/2","-y+1/2,-x+1/2,z+1/2","x+1/2,-y+1/2,z+1/2","y+1/2,x+1/2,z+1/2","-z+1/2,-x+1/2,-y+1/2","x+1/2,-z+1/2,-y+1/2","z+1/2,x+1/2,-y+1/2","-x+1/2,z+1/2,-y+1/2","-z+1/2,x+1/2,y+1/2","-x+1/2,-z+1/2,y+1/2","z+1/2,-x+1/2,y+1/2","x+1/2,z+1/2,y+1/2","-y+1/2,-z+1/2,-x+1/2","-y+1/2,z+1/2,x+1/2","-z+1/2,-y+1/2,x+1/2","y+1/2,-z+1/2,x+1/2","z+1/2,y+1/2,x+1/2","y+1/2,z+1/2,-x+1/2","-z+1/2,y+1/2,-x+1/2","z+1/2,-y+1/2,-x+1/2"]},{id:230,hm:"I a -3 d",hs:"-I 4bd 2c 3",o:24,s:["x,y,z","-y+1/4,x+3/4,z+1/4","-x+1/2,-y,z+1/2","y+1/4,-x+1/4,z+3/4","x,-y,-z+1/2","y+1/4,x+3/4,-z+3/4","-x+1/2,y,-z","-y+1/4,-x+1/4,-z+1/4","z,x,y","-x+1/4,z+3/4,y+1/4","-z+1/2,-x,y+1/2","x+1/4,-z+1/4,y+3/4","z,-x,-y+1/2","x+1/4,z+3/4,-y+3/4","-z+1/2,x,-y","-x+1/4,-z+1/4,-y+1/4","y,z,x","y+1/2,-z+1/2,-x","z+3/4,y+1/4,-x+1/4","-y,z+1/2,-x+1/2","-z+1/4,-y+1/4,-x+1/4","-y+1/2,-z,x+1/2","z+3/4,-y+3/4,x+1/4","-z+3/4,y+1/4,x+3/4","-x,-y,-z","y-1/4,-x-3/4,-z-1/4","x-1/2,y,-z-1/2","-y-1/4,x-1/4,-z-3/4","-x,y,z-1/2","-y-1/4,-x-3/4,z-3/4","x-1/2,-y,z","y-1/4,x-1/4,z-1/4","-z,-x,-y","x-1/4,-z-3/4,-y-1/4","z-1/2,x,-y-1/2","-x-1/4,z-1/4,-y-3/4","-z,x,y-1/2","-x-1/4,-z-3/4,y-3/4","z-1/2,-x,y","x-1/4,z-1/4,y-1/4","-y,-z,-x","-y-1/2,z-1/2,x","-z-3/4,-y-1/4,x-1/4","y,-z-1/2,x-1/2","z-1/4,y-1/4,x-1/4","y-1/2,z,-x-1/2","-z-3/4,y-3/4,-x-1/4","z-3/4,-y-1/4,-x-3/4","x+1/2,y+1/2,z+1/2","-y+3/4,x+5/4,z+3/4","-x+1,-y+1/2,z+1","y+3/4,-x+3/4,z+5/4","x+1/2,-y+1/2,-z+1","y+3/4,x+5/4,-z+5/4","-x+1,y+1/2,-z+1/2","-y+3/4,-x+3/4,-z+3/4","z+1/2,x+1/2,y+1/2","-x+3/4,z+5/4,y+3/4","-z+1,-x+1/2,y+1","x+3/4,-z+3/4,y+5/4","z+1/2,-x+1/2,-y+1","x+3/4,z+5/4,-y+5/4","-z+1,x+1/2,-y+1/2","-x+3/4,-z+3/4,-y+3/4","y+1/2,z+1/2,x+1/2","y+1,-z+1,-x+1/2","z+5/4,y+3/4,-x+3/4","-y+1/2,z+1,-x+1","-z+3/4,-y+3/4,-x+3/4","-y+1,-z+1/2,x+1","z+5/4,-y+5/4,x+3/4","-z+5/4,y+3/4,x+5/4","-x+1/2,-y+1/2,-z+1/2","y+1/4,-x-1/4,-z+1/4","x,y+1/2,-z","-y+1/4,x+1/4,-z-1/4","-x+1/2,y+1/2,z","-y+1/4,-x-1/4,z-1/4","x,-y+1/2,z+1/2","y+1/4,x+1/4,z+1/4","-z+1/2,-x+1/2,-y+1/2","x+1/4,-z-1/4,-y+1/4","z,x+1/2,-y","-x+1/4,z+1/4,-y-1/4","-z+1/2,x+1/2,y","-x+1/4,-z-1/4,y-1/4","z,-x+1/2,y+1/2","x+1/4,z+1/4,y+1/4","-y+1/2,-z+1/2,-x+1/2","-y,z,x+1/2","-z-1/4,-y+1/4,x+1/4","y+1/2,-z,x","z+1/4,y+1/4,x+1/4","y,z+1/2,-x","-z-1/4,y-1/4,-x+1/4","z-1/4,-y+1/4,-x-1/4"]}]},function(y,x,z){function s(y){for(var z in y)x.hasOwnProperty(z)||(x[z]=y[z])}Object.defineProperty(x,"__esModule",{value:!0}),s(z(2)),s(z(0))},function(y,x,z){var s=this&&this.__assign||function(){return(s=Object.assign||function(y){for(var x,z=1,s=arguments.length;z<s;z++)for(var h in x=arguments[z])Object.prototype.hasOwnProperty.call(x,h)&&(y[h]=x[h]);return y}).apply(this,arguments)};Object.defineProperty(x,"__esModule",{value:!0});var h,m,i,o=z(0);!function(y){y.Triclinic="Triclinic",y.Monoclinic="Monoclinic",y.Orthorhombic="Orthorhombic",y.Tetragonal="Tetragonal",y.Trigonal="Trigonal",y.Hexagonal="Hexagonal",y.Cubic="Cubic"}(h=x.CrystalSystem||(x.CrystalSystem={})),function(y){y.P="P",y.A="A",y.B="B",y.C="C",y.I="I",y.F="F",y.R="R"}(m=x.UnitCellCentring||(x.UnitCellCentring={})),function(y){y.Primitive="Primitive",y.BaseCentered="BaseCentered",y.BodyCentered="BodyCentered",y.FaceCentered=" FaceCentered"}(i=x.UnitCellCentringType||(x.UnitCellCentringType={}));var d=function(){function y(){}return y.getById=function(y){for(var x=0,z=o.SpaceGroupsData;x<z.length;x++){var h=z[x];if(h.id===y)return s(s({},h),{s:h.s.slice(0)})}return null},y.getByHMName=function(y){for(var x=(y||"").split(":")[0].trim(),z=0,h=o.SpaceGroupsData;z<h.length;z++){var m=h[z];if(m.hm===x)return s(s({},m),{s:m.s.slice(0)})}return null},y.getByHallName=function(y){for(var x=y||"",z=0,h=o.SpaceGroupsData;z<h.length;z++){var m=h[z];if(m.hs===x)return s(s({},m),{s:m.s.slice(0)})}return null},y.getCrystalSystem=function(y){return y.id>=1&&y.id<=2?h.Triclinic:y.id>=3&&y.id<=15?h.Monoclinic:y.id>=16&&y.id<=74?h.Orthorhombic:y.id>=75&&y.id<=142?h.Tetragonal:y.id>=143&&y.id<=167?h.Trigonal:y.id>=168&&y.id<=194?h.Hexagonal:y.id>=195&&y.id<=230?h.Cubic:null},y.getUnitCellCentring=function(y){var x=(y.hm||"")[0];return"P"===x?m.P:"A"===x?m.A:"B"===x?m.B:"C"===x?m.C:"I"===x?m.I:"F"===x?m.F:"R"===x?m.R:null},y.getCentringType=function(x){var z=y.getUnitCellCentring(x);return z===m.P?i.Primitive:z===m.A||z===m.B||z===m.C?i.BaseCentered:z===m.F?i.FaceCentered:z===m.I?i.BodyCentered:z===m.R?i.Primitive:null},y.getUniqueSpaceGroupsList=function(){for(var y=[],x=new Array(230),z=0,s=o.SpaceGroupsData;z<s.length;z++){var h=s[z],m=h.id;x[m]||(x[m]=!0,y.push({id:h.id,hm:h.hm,hs:h.hs}))}return y},y}();x.SpaceGroup=d}]);exports.SpaceGroup=x.SpaceGroup;
 
 ;
 
-$node[ "../mpds/cifplayer/lib/spacegroups/_spacegroups" ] = $node[ "../mpds/cifplayer/lib/spacegroups/_spacegroups.js" ] = module.exports }.call( {} , {} )
+$node[ "../optimade/cifplayer/lib/spacegroups/_spacegroups" ] = $node[ "../optimade/cifplayer/lib/spacegroups/_spacegroups.js" ] = module.exports }.call( {} , {} )
 ;
 "use strict";
 var $;
 (function ($) {
-    $.$mpds_cifplayer_lib_spacegroups = require('../mpds/cifplayer/lib/spacegroups/_spacegroups.js');
+    $.$optimade_cifplayer_lib_spacegroups = require('../optimade/cifplayer/lib/spacegroups/_spacegroups.js');
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    const math = $mpds_cifplayer_lib_math;
-    class $mpds_cifplayer_matinfio_spacegroup extends $mol_object2 {
+    const math = $optimade_cifplayer_lib_math;
+    class $optimade_cifplayer_matinfio_spacegroup extends $mol_object2 {
         data;
         constructor(data) {
             super();
@@ -6377,21 +6953,21 @@ var $;
         }
         static by_name_or_num(name, num) {
             const spacegroup = num
-                ? $mpds_cifplayer_matinfio_spacegroup.by_num(num)
-                : name ? $mpds_cifplayer_matinfio_spacegroup.by_name(name) : null;
-            return spacegroup ? spacegroup : $mpds_cifplayer_matinfio_spacegroup.unknown();
+                ? $optimade_cifplayer_matinfio_spacegroup.by_num(num)
+                : name ? $optimade_cifplayer_matinfio_spacegroup.by_name(name) : null;
+            return spacegroup ? spacegroup : $optimade_cifplayer_matinfio_spacegroup.unknown();
         }
         static by_name(name) {
             const name_fixed = name.charAt(0).toUpperCase() + name.slice(1);
-            const data = $mpds_cifplayer_lib_spacegroups.SpaceGroup.getByHMName(name_fixed);
-            return data ? new $mpds_cifplayer_matinfio_spacegroup(data) : null;
+            const data = $optimade_cifplayer_lib_spacegroups.SpaceGroup.getByHMName(name_fixed);
+            return data ? new $optimade_cifplayer_matinfio_spacegroup(data) : null;
         }
         static by_num(num) {
-            const data = $mpds_cifplayer_lib_spacegroups.SpaceGroup.getById(num);
-            return data ? new $mpds_cifplayer_matinfio_spacegroup(data) : null;
+            const data = $optimade_cifplayer_lib_spacegroups.SpaceGroup.getById(num);
+            return data ? new $optimade_cifplayer_matinfio_spacegroup(data) : null;
         }
         static unknown() {
-            return new $mpds_cifplayer_matinfio_spacegroup($mpds_cifplayer_lib_spacegroups.SpaceGroup.getById(1));
+            return new $optimade_cifplayer_matinfio_spacegroup($optimade_cifplayer_lib_spacegroups.SpaceGroup.getById(1));
         }
         symmetry_list() {
             return this.data.s;
@@ -6412,20 +6988,20 @@ var $;
     }
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio_spacegroup.prototype, "symmetry_list", null);
+    ], $optimade_cifplayer_matinfio_spacegroup.prototype, "symmetry_list", null);
     __decorate([
         $mol_mem_key
-    ], $mpds_cifplayer_matinfio_spacegroup.prototype, "symmetric_atoms", null);
+    ], $optimade_cifplayer_matinfio_spacegroup.prototype, "symmetric_atoms", null);
     __decorate([
         $mol_mem_key
-    ], $mpds_cifplayer_matinfio_spacegroup, "by_name", null);
+    ], $optimade_cifplayer_matinfio_spacegroup, "by_name", null);
     __decorate([
         $mol_mem_key
-    ], $mpds_cifplayer_matinfio_spacegroup, "by_num", null);
+    ], $optimade_cifplayer_matinfio_spacegroup, "by_num", null);
     __decorate([
         $mol_mem
-    ], $mpds_cifplayer_matinfio_spacegroup, "unknown", null);
-    $.$mpds_cifplayer_matinfio_spacegroup = $mpds_cifplayer_matinfio_spacegroup;
+    ], $optimade_cifplayer_matinfio_spacegroup, "unknown", null);
+    $.$optimade_cifplayer_matinfio_spacegroup = $optimade_cifplayer_matinfio_spacegroup;
     function calc_symmetry_span(symmetry_span, fract) {
         let res = 0;
         let sign = 1;
@@ -6571,8 +7147,8 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    const math = $mpds_cifplayer_lib_math;
-    function $mpds_cifplayer_matinfio_cif_to_obj(str) {
+    const math = $optimade_cifplayer_lib_math;
+    function $optimade_cifplayer_matinfio_cif_to_obj(str) {
         const structures = [];
         let symops = [];
         let atprop_seq = [];
@@ -6614,7 +7190,7 @@ var $;
         ];
         const chem_element_idxs = [0, 1];
         let overlayed_idxs = [];
-        for (let oprop in $mpds_cifplayer_matinfio_custom_atom_loop_props) {
+        for (let oprop in $optimade_cifplayer_matinfio_custom_atom_loop_props) {
             overlayed_idxs.push(loop_vals.length);
             loop_vals.push(oprop);
         }
@@ -6714,7 +7290,7 @@ var $;
                             if (!atom.symbol)
                                 atom.symbol = atom.label.replace(/[0-9]/g, '');
                         }
-                        if (!$mpds_cifplayer_matinfio_chemical_elements.JmolColors[atom.symbol]
+                        if (!$optimade_cifplayer_matinfio_chemical_elements.JmolColors[atom.symbol]
                             && atom.symbol
                             && atom.symbol.length > 1) {
                             atom.symbol = atom.symbol.substr(0, atom.symbol.length - 1);
@@ -6747,17 +7323,17 @@ var $;
             return this.$mol_fail(new $mol_data_error('Error: unexpected CIF format'));
         return structures[structures.length - 1];
     }
-    $.$mpds_cifplayer_matinfio_cif_to_obj = $mpds_cifplayer_matinfio_cif_to_obj;
-    function $mpds_cifplayer_matinfio_cif_from_obj(crystal) {
+    $.$optimade_cifplayer_matinfio_cif_to_obj = $optimade_cifplayer_matinfio_cif_to_obj;
+    function $optimade_cifplayer_matinfio_cif_from_obj(crystal) {
         let cif_str = "data_matinfio\n";
         let cell_abc;
         let cell_mat;
         if (Object.keys(crystal.cell).length == 6) {
             cell_abc = crystal.cell;
-            cell_mat = this.$mpds_cifplayer_matinfio_cell_to_matrix(crystal.cell);
+            cell_mat = this.$optimade_cifplayer_matinfio_cell_to_matrix(crystal.cell);
         }
         else {
-            cell_abc = $mpds_cifplayer_matinfio_cell_params_from_matrix(crystal.cell);
+            cell_abc = $optimade_cifplayer_matinfio_cell_params_from_matrix(crystal.cell);
             cell_mat = crystal.cell;
         }
         cif_str += "_cell_length_a    " + cell_abc[0].toFixed(6) + "\n";
@@ -6793,23 +7369,23 @@ var $;
         }
         return cif_str;
     }
-    $.$mpds_cifplayer_matinfio_cif_from_obj = $mpds_cifplayer_matinfio_cif_from_obj;
+    $.$optimade_cifplayer_matinfio_cif_from_obj = $optimade_cifplayer_matinfio_cif_from_obj;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    const math = $mpds_cifplayer_lib_math;
+    const math = $optimade_cifplayer_lib_math;
     const is_numeric = function (v) {
         return !isNaN(parseFloat(v)) && isFinite(v);
     };
-    function $mpds_cifplayer_matinfio_poscar_to_obj(str) {
+    function $optimade_cifplayer_matinfio_poscar_to_obj(str) {
         var lines = str.toString().replace(/(\r\n|\r)/gm, "\n").split("\n"), cell_matrix = [], atoms = [], factor = 1.0, atindices = [], atvals = [], elems = [], types = [], atom_props = ['x', 'y', 'z', 'symbol'], j = 0, line_data = [], atidx = 0, tryarr = [], periodic_table = [], marker = '', cartesian = false;
         loop_poscar_parse: for (let i = 0; i < lines.length; i++) {
             if (i == 0) {
                 tryarr = lines[i].split(" ").filter(function (o) { return o ? true : false; });
-                periodic_table = Object.keys($mpds_cifplayer_matinfio_chemical_elements.AseRadii);
+                periodic_table = Object.keys($optimade_cifplayer_matinfio_chemical_elements.AseRadii);
                 for (let k = 0; k < tryarr.length; k++) {
                     if (periodic_table.indexOf(tryarr[k]) == -1)
                         continue loop_poscar_parse;
@@ -6878,7 +7454,7 @@ var $;
                 else if (line_data.length == 3)
                     elems.length ? line_data.push(elems[atidx]) : line_data.push('Xx');
                 else if (line_data.length < 3) {
-                    this.$mpds_cifplayer_matinfio_log.error("Error: unknown atom definition");
+                    this.$optimade_cifplayer_matinfio_log.error("Error: unknown atom definition");
                     return false;
                 }
                 for (let j = 0; j < 4; j++) {
@@ -6888,7 +7464,7 @@ var $;
                         atom[atom_props[j]] = line_data[j];
                 }
                 if (!atom.symbol) {
-                    this.$mpds_cifplayer_matinfio_log.error("Error: unknown data lines order");
+                    this.$optimade_cifplayer_matinfio_log.error("Error: unknown data lines order");
                     return false;
                 }
                 atom.symbol = atom.symbol.replace(/\W+/, '').replace(/\d+/, '');
@@ -6907,32 +7483,32 @@ var $;
                 'cartesian': cartesian
             };
         else {
-            this.$mpds_cifplayer_matinfio_log.error("Error: unexpected POSCAR format");
+            this.$optimade_cifplayer_matinfio_log.error("Error: unexpected POSCAR format");
             return false;
         }
     }
-    $.$mpds_cifplayer_matinfio_poscar_to_obj = $mpds_cifplayer_matinfio_poscar_to_obj;
+    $.$optimade_cifplayer_matinfio_poscar_to_obj = $optimade_cifplayer_matinfio_poscar_to_obj;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    function $mpds_cifplayer_matinfio_optimade_str_to_obj(str) {
+    function $optimade_cifplayer_matinfio_optimade_str_to_obj(str) {
         const payload = JSON.parse(str);
-        return this.$mpds_cifplayer_matinfio_optimade_to_obj(payload);
+        return this.$optimade_cifplayer_matinfio_optimade_to_obj(payload);
     }
-    $.$mpds_cifplayer_matinfio_optimade_str_to_obj = $mpds_cifplayer_matinfio_optimade_str_to_obj;
-    function $mpds_cifplayer_matinfio_optimade_to_obj(payload) {
+    $.$optimade_cifplayer_matinfio_optimade_str_to_obj = $optimade_cifplayer_matinfio_optimade_str_to_obj;
+    function $optimade_cifplayer_matinfio_optimade_to_obj(payload) {
         const atoms = [];
         const src = payload?.data?.[0] ?? payload;
         if (!src) {
-            this.$mpds_cifplayer_matinfio_log.error("Error: unexpected OPTIMADE format");
+            this.$optimade_cifplayer_matinfio_log.error("Error: unexpected OPTIMADE format");
             return false;
         }
         var n_atoms = src.attributes.cartesian_site_positions.length;
         if (!n_atoms) {
-            this.$mpds_cifplayer_matinfio_log.error("Error: no atomic positions found");
+            this.$optimade_cifplayer_matinfio_log.error("Error: no atomic positions found");
             return false;
         }
         if (src.attributes.species && src.attributes.species[n_atoms - 1] && src.attributes.species[n_atoms - 1].chemical_symbols) {
@@ -6957,7 +7533,7 @@ var $;
             });
         }
         else {
-            this.$mpds_cifplayer_matinfio_log.error("Error: no atomic data found");
+            this.$optimade_cifplayer_matinfio_log.error("Error: no atomic data found");
             return false;
         }
         return {
@@ -6967,18 +7543,18 @@ var $;
             'cartesian': true
         };
     }
-    $.$mpds_cifplayer_matinfio_optimade_to_obj = $mpds_cifplayer_matinfio_optimade_to_obj;
+    $.$optimade_cifplayer_matinfio_optimade_to_obj = $optimade_cifplayer_matinfio_optimade_to_obj;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    function $mpds_cifplayer_matinfio_flatten_from_obj(crystal) {
+    function $optimade_cifplayer_matinfio_flatten_from_obj(crystal) {
         if (crystal.symops)
-            this.$mpds_cifplayer_matinfio_log.warning("Reading of symmetry operations is not implemented, expect errors");
+            this.$optimade_cifplayer_matinfio_log.warning("Reading of symmetry operations is not implemented, expect errors");
         const cell = Object.keys(crystal.cell).length == 6
-            ? this.$mpds_cifplayer_matinfio_cell_to_matrix(crystal.cell)
+            ? this.$optimade_cifplayer_matinfio_cell_to_matrix(crystal.cell)
             : crystal.cell;
         const xyzatoms = [];
         const tcell = cell[0].map(function (col, i) {
@@ -7014,14 +7590,14 @@ var $;
             : false;
         return { 'cell': fcell, 'atoms': fatoms, 'types': types || crystal.types, 'symlabel': symlabel };
     }
-    $.$mpds_cifplayer_matinfio_flatten_from_obj = $mpds_cifplayer_matinfio_flatten_from_obj;
+    $.$optimade_cifplayer_matinfio_flatten_from_obj = $optimade_cifplayer_matinfio_flatten_from_obj;
 })($ || ($ = {}));
 
 ;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mpds/cifplayer/player/player.view.css", "[mol_theme=\"$mol_theme_light\"] {\n\t--mol_theme_back: white;\n}\n");
+    $mol_style_attach("optimade/cifplayer/player/player.view.css", "[mol_theme=\"$mol_theme_light\"] {\n\t--mol_theme_back: white;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -7033,7 +7609,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $mol_style_define($mpds_cifplayer_player, {
+        $mol_style_define($optimade_cifplayer_player, {
             background: {
                 color: $mol_theme.back,
             },
@@ -7125,7 +7701,7 @@ var $;
             Zoom_section: {
                 padding: {
                     top: '2rem',
-                    bottom: '2rem',
+                    bottom: '1rem',
                 },
             },
             Zoom_up_icon: {
@@ -7162,10 +7738,10 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const THREE = $mpds_cifplayer_lib_three;
-        const TWEEN = $mpds_cifplayer_lib_tween.TWEEN;
+        const THREE = $optimade_cifplayer_lib_three;
+        const TWEEN = $optimade_cifplayer_lib_tween.TWEEN;
         const phonon_amp = 6;
-        class $mpds_cifplayer_player extends $.$mpds_cifplayer_player {
+        class $optimade_cifplayer_player extends $.$optimade_cifplayer_player {
             theme() {
                 return '$mol_theme_' + (this.externals()?.theme || 'dark');
             }
@@ -7236,7 +7812,7 @@ var $;
                 }
             }
             structure_3d_data() {
-                return new $mpds_cifplayer_matinfio(this.data()).player();
+                return new $optimade_cifplayer_matinfio(this.data()).player();
             }
             text_canvas(text) {
                 const canvas = document.createElement('canvas');
@@ -7277,7 +7853,7 @@ var $;
             }
             spacegroup() {
                 const { sg_name, ng_name } = this.structure_3d_data();
-                return $mpds_cifplayer_matinfio_spacegroup.by_name_or_num(sg_name, ng_name);
+                return $optimade_cifplayer_matinfio_spacegroup.by_name_or_num(sg_name, ng_name);
             }
             sym_checks() {
                 return this.symmetry_list().map(name => this.Sym_check(name));
@@ -7350,10 +7926,12 @@ var $;
                     };
                 });
             }
+            atom_width_segments = 32;
+            atom_height_segments = 16;
             atom_box(fract_translate) {
                 const atom_box = this.Three().new_object(`atom_box` + fract_translate.toString(), () => new THREE.Object3D());
                 this.visible_atoms_translated(fract_translate).forEach(data => {
-                    const atom = new THREE.Mesh(new THREE.SphereGeometry(data.r * this.atom_radius_scale(), 10, 8), new THREE.MeshLambertMaterial({ color: data.c }));
+                    const atom = new THREE.Mesh(new THREE.SphereGeometry(data.r * this.atom_radius_scale(), this.atom_width_segments, this.atom_height_segments), new THREE.MeshLambertMaterial({ color: data.c }));
                     atom.position.set(data.x, data.y, data.z);
                     atom_box.add(atom);
                 });
@@ -7400,14 +7978,14 @@ var $;
                 return [this.overlay_box([0, 0, 0])];
             }
             dir_light() {
-                const intensity = this.$.$mol_lights() ? 1.5 : 0.5;
+                const intensity = this.$.$mol_lights() ? 2.2 : 0.7;
                 const dir_light = this.Three().object('dir_light', () => new THREE.DirectionalLight(0xffffff, intensity));
                 dir_light.intensity = intensity;
                 dir_light.position.set(1, 1.5, 2);
                 return dir_light;
             }
             ambient_light() {
-                const intensity = this.$.$mol_lights() ? 5 : 1.5;
+                const intensity = this.$.$mol_lights() ? 1.8 : 0.6;
                 const ambient_light = this.Three().object('ambient_light', () => new THREE.AmbientLight(0x999999, intensity));
                 ambient_light.intensity = intensity;
                 return ambient_light;
@@ -7468,6 +8046,7 @@ var $;
             tweens = new TWEEN.Group();
             on_render() {
                 this.tweens.update();
+                this.dir_light().position.copy(this.camera().position);
             }
             vibrate(phonon) {
                 $mol_wire_sync(this).unvibrate();
@@ -7543,153 +8122,153 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "available_overlays", null);
+        ], $optimade_cifplayer_player.prototype, "available_overlays", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "symlabel", null);
+        ], $optimade_cifplayer_player.prototype, "symlabel", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_a", null);
+        ], $optimade_cifplayer_player.prototype, "descr_a", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_b", null);
+        ], $optimade_cifplayer_player.prototype, "descr_b", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_c", null);
+        ], $optimade_cifplayer_player.prototype, "descr_c", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_alpha", null);
+        ], $optimade_cifplayer_player.prototype, "descr_alpha", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_beta", null);
+        ], $optimade_cifplayer_player.prototype, "descr_beta", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "descr_gamma", null);
+        ], $optimade_cifplayer_player.prototype, "descr_gamma", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "color_a", null);
+        ], $optimade_cifplayer_player.prototype, "color_a", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "color_b", null);
+        ], $optimade_cifplayer_player.prototype, "color_b", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "color_c", null);
+        ], $optimade_cifplayer_player.prototype, "color_c", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "camera_distance", null);
+        ], $optimade_cifplayer_player.prototype, "camera_distance", null);
         __decorate([
             $mol_action
-        ], $mpds_cifplayer_player.prototype, "zoom_up", null);
+        ], $optimade_cifplayer_player.prototype, "zoom_up", null);
         __decorate([
             $mol_action
-        ], $mpds_cifplayer_player.prototype, "zoom_down", null);
+        ], $optimade_cifplayer_player.prototype, "zoom_down", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "message_visible", null);
+        ], $optimade_cifplayer_player.prototype, "message_visible", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "message", null);
+        ], $optimade_cifplayer_player.prototype, "message", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "structure_3d_data", null);
+        ], $optimade_cifplayer_player.prototype, "structure_3d_data", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "text_canvas", null);
+        ], $optimade_cifplayer_player.prototype, "text_canvas", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "axis_vectors", null);
+        ], $optimade_cifplayer_player.prototype, "axis_vectors", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "controls_target", null);
+        ], $optimade_cifplayer_player.prototype, "controls_target", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spacegroup", null);
+        ], $optimade_cifplayer_player.prototype, "spacegroup", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "sym_checks", null);
+        ], $optimade_cifplayer_player.prototype, "sym_checks", null);
         __decorate([
             $mol_action
-        ], $mpds_cifplayer_player.prototype, "toogle_all_symmetry", null);
+        ], $optimade_cifplayer_player.prototype, "toogle_all_symmetry", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "all_symmetry_enabled", null);
+        ], $optimade_cifplayer_player.prototype, "all_symmetry_enabled", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "symmetry_visible", null);
+        ], $optimade_cifplayer_player.prototype, "symmetry_visible", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "Toogle_all_title", null);
+        ], $optimade_cifplayer_player.prototype, "Toogle_all_title", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "symmetry_atoms", null);
+        ], $optimade_cifplayer_player.prototype, "symmetry_atoms", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "symmetry_list", null);
+        ], $optimade_cifplayer_player.prototype, "symmetry_list", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "visible_atoms", null);
+        ], $optimade_cifplayer_player.prototype, "visible_atoms", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "visible_atoms_translated", null);
+        ], $optimade_cifplayer_player.prototype, "visible_atoms_translated", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "atom_box", null);
+        ], $optimade_cifplayer_player.prototype, "atom_box", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "cell_translations", null);
+        ], $optimade_cifplayer_player.prototype, "cell_translations", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "overlay_changed", null);
+        ], $optimade_cifplayer_player.prototype, "overlay_changed", null);
         __decorate([
             $mol_mem_key
-        ], $mpds_cifplayer_player.prototype, "overlay_box", null);
+        ], $optimade_cifplayer_player.prototype, "overlay_box", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "overlay_boxes", null);
+        ], $optimade_cifplayer_player.prototype, "overlay_boxes", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "dir_light", null);
+        ], $optimade_cifplayer_player.prototype, "dir_light", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "ambient_light", null);
+        ], $optimade_cifplayer_player.prototype, "ambient_light", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "cell_center", null);
+        ], $optimade_cifplayer_player.prototype, "cell_center", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "axes_box", null);
+        ], $optimade_cifplayer_player.prototype, "axes_box", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "cell_box", null);
+        ], $optimade_cifplayer_player.prototype, "cell_box", null);
         __decorate([
             $mol_action
-        ], $mpds_cifplayer_player.prototype, "vibrate", null);
+        ], $optimade_cifplayer_player.prototype, "vibrate", null);
         __decorate([
             $mol_action
-        ], $mpds_cifplayer_player.prototype, "unvibrate", null);
+        ], $optimade_cifplayer_player.prototype, "unvibrate", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "left_panel", null);
+        ], $optimade_cifplayer_player.prototype, "left_panel", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "symlabel_visible", null);
+        ], $optimade_cifplayer_player.prototype, "symlabel_visible", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spread_cells", null);
+        ], $optimade_cifplayer_player.prototype, "spread_cells", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spread_cell_label", null);
+        ], $optimade_cifplayer_player.prototype, "spread_cell_label", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spread_limit_a", null);
+        ], $optimade_cifplayer_player.prototype, "spread_limit_a", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spread_limit_b", null);
+        ], $optimade_cifplayer_player.prototype, "spread_limit_b", null);
         __decorate([
             $mol_mem
-        ], $mpds_cifplayer_player.prototype, "spread_limit_c", null);
-        $$.$mpds_cifplayer_player = $mpds_cifplayer_player;
-        $mol_view_component($mpds_cifplayer_player);
+        ], $optimade_cifplayer_player.prototype, "spread_limit_c", null);
+        $$.$optimade_cifplayer_player = $optimade_cifplayer_player;
+        $mol_view_component($optimade_cifplayer_player);
         function is_overlap(check, atoms, delta) {
             for (const atom of atoms) {
                 if (check.x < atom.x - delta || check.x > atom.x + delta)
@@ -7706,287 +8285,700 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
-		theme(){
-			return "$mol_theme_base";
-		}
-	};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/button/major/major.view.css", "[mol_button_major] {\n\tbackground-color: var(--mol_theme_back);\n\tcolor: var(--mol_theme_text);\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-;
-	($.$mol_row) = class $mol_row extends ($.$mol_view) {};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/row/row.view.css", "[mol_row] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\talign-items: flex-start;\n\talign-content: flex-start;\n\tjustify-content: flex-start;\n\tpadding: var(--mol_gap_block);\n\tgap: var(--mol_gap_block);\n\tflex: 0 0 auto;\n\tbox-sizing: border-box;\n\tmax-width: 100%;\n}\n\n[mol_row] > * {\n\tmax-width: 100%;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-;
-	($.$mpds_tmdne_app) = class $mpds_tmdne_app extends ($.$mol_view) {
-		Head(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Does this material exist?");
-			return obj;
-		}
-		name(){
+	($.$mol_link) = class $mol_link extends ($.$mol_view) {
+		uri_toggle(){
 			return "";
 		}
-		Name(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this?.name()));
-			return obj;
+		hint(){
+			return "";
 		}
-		json(){
-			return null;
+		hint_safe(){
+			return (this?.hint());
 		}
-		Player(){
-			const obj = new this.$.$mpds_cifplayer_player();
-			(obj.data) = () => ((this?.json()));
-			(obj.Fullscreen) = () => (null);
-			return obj;
+		target(){
+			return "_self";
 		}
-		Question(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Do you think it's synthesizable?");
-			return obj;
+		file_name(){
+			return "";
 		}
-		update(next){
+		current(){
+			return false;
+		}
+		relation(){
+			return "";
+		}
+		event_click(next){
 			if(next !== undefined) return next;
 			return null;
 		}
-		Yes(){
-			const obj = new this.$.$mol_button_major();
-			(obj.click) = (next) => ((this?.update(next)));
-			return obj;
+		click(next){
+			return (this?.event_click(next));
 		}
-		No(){
-			const obj = new this.$.$mol_button_major();
-			(obj.click) = (next) => ((this?.update(next)));
-			return obj;
+		uri(){
+			return "";
 		}
-		Answer(){
-			const obj = new this.$.$mol_row();
-			(obj.sub) = () => ([(this?.Yes()), (this?.No())]);
+		dom_name(){
+			return "a";
+		}
+		uri_off(){
+			return "";
+		}
+		uri_native(){
+			return null;
+		}
+		external(){
+			return false;
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"href": (this?.uri_toggle()), 
+				"title": (this?.hint_safe()), 
+				"target": (this?.target()), 
+				"download": (this?.file_name()), 
+				"mol_link_current": (this?.current()), 
+				"rel": (this?.relation())
+			};
+		}
+		sub(){
+			return [(this?.title())];
+		}
+		arg(){
+			return {};
+		}
+		event(){
+			return {...(super.event()), "click": (next) => (this?.click(next))};
+		}
+	};
+	($mol_mem(($.$mol_link.prototype), "event_click"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_link extends $.$mol_link {
+            uri_toggle() {
+                return this.current() ? this.uri_off() : this.uri();
+            }
+            uri() {
+                return new this.$.$mol_state_arg(this.state_key()).link(this.arg());
+            }
+            uri_off() {
+                const arg2 = {};
+                for (let i in this.arg())
+                    arg2[i] = null;
+                return new this.$.$mol_state_arg(this.state_key()).link(arg2);
+            }
+            uri_native() {
+                const base = this.$.$mol_state_arg.href();
+                return new URL(this.uri(), base);
+            }
+            current() {
+                const base = this.$.$mol_state_arg.href_normal();
+                const target = this.uri_native().toString();
+                if (base === target)
+                    return true;
+                const args = this.arg();
+                const keys = Object.keys(args).filter(key => args[key] != null);
+                if (keys.length === 0)
+                    return false;
+                for (const key of keys) {
+                    if (this.$.$mol_state_arg.value(key) != args[key])
+                        return false;
+                }
+                return true;
+            }
+            file_name() {
+                return null;
+            }
+            minimal_height() {
+                return Math.max(super.minimal_height(), 24);
+            }
+            external() {
+                return this.uri_native().origin !== $mol_dom_context.location.origin;
+            }
+            target() {
+                return this.external() ? '_blank' : '_self';
+            }
+            hint_safe() {
+                try {
+                    return this.hint();
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                    return '';
+                }
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_link.prototype, "uri_toggle", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link.prototype, "uri", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link.prototype, "uri_off", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link.prototype, "uri_native", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link.prototype, "current", null);
+        $$.$mol_link = $mol_link;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    const { rem } = $mol_style_unit;
+    $mol_style_define($mol_link, {
+        textDecoration: 'none',
+        color: $mol_theme.control,
+        stroke: 'currentcolor',
+        cursor: 'pointer',
+        padding: $mol_gap.text,
+        boxSizing: 'border-box',
+        position: 'relative',
+        minWidth: rem(2.5),
+        gap: $mol_gap.space,
+        border: {
+            radius: $mol_gap.round,
+        },
+        ':hover': {
+            background: {
+                color: $mol_theme.hover,
+            },
+        },
+        ':focus-visible': {
+            outline: 'none',
+            background: {
+                color: $mol_theme.hover,
+            },
+        },
+        ':active': {
+            color: $mol_theme.focus,
+        },
+        '@': {
+            mol_link_current: {
+                'true': {
+                    color: $mol_theme.current,
+                    textShadow: '0 0',
+                }
+            }
+        },
+    });
+})($ || ($ = {}));
+
+;
+	($.$mol_image) = class $mol_image extends ($.$mol_view) {
+		uri(){
+			return "";
+		}
+		loading(){
+			return "eager";
+		}
+		decoding(){
+			return "async";
+		}
+		cors(){
+			return null;
+		}
+		natural_width(){
+			return 0;
+		}
+		natural_height(){
+			return 0;
+		}
+		load(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		dom_name(){
+			return "img";
+		}
+		field(){
+			return {
+				...(super.field()), 
+				"src": (this?.uri()), 
+				"alt": (this?.title()), 
+				"loading": (this?.loading()), 
+				"decoding": (this?.decoding()), 
+				"crossOrigin": (this?.cors())
+			};
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"width": (this?.natural_width()), 
+				"height": (this?.natural_height())
+			};
+		}
+		event(){
+			return {"load": (next) => (this?.load(next))};
+		}
+		minimal_width(){
+			return 16;
+		}
+		minimal_height(){
+			return 16;
+		}
+	};
+	($mol_mem(($.$mol_image.prototype), "load"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_image extends $.$mol_image {
+            natural_width(next) {
+                const dom = this.dom_node();
+                if (dom.naturalWidth)
+                    return dom.naturalWidth;
+                const found = this.uri().match(/\bwidth=(\d+)/);
+                return found ? Number(found[1]) : null;
+            }
+            natural_height(next) {
+                const dom = this.dom_node();
+                if (dom.naturalHeight)
+                    return dom.naturalHeight;
+                const found = this.uri().match(/\bheight=(\d+)/);
+                return found ? Number(found[1]) : null;
+            }
+            load() {
+                this.natural_width(null);
+                this.natural_height(null);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_image.prototype, "natural_width", null);
+        __decorate([
+            $mol_mem
+        ], $mol_image.prototype, "natural_height", null);
+        $$.$mol_image = $mol_image;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/image/image.view.css", "[mol_image] {\n\tborder-radius: var(--mol_gap_round);\n\toverflow: hidden;\n\tflex: 0 1 auto;\n\tmax-width: 100%;\n\tobject-fit: cover;\n\theight: fit-content;\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_link_iconed) = class $mol_link_iconed extends ($.$mol_link) {
+		icon(){
+			return "";
+		}
+		Icon(){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ((this?.icon()));
+			(obj.title) = () => ("");
 			return obj;
 		}
 		title(){
-			return "This material does not exist";
-		}
-		number(next){
-			if(next !== undefined) return next;
-			return 1;
-		}
-		auto(){
-			return [(this?.update())];
+			return (this?.uri());
 		}
 		sub(){
-			return [
-				(this?.Head()), 
-				(this?.Name()), 
-				(this?.Player()), 
-				(this?.Question()), 
-				(this?.Answer())
-			];
+			return [(this?.Icon())];
+		}
+		content(){
+			return [(this?.title())];
+		}
+		host(){
+			return "";
 		}
 	};
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Head"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Name"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Player"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Question"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "update"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Yes"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "No"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "Answer"));
-	($mol_mem(($.$mpds_tmdne_app.prototype), "number"));
+	($mol_mem(($.$mol_link_iconed.prototype), "Icon"));
 
+
+;
+"use strict";
 
 ;
 "use strict";
 var $;
 (function ($) {
-    function $mol_dom_parse(text, type = 'application/xhtml+xml') {
-        const parser = new $mol_dom_context.DOMParser();
-        const doc = parser.parseFromString(text, type);
-        const error = doc.getElementsByTagName('parsererror');
-        if (error.length)
-            throw new Error(error[0].textContent);
-        return doc;
-    }
-    $.$mol_dom_parse = $mol_dom_parse;
+    var $$;
+    (function ($$) {
+        class $mol_link_iconed extends $.$mol_link_iconed {
+            icon() {
+                return `https://favicon.yandex.net/favicon/${this.host()}?color=0,0,0,0&size=32&stub=1`;
+            }
+            host() {
+                const base = this.$.$mol_state_arg.href();
+                const url = new URL(this.uri(), base);
+                return url.hostname;
+            }
+            title() {
+                const uri = this.uri();
+                const host = this.host();
+                const suffix = (host ? uri.split(this.host(), 2)[1] : uri)?.replace(/^[\/\?#!]+/, '');
+                return decodeURIComponent(suffix || host).replace(/^\//, ' ');
+            }
+            sub() {
+                return [
+                    ...this.host() ? [this.Icon()] : [],
+                    ...this.content() ? [' ', ...this.content()] : [],
+                ];
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_link_iconed.prototype, "icon", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link_iconed.prototype, "host", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link_iconed.prototype, "title", null);
+        __decorate([
+            $mol_mem
+        ], $mol_link_iconed.prototype, "sub", null);
+        $$.$mol_link_iconed = $mol_link_iconed;
+    })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
 ;
 "use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/link/iconed/iconed.view.css", "[mol_link_iconed] {\n\talign-items: baseline;\n\tdisplay: inline-flex;\n\tpadding: var(--mol_gap_text);\n}\n\n[mol_link_iconed_icon] {\n\tbox-shadow: none;\n\theight: 1.5em;\n\twidth: 1em;\n\tflex: 0 0 auto;\n\tdisplay: inline-block;\n\talign-self: normal;\n\tvertical-align: top;\n\tborder-radius: 0;\n\tobject-fit: scale-down;\n\topacity: .75;\n}\n\n[mol_theme=\"$mol_theme_dark\"] [mol_link_iconed_icon] {\n\tfilter: var(--mol_theme_image);\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_dimmer) = class $mol_dimmer extends ($.$mol_paragraph) {
+		parts(){
+			return [];
+		}
+		string(id){
+			return "";
+		}
+		haystack(){
+			return "";
+		}
+		needle(){
+			return "";
+		}
+		sub(){
+			return (this?.parts());
+		}
+		Low(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ([(this?.string(id))]);
+			return obj;
+		}
+		High(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ([(this?.string(id))]);
+			return obj;
+		}
+	};
+	($mol_mem_key(($.$mol_dimmer.prototype), "Low"));
+	($mol_mem_key(($.$mol_dimmer.prototype), "High"));
+
 
 ;
 "use strict";
-var $node = $node || {};
+
+;
+"use strict";
+
+;
+"use strict";
+
+;
+"use strict";
 
 ;
 "use strict";
 var $;
 (function ($) {
-    class $mol_fetch_response extends $mol_object2 {
-        native;
-        constructor(native) {
-            super();
-            this.native = native;
+    class $mol_regexp extends RegExp {
+        groups;
+        constructor(source, flags = 'gsu', groups = []) {
+            super(source, flags);
+            this.groups = groups;
         }
-        status() {
-            const types = ['unknown', 'inform', 'success', 'redirect', 'wrong', 'failed'];
-            return types[Math.floor(this.native.status / 100)];
+        *[Symbol.matchAll](str) {
+            const index = this.lastIndex;
+            this.lastIndex = 0;
+            try {
+                while (this.lastIndex < str.length) {
+                    const found = this.exec(str);
+                    if (!found)
+                        break;
+                    yield found;
+                }
+            }
+            finally {
+                this.lastIndex = index;
+            }
         }
-        code() {
-            return this.native.status;
+        [Symbol.match](str) {
+            const res = [...this[Symbol.matchAll](str)].filter(r => r.groups).map(r => r[0]);
+            if (!res.length)
+                return null;
+            return res;
         }
-        message() {
-            return this.native.statusText || `HTTP Error ${this.code()}`;
+        [Symbol.split](str) {
+            const res = [];
+            let token_last = null;
+            for (let token of this[Symbol.matchAll](str)) {
+                if (token.groups && (token_last ? token_last.groups : true))
+                    res.push('');
+                res.push(token[0]);
+                token_last = token;
+            }
+            if (!res.length)
+                res.push('');
+            return res;
         }
-        headers() {
-            return this.native.headers;
+        test(str) {
+            return Boolean(str.match(this));
         }
-        mime() {
-            return this.headers().get('content-type');
+        exec(str) {
+            const from = this.lastIndex;
+            if (from >= str.length)
+                return null;
+            const res = super.exec(str);
+            if (res === null) {
+                this.lastIndex = str.length;
+                if (!str)
+                    return null;
+                return Object.assign([str.slice(from)], {
+                    index: from,
+                    input: str,
+                });
+            }
+            if (from === this.lastIndex) {
+                $mol_fail(new Error('Captured empty substring'));
+            }
+            const groups = {};
+            const skipped = str.slice(from, this.lastIndex - res[0].length);
+            if (skipped) {
+                this.lastIndex = this.lastIndex - res[0].length;
+                return Object.assign([skipped], {
+                    index: from,
+                    input: res.input,
+                });
+            }
+            for (let i = 0; i < this.groups.length; ++i) {
+                const group = this.groups[i];
+                groups[group] = groups[group] || res[i + 1] || '';
+            }
+            return Object.assign(res, { groups });
         }
-        stream() {
-            return this.native.body;
+        generate(params) {
+            return null;
         }
-        text() {
-            const buffer = this.buffer();
-            const native = this.native;
-            const mime = native.headers.get('content-type') || '';
-            const [, charset] = /charset=(.*)/.exec(mime) || [, 'utf-8'];
-            const decoder = new TextDecoder(charset);
-            return decoder.decode(buffer);
+        get native() {
+            return new RegExp(this.source, this.flags);
         }
-        json() {
-            return $mol_wire_sync(this.native).json();
+        static repeat(source, min = 0, max = Number.POSITIVE_INFINITY) {
+            const regexp = $mol_regexp.from(source);
+            const upper = Number.isFinite(max) ? max : '';
+            const str = `(?:${regexp.source}){${min},${upper}}?`;
+            const regexp2 = new $mol_regexp(str, regexp.flags, regexp.groups);
+            regexp2.generate = params => {
+                const res = regexp.generate(params);
+                if (res)
+                    return res;
+                if (min > 0)
+                    return res;
+                return '';
+            };
+            return regexp2;
         }
-        buffer() {
-            return $mol_wire_sync(this.native).arrayBuffer();
+        static repeat_greedy(source, min = 0, max = Number.POSITIVE_INFINITY) {
+            const regexp = $mol_regexp.from(source);
+            const upper = Number.isFinite(max) ? max : '';
+            const str = `(?:${regexp.source}){${min},${upper}}`;
+            const regexp2 = new $mol_regexp(str, regexp.flags, regexp.groups);
+            regexp2.generate = params => {
+                const res = regexp.generate(params);
+                if (res)
+                    return res;
+                if (min > 0)
+                    return res;
+                return '';
+            };
+            return regexp2;
         }
-        xml() {
-            return $mol_dom_parse(this.text(), 'application/xml');
-        }
-        xhtml() {
-            return $mol_dom_parse(this.text(), 'application/xhtml+xml');
-        }
-        html() {
-            return $mol_dom_parse(this.text(), 'text/html');
-        }
-    }
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "stream", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "text", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "buffer", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "xml", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "xhtml", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch_response.prototype, "html", null);
-    $.$mol_fetch_response = $mol_fetch_response;
-    class $mol_fetch extends $mol_object2 {
-        static request(input, init = {}) {
-            const native = globalThis.fetch ?? $node['undici'].fetch;
-            const controller = new AbortController();
-            let done = false;
-            const promise = native(input, {
-                ...init,
-                signal: controller.signal,
-            }).finally(() => {
-                done = true;
+        static vary(sources) {
+            const groups = [];
+            const chunks = sources.map(source => {
+                const regexp = $mol_regexp.from(source);
+                groups.push(...regexp.groups);
+                return regexp.source;
             });
-            return Object.assign(promise, {
-                destructor: () => {
-                    if (!done && !controller.signal.aborted)
-                        controller.abort();
-                },
-            });
+            return new $mol_regexp(`(?:${chunks.join('|')})`, '', groups);
         }
-        static response(input, init) {
-            return new $mol_fetch_response($mol_wire_sync(this).request(input, init));
+        static optional(source) {
+            return $mol_regexp.repeat_greedy(source, 0, 1);
         }
-        static success(input, init) {
-            const response = this.response(input, init);
-            if (response.status() === 'success')
-                return response;
-            throw new Error(response.message());
+        static force_after(source) {
+            const regexp = $mol_regexp.from(source);
+            return new $mol_regexp(`(?=${regexp.source})`, regexp.flags, regexp.groups);
         }
-        static stream(input, init) {
-            return this.success(input, init).stream();
+        static forbid_after(source) {
+            const regexp = $mol_regexp.from(source);
+            return new $mol_regexp(`(?!${regexp.source})`, regexp.flags, regexp.groups);
         }
-        static text(input, init) {
-            return this.success(input, init).text();
+        static from(source, { ignoreCase, multiline } = {
+            ignoreCase: false,
+            multiline: false,
+        }) {
+            let flags = 'gsu';
+            if (multiline)
+                flags += 'm';
+            if (ignoreCase)
+                flags += 'i';
+            if (typeof source === 'number') {
+                const src = `\\u{${source.toString(16)}}`;
+                const regexp = new $mol_regexp(src, flags);
+                regexp.generate = () => src;
+                return regexp;
+            }
+            if (typeof source === 'string') {
+                const src = source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regexp = new $mol_regexp(src, flags);
+                regexp.generate = () => source;
+                return regexp;
+            }
+            else if (source instanceof $mol_regexp) {
+                const regexp = new $mol_regexp(source.source, flags, source.groups);
+                regexp.generate = params => source.generate(params);
+                return regexp;
+            }
+            if (source instanceof RegExp) {
+                const test = new RegExp('|' + source.source);
+                const groups = Array.from({ length: test.exec('').length - 1 }, (_, i) => String(i + 1));
+                const regexp = new $mol_regexp(source.source, source.flags, groups);
+                regexp.generate = () => '';
+                return regexp;
+            }
+            if (Array.isArray(source)) {
+                const patterns = source.map(src => Array.isArray(src)
+                    ? $mol_regexp.optional(src)
+                    : $mol_regexp.from(src));
+                const chunks = patterns.map(pattern => pattern.source);
+                const groups = [];
+                let index = 0;
+                for (const pattern of patterns) {
+                    for (let group of pattern.groups) {
+                        if (Number(group) >= 0) {
+                            groups.push(String(index++));
+                        }
+                        else {
+                            groups.push(group);
+                        }
+                    }
+                }
+                const regexp = new $mol_regexp(chunks.join(''), flags, groups);
+                regexp.generate = params => {
+                    let res = '';
+                    for (const pattern of patterns) {
+                        let sub = pattern.generate(params);
+                        if (sub === null)
+                            return '';
+                        res += sub;
+                    }
+                    return res;
+                };
+                return regexp;
+            }
+            else {
+                const groups = [];
+                const chunks = Object.keys(source).map(name => {
+                    groups.push(name);
+                    const regexp = $mol_regexp.from(source[name]);
+                    groups.push(...regexp.groups);
+                    return `(${regexp.source})`;
+                });
+                const regexp = new $mol_regexp(`(?:${chunks.join('|')})`, flags, groups);
+                const validator = new RegExp('^' + regexp.source + '$', flags);
+                regexp.generate = (params) => {
+                    for (let option in source) {
+                        if (option in params) {
+                            if (typeof params[option] === 'boolean') {
+                                if (!params[option])
+                                    continue;
+                            }
+                            else {
+                                const str = String(params[option]);
+                                if (str.match(validator))
+                                    return str;
+                                $mol_fail(new Error(`Wrong param: ${option}=${str}`));
+                            }
+                        }
+                        else {
+                            if (typeof source[option] !== 'object')
+                                continue;
+                        }
+                        const res = $mol_regexp.from(source[option]).generate(params);
+                        if (res)
+                            return res;
+                    }
+                    return null;
+                };
+                return regexp;
+            }
         }
-        static json(input, init) {
-            return this.success(input, init).json();
+        static unicode_only(...category) {
+            return new $mol_regexp(`\\p{${category.join('=')}}`);
         }
-        static buffer(input, init) {
-            return this.success(input, init).buffer();
+        static unicode_except(...category) {
+            return new $mol_regexp(`\\P{${category.join('=')}}`);
         }
-        static xml(input, init) {
-            return this.success(input, init).xml();
+        static char_range(from, to) {
+            return new $mol_regexp(`${$mol_regexp.from(from).source}-${$mol_regexp.from(to).source}`);
         }
-        static xhtml(input, init) {
-            return this.success(input, init).xhtml();
+        static char_only(...allowed) {
+            const regexp = allowed.map(f => $mol_regexp.from(f).source).join('');
+            return new $mol_regexp(`[${regexp}]`);
         }
-        static html(input, init) {
-            return this.success(input, init).html();
+        static char_except(...forbidden) {
+            const regexp = forbidden.map(f => $mol_regexp.from(f).source).join('');
+            return new $mol_regexp(`[^${regexp}]`);
         }
+        static decimal_only = $mol_regexp.from(/\d/gsu);
+        static decimal_except = $mol_regexp.from(/\D/gsu);
+        static latin_only = $mol_regexp.from(/\w/gsu);
+        static latin_except = $mol_regexp.from(/\W/gsu);
+        static space_only = $mol_regexp.from(/\s/gsu);
+        static space_except = $mol_regexp.from(/\S/gsu);
+        static word_break_only = $mol_regexp.from(/\b/gsu);
+        static word_break_except = $mol_regexp.from(/\B/gsu);
+        static tab = $mol_regexp.from(/\t/gsu);
+        static slash_back = $mol_regexp.from(/\\/gsu);
+        static nul = $mol_regexp.from(/\0/gsu);
+        static char_any = $mol_regexp.from(/./gsu);
+        static begin = $mol_regexp.from(/^/gsu);
+        static end = $mol_regexp.from(/$/gsu);
+        static or = $mol_regexp.from(/|/gsu);
+        static line_end = $mol_regexp.from({
+            win_end: [['\r'], '\n'],
+            mac_end: '\r',
+        });
     }
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "response", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "success", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "stream", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "text", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "json", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "buffer", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "xml", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "xhtml", null);
-    __decorate([
-        $mol_action
-    ], $mol_fetch, "html", null);
-    $.$mol_fetch = $mol_fetch;
+    $.$mol_regexp = $mol_regexp;
 })($ || ($ = {}));
 
 ;
@@ -7998,29 +8990,3283 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        class $mpds_tmdne_app extends $.$mpds_tmdne_app {
-            json() {
-                return this.$.$mol_fetch.json(`https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${this.number()}`);
+        class $mol_dimmer extends $.$mol_dimmer {
+            parts() {
+                const needle = this.needle();
+                if (needle.length < 2)
+                    return [this.haystack()];
+                let chunks = [];
+                let strings = this.strings();
+                for (let index = 0; index < strings.length; index++) {
+                    if (strings[index] === '')
+                        continue;
+                    chunks.push((index % 2) ? this.High(index) : this.Low(index));
+                }
+                return chunks;
             }
-            name() {
-                return this.json()?.data[0]?.attributes?.chemical_formula_reduced ?? '';
+            strings() {
+                const options = this.needle().split(/\s+/g).filter(Boolean);
+                if (!options.length)
+                    return [this.haystack()];
+                const variants = { ...options };
+                const regexp = $mol_regexp.from({ needle: variants }, { ignoreCase: true });
+                return this.haystack().split(regexp);
             }
-            update() {
-                this.number(this.number(random_int(1, 384937)));
+            string(index) {
+                return this.strings()[index];
+            }
+            *view_find(check, path = []) {
+                if (check(this, this.haystack())) {
+                    yield [...path, this];
+                }
             }
         }
         __decorate([
             $mol_mem
-        ], $mpds_tmdne_app.prototype, "json", null);
+        ], $mol_dimmer.prototype, "strings", null);
+        $$.$mol_dimmer = $mol_dimmer;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/dimmer/dimmer.view.css", "[mol_dimmer] {\n\tdisplay: block;\n\tmax-width: 100%;\n}\n\n[mol_dimmer_low] {\n\tdisplay: inline;\n\topacity: 0.8;\n}\n\n[mol_dimmer_high] {\n\tdisplay: inline;\n\tcolor: var(--mol_theme_focus);\n\ttext-shadow: 0 0;\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_html_view) = class $mol_html_view extends ($.$mol_list) {
+		heading_level(id){
+			return 1;
+		}
+		content(id){
+			return [];
+		}
+		link_uri(id){
+			return "";
+		}
+		image_uri(id){
+			return "";
+		}
+		highlight(){
+			return "";
+		}
+		text(id){
+			return "";
+		}
+		html(){
+			return "";
+		}
+		dom(){
+			return null;
+		}
+		safe_link(id){
+			return "";
+		}
+		views(id){
+			return [];
+		}
+		xss_uri(){
+			return "https://en.wikipedia.org/wiki/XSS#";
+		}
+		Heading(id){
+			const obj = new this.$.$mol_html_view_heading();
+			(obj.level) = () => ((this?.heading_level(id)));
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Paragraph(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		List(id){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this?.content(id)));
+			return obj;
+		}
+		Quote(id){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this?.content(id)));
+			return obj;
+		}
+		Strong(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Emphasis(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Deleted(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Inserted(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Code(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Link(id){
+			const obj = new this.$.$mol_link_iconed();
+			(obj.uri) = () => ((this?.link_uri(id)));
+			(obj.content) = () => ((this?.content(id)));
+			return obj;
+		}
+		Image(id){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ((this?.image_uri(id)));
+			return obj;
+		}
+		Break(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.sub) = () => ([]);
+			return obj;
+		}
+		Text(id){
+			const obj = new this.$.$mol_dimmer();
+			(obj.needle) = () => ((this?.highlight()));
+			(obj.haystack) = () => ((this?.text(id)));
+			return obj;
+		}
+	};
+	($mol_mem_key(($.$mol_html_view.prototype), "Heading"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Paragraph"));
+	($mol_mem_key(($.$mol_html_view.prototype), "List"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Quote"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Strong"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Emphasis"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Deleted"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Inserted"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Code"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Link"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Image"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Break"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Text"));
+	($.$mol_html_view_heading) = class $mol_html_view_heading extends ($.$mol_paragraph) {
+		level(){
+			return 1;
+		}
+		attr(){
+			return {...(super.attr()), "mol_html_view_heading": (this?.level())};
+		}
+	};
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    const { rem } = $mol_style_unit;
+    $mol_style_define($mol_html_view, {
+        Heading: {
+            padding: $mol_gap.text,
+            textShadow: '0 0',
+            '@': {
+                'mol_html_view_heading': {
+                    '1': {
+                        font: {
+                            size: rem(1.5),
+                        },
+                    },
+                    '2': {
+                        font: {
+                            size: rem(1.5),
+                            style: 'italic',
+                        },
+                    },
+                    '3': {
+                        font: {
+                            size: rem(1.25),
+                        },
+                    },
+                    '4': {
+                        font: {
+                            size: rem(1.25),
+                            style: 'italic',
+                        },
+                    },
+                    '5': {
+                        font: {
+                            size: rem(1),
+                        },
+                    },
+                    '6': {
+                        font: {
+                            size: rem(1),
+                            style: 'italic',
+                        },
+                    },
+                },
+            },
+        },
+        Paragraph: {
+            display: 'block',
+            flex: {
+                wrap: 'wrap',
+            },
+            padding: $mol_gap.text,
+        },
+        List: {
+            display: 'block',
+            flex: {
+                wrap: 'wrap',
+            },
+            padding: $mol_gap.block,
+        },
+        Quote: {
+            display: 'block',
+            flex: {
+                'wrap': 'wrap',
+            },
+            padding: $mol_gap.block,
+            margin: {
+                left: rem(.75),
+            },
+            box: {
+                shadow: [{
+                        inset: true,
+                        x: rem(.25),
+                        y: 0,
+                        blur: 0,
+                        spread: 0,
+                        color: $mol_theme.line,
+                    }],
+            },
+        },
+        Strong: {
+            display: 'inline',
+            textShadow: '0 0',
+        },
+        Emphasis: {
+            display: 'inline',
+            font: {
+                style: 'italic',
+            },
+        },
+        Deleted: {
+            display: 'inline',
+            color: $mol_theme.shade,
+        },
+        Inserted: {
+            display: 'inline',
+            color: $mol_theme.special,
+        },
+        Link: {
+            margin: rem(-.5),
+        },
+        Code: {
+            display: 'inline',
+            font: {
+                family: 'monospace',
+            },
+            whiteSpace: 'pre-wrap',
+        },
+        Image: {
+            display: 'inline-block',
+        },
+        Break: {
+            display: 'block',
+            height: $mol_gap.block,
+        },
+        Text: {
+            display: 'inline',
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const warned = new Set();
+        class $mol_html_view extends $.$mol_html_view {
+            dom() {
+                return this.$.$mol_dom_parse(this.html(), 'text/html').body;
+            }
+            sub() {
+                return this.content(this.dom());
+            }
+            content(node) {
+                const res = [];
+                for (const child of node.childNodes) {
+                    res.push(...this.views(child));
+                }
+                return res;
+            }
+            views(node) {
+                switch (node.nodeName) {
+                    case '#comment':
+                        return [];
+                    case '#text':
+                    case '#cdata-section':
+                        if (!node.textContent.trim())
+                            return [];
+                        return [this.Text(node)];
+                    case 'H1':
+                    case 'H2':
+                    case 'H3':
+                    case 'H4':
+                    case 'H5':
+                    case 'H6':
+                        return [this.Heading(node)];
+                    case 'P':
+                    case 'LI':
+                    case 'PRE':
+                    case 'DIV':
+                        return [this.Paragraph(node)];
+                    case 'UL':
+                    case 'OL':
+                        return [this.List(node)];
+                    case 'BLOCKQUOTE':
+                        return [this.Quote(node)];
+                    case 'STRONG':
+                    case 'B':
+                        return [this.Strong(node)];
+                    case 'EM':
+                    case 'I':
+                        return [this.Emphasis(node)];
+                    case 'DEL':
+                    case 'S':
+                        return [this.Deleted(node)];
+                    case 'INS':
+                    case 'U':
+                        return [this.Inserted(node)];
+                    case 'A':
+                        return [this.Link(node)];
+                    case 'PRE':
+                    case 'CODE':
+                        return [this.Code(node)];
+                    case 'IMG':
+                        return [this.Image(node)];
+                    case 'BR':
+                        return [this.Break(node)];
+                    default:
+                        if (!warned.has(node.nodeName)) {
+                            this.$.$mol_log3_warn({
+                                place: `${this}.views()`,
+                                message: 'Unsupported tag',
+                                tag: node.nodeName,
+                                hint: 'Add support to $mol_html_view',
+                            });
+                            warned.add(node.nodeName);
+                        }
+                        return this.content(node);
+                }
+            }
+            text(node) {
+                return node.textContent ?? '???';
+            }
+            safe_link(uri) {
+                const base = $mol_dom_context.location.href;
+                const url = new $mol_dom_context.URL(uri, base);
+                if (/^\w*script:/i.test(url.protocol)) {
+                    return this.xss_uri() + uri;
+                }
+                return uri;
+            }
+            link_uri(node) {
+                return this.safe_link(node.href);
+            }
+            image_uri(node) {
+                return this.safe_link(node.src);
+            }
+            heading_level(node) {
+                return Number(node.nodeName.substring(1));
+            }
+        }
         __decorate([
             $mol_mem
-        ], $mpds_tmdne_app.prototype, "name", null);
+        ], $mol_html_view.prototype, "dom", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_html_view.prototype, "content", null);
+        $$.$mol_html_view = $mol_html_view;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$optimade_tmdne_html_view) = class $optimade_tmdne_html_view extends ($.$mol_html_view) {
+		minimal_height(){
+			return 16;
+		}
+		Subscript(id){
+			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("sub");
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Superscript(id){
+			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("sup");
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Text(id){
+			const obj = new this.$.$mol_dimmer();
+			(obj.minimal_height) = () => (16);
+			(obj.needle) = () => ((this?.highlight()));
+			(obj.haystack) = () => ((this?.text(id)));
+			return obj;
+		}
+	};
+	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Subscript"));
+	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Superscript"));
+	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Text"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $optimade_tmdne_html_view extends $.$optimade_tmdne_html_view {
+            views(node) {
+                if (node.nodeName == 'SUB')
+                    return [this.Subscript(node)];
+                if (node.nodeName == 'SUP')
+                    return [this.Superscript(node)];
+                return super.views(node);
+            }
+        }
+        $$.$optimade_tmdne_html_view = $optimade_tmdne_html_view;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($optimade_tmdne_html_view, {
+        Subscript: {
+            font: {
+                size: '.75em',
+            },
+            position: 'relative',
+            bottom: '-0.5em',
+        },
+        Superscript: {
+            font: {
+                size: '.75em',
+            },
+            position: 'relative',
+            top: '-0.25em',
+        },
+    });
+})($ || ($ = {}));
+
+;
+	($.$mol_stack) = class $mol_stack extends ($.$mol_view) {};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/stack/stack.view.css", "[mol_stack] {\n\tdisplay: grid;\n\t/* width: max-content; */\n\t/* height: max-content; */\n\talign-items: flex-start;\n\tjustify-items: flex-start;\n}\n\n[mol_stack] > * {\n\tgrid-area: 1/1;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+	($.$mol_text_code_token) = class $mol_text_code_token extends ($.$mol_dimmer) {
+		type(){
+			return "";
+		}
+		attr(){
+			return {...(super.attr()), "mol_text_code_token_type": (this?.type())};
+		}
+	};
+	($.$mol_text_code_token_link) = class $mol_text_code_token_link extends ($.$mol_text_code_token) {
+		uri(){
+			return "";
+		}
+		dom_name(){
+			return "a";
+		}
+		type(){
+			return "code-link";
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"href": (this?.uri()), 
+				"target": "_blank"
+			};
+		}
+	};
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const { hsla } = $mol_style_func;
+        $mol_style_define($mol_text_code_token, {
+            display: 'inline',
+            textDecoration: 'none',
+            '@': {
+                mol_text_code_token_type: {
+                    'code-keyword': {
+                        color: hsla(0, 70, 60, 1),
+                    },
+                    'code-field': {
+                        color: hsla(300, 70, 50, 1),
+                    },
+                    'code-tag': {
+                        color: hsla(330, 70, 50, 1),
+                    },
+                    'code-global': {
+                        color: hsla(30, 80, 50, 1),
+                    },
+                    'code-decorator': {
+                        color: hsla(180, 40, 50, 1),
+                    },
+                    'code-punctuation': {
+                        color: hsla(0, 0, 50, 1),
+                    },
+                    'code-string': {
+                        color: hsla(90, 40, 50, 1),
+                    },
+                    'code-number': {
+                        color: hsla(55, 65, 45, 1),
+                    },
+                    'code-call': {
+                        color: hsla(270, 60, 50, 1),
+                    },
+                    'code-link': {
+                        color: hsla(210, 60, 50, 1),
+                    },
+                    'code-comment-inline': {
+                        opacity: .5,
+                    },
+                    'code-comment-block': {
+                        opacity: .5,
+                    },
+                    'code-docs': {
+                        opacity: .75,
+                    },
+                },
+            }
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_text_code_row) = class $mol_text_code_row extends ($.$mol_paragraph) {
+		numb(){
+			return 0;
+		}
+		token_type(id){
+			return "";
+		}
+		token_text(id){
+			return "";
+		}
+		highlight(){
+			return "";
+		}
+		token_uri(id){
+			return "";
+		}
+		text(){
+			return "";
+		}
+		minimal_height(){
+			return 24;
+		}
+		numb_showed(){
+			return true;
+		}
+		syntax(){
+			return null;
+		}
+		uri_resolve(id){
+			return "";
+		}
+		Numb(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this?.numb())]);
+			return obj;
+		}
+		Token(id){
+			const obj = new this.$.$mol_text_code_token();
+			(obj.type) = () => ((this?.token_type(id)));
+			(obj.haystack) = () => ((this?.token_text(id)));
+			(obj.needle) = () => ((this?.highlight()));
+			return obj;
+		}
+		Token_link(id){
+			const obj = new this.$.$mol_text_code_token_link();
+			(obj.haystack) = () => ((this?.token_text(id)));
+			(obj.needle) = () => ((this?.highlight()));
+			(obj.uri) = () => ((this?.token_uri(id)));
+			return obj;
+		}
+		find_pos(id){
+			return null;
+		}
+	};
+	($mol_mem(($.$mol_text_code_row.prototype), "Numb"));
+	($mol_mem_key(($.$mol_text_code_row.prototype), "Token"));
+	($mol_mem_key(($.$mol_text_code_row.prototype), "Token_link"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_syntax2 {
+        lexems;
+        constructor(lexems) {
+            this.lexems = lexems;
+            for (let name in lexems) {
+                this.rules.push({
+                    name: name,
+                    regExp: lexems[name],
+                    size: RegExp('^$|' + lexems[name].source).exec('').length - 1,
+                });
+            }
+            const parts = '(' + this.rules.map(rule => rule.regExp.source).join(')|(') + ')';
+            this.regexp = RegExp(`([\\s\\S]*?)(?:(${parts})|$(?![^]))`, 'gmu');
+        }
+        rules = [];
+        regexp;
+        tokenize(text, handle) {
+            let end = 0;
+            lexing: while (end < text.length) {
+                const start = end;
+                this.regexp.lastIndex = start;
+                var found = this.regexp.exec(text);
+                end = this.regexp.lastIndex;
+                if (start === end)
+                    throw new Error('Empty token');
+                var prefix = found[1];
+                if (prefix)
+                    handle('', prefix, [prefix], start);
+                var suffix = found[2];
+                if (!suffix)
+                    continue;
+                let offset = 4;
+                for (let rule of this.rules) {
+                    if (found[offset - 1]) {
+                        handle(rule.name, suffix, found.slice(offset, offset + rule.size), start + prefix.length);
+                        continue lexing;
+                    }
+                    offset += rule.size + 1;
+                }
+                $mol_fail(new Error('$mol_syntax2 is broken'));
+            }
+        }
+        parse(text, handlers) {
+            this.tokenize(text, (name, ...args) => handlers[name](...args));
+        }
+    }
+    $.$mol_syntax2 = $mol_syntax2;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $.$mol_syntax2_md_flow = new $mol_syntax2({
+        'quote': /^((?:(?:[>"] )(?:[^]*?)$(\r?\n?))+)([\n\r]*)/,
+        'header': /^([#=]+)(\s+)(.*?)$([\n\r]*)/,
+        'list': /^((?:(?: ?([*+-])|(?:\d+[\.\)])+) +(?:[^]*?)$(?:\r?\n?)(?:  (?:[^]*?)$(?:\r?\n?))*)+)((?:\r?\n)*)/,
+        'code': /^(```\s*)([\w.-]*)[\r\n]+([^]*?)^(```)$([\n\r]*)/,
+        'code-indent': /^((?:(?:  |\t)(?:[^]*?)$\r?\n?)+)([\n\r]*)/,
+        'table': /((?:^\|.+?$\r?\n?)+)([\n\r]*)/,
+        'grid': /((?:^ *! .*?$\r?\n?)+)([\n\r]*)/,
+        'cut': /^--+$((?:\r?\n)*)/,
+        'block': /^(.*?)$((?:\r?\n)*)/,
+    });
+    $.$mol_syntax2_md_line = new $mol_syntax2({
+        'strong': /\*\*(.+?)\*\*/,
+        'emphasis': /\*(?!\s)(.+?)\*|\/\/(?!\s)(.+?)\/\//,
+        'code': /```(.+?)```|;;(.+?);;|`(.+?)`/,
+        'insert': /\+\+(.+?)\+\+/,
+        'delete': /~~(.+?)~~|--(.+?)--/,
+        'embed': /""(?:(.*?)\\)?(.*?)""/,
+        'link': /\\\\(?:(.*?)\\)?(.*?)\\\\/,
+        'image-link': /!\[([^\[\]]*?)\]\((.*?)\)/,
+        'text-link': /\[(.*?(?:\[[^\[\]]*?\][^\[\]]*?)*)\]\((.*?)\)/,
+        'text-link-http': /\b(https?:\/\/[^\s,.;:!?")]+(?:[,.;:!?")][^\s,.;:!?")]+)+)/,
+    });
+    $.$mol_syntax2_md_code = new $mol_syntax2({
+        'code-indent': /\t+/,
+        'code-docs': /\/\/\/.*?$/,
+        'code-comment-block': /(?:\/\*[^]*?\*\/|\/\+[^]*?\+\/|<![^]*?>)/,
+        'code-link': /(?:\w+:\/\/|#)\S+?(?=\s|\\\\|""|$)/,
+        'code-comment-inline': /\/\/.*?(?:$|\/\/)/,
+        'code-string': /(?:".*?"|'.*?'|`.*?`|\/.+?\/[dygimsu]*(?!\p{Letter})|(?:^|[ \t])\\[^\n]*\n)/u,
+        'code-number': /[+-]?(?:\d*\.)?\d+\w*/,
+        'code-call': /\.?\w+ *(?=\()/,
+        'code-sexpr': /\((\w+ )/,
+        'code-field': /(?:(?:\.|::|->)\w+|[\w-]+\??\s*:(?!\/\/|:))/,
+        'code-keyword': /\b(throw|readonly|unknown|keyof|typeof|never|from|class|struct|interface|type|function|extends|implements|module|namespace|import|export|include|require|var|val|let|const|for|do|while|until|in|out|of|new|if|then|else|switch|case|this|return|async|await|yield|try|catch|break|continue|get|set|public|private|protected|string|boolean|number|null|undefined|true|false|void|int|float|ref)\b/,
+        'code-global': /[$]+\w*|\b[A-Z][a-z0-9]+[A-Z]\w*/,
+        'code-word': /\w+/,
+        'code-decorator': /@\s*\S+/,
+        'code-tag': /<\/?[\w-]+\/?>?|&\w+;/,
+        'code-punctuation': /[\-\[\]\{\}\(\)<=>~!\?@#%&\*_\+\\\/\|;:\.,\^]+?/,
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_text_code_row extends $.$mol_text_code_row {
+            maximal_width() {
+                return this.text().length * this.letter_width();
+            }
+            syntax() {
+                return this.$.$mol_syntax2_md_code;
+            }
+            tokens(path) {
+                const tokens = [];
+                const text = (path.length > 0)
+                    ? this.tokens(path.slice(0, path.length - 1))[path[path.length - 1]].found.slice(1, -1)
+                    : this.text();
+                this.syntax().tokenize(text, (name, found, chunks) => {
+                    if (name === 'code-sexpr') {
+                        tokens.push({ name: 'code-punctuation', found: '(', chunks: [] });
+                        tokens.push({ name: 'code-call', found: chunks[0], chunks: [] });
+                    }
+                    else {
+                        tokens.push({ name, found, chunks });
+                    }
+                });
+                return tokens;
+            }
+            sub() {
+                return [
+                    ...this.numb_showed() ? [this.Numb()] : [],
+                    ...this.row_content([])
+                ];
+            }
+            row_content(path) {
+                return this.tokens(path).map((t, i) => this.Token([...path, i]));
+            }
+            Token(path) {
+                return this.token_type(path) === 'code-link' ? this.Token_link(path) : super.Token(path);
+            }
+            token_type(path) {
+                return this.tokens([...path.slice(0, path.length - 1)])[path[path.length - 1]].name;
+            }
+            token_content(path) {
+                const tokens = this.tokens([...path.slice(0, path.length - 1)]);
+                const token = tokens[path[path.length - 1]];
+                switch (token.name) {
+                    case 'code-string': return [
+                        token.found[0],
+                        ...this.row_content(path),
+                        token.found[token.found.length - 1],
+                    ];
+                    default: return [token.found];
+                }
+            }
+            token_text(path) {
+                const tokens = this.tokens([...path.slice(0, path.length - 1)]);
+                const token = tokens[path[path.length - 1]];
+                return token.found;
+            }
+            token_uri(path) {
+                const uri = this.token_text(path);
+                return this.uri_resolve(uri);
+            }
+            *view_find(check, path = []) {
+                if (check(this, this.text())) {
+                    yield [...path, this];
+                }
+            }
+            find_pos(offset) {
+                return this.find_token_pos([offset]);
+            }
+            find_token_pos([offset, ...path]) {
+                for (const [index, token] of this.tokens(path).entries()) {
+                    if (token.found.length >= offset) {
+                        const token = this.Token([...path, index]);
+                        return { token, offset };
+                    }
+                    else {
+                        offset -= token.found.length;
+                    }
+                }
+                return null;
+            }
+        }
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "tokens", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "row_content", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "token_type", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "token_content", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "token_text", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "token_uri", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "find_pos", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code_row.prototype, "find_token_pos", null);
+        $$.$mol_text_code_row = $mol_text_code_row;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const { rem } = $mol_style_unit;
+        $mol_style_define($mol_text_code_row, {
+            display: 'block',
+            position: 'relative',
+            font: {
+                family: 'monospace',
+            },
+            Numb: {
+                textAlign: 'right',
+                color: $mol_theme.shade,
+                width: rem(3),
+                margin: {
+                    left: rem(-4),
+                },
+                display: 'inline-block',
+                whiteSpace: 'nowrap',
+                userSelect: 'none',
+                position: 'absolute',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $.$mol_blob = ($node.buffer?.Blob ?? $mol_dom_context.Blob);
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_clipboard) = class $mol_icon_clipboard extends ($.$mol_icon) {
+		path(){
+			return "M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3";
+		}
+	};
+
+
+;
+"use strict";
+
+;
+	($.$mol_icon_clipboard_outline) = class $mol_icon_clipboard_outline extends ($.$mol_icon) {
+		path(){
+			return "M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3M7,7H17V5H19V19H5V5H7V7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+;
+	($.$mol_button_copy) = class $mol_button_copy extends ($.$mol_button_minor) {
+		text(){
+			return (this?.title());
+		}
+		text_blob(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_blob([(this?.text())], {"type": "text/plain"});
+			return obj;
+		}
+		html(){
+			return "";
+		}
+		html_blob(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_blob([(this?.html())], {"type": "text/html"});
+			return obj;
+		}
+		Icon(){
+			const obj = new this.$.$mol_icon_clipboard_outline();
+			return obj;
+		}
+		title(){
+			return "";
+		}
+		blobs(){
+			return [(this?.text_blob()), (this?.html_blob())];
+		}
+		data(){
+			return {};
+		}
+		sub(){
+			return [(this?.Icon()), (this?.title())];
+		}
+	};
+	($mol_mem(($.$mol_button_copy.prototype), "text_blob"));
+	($mol_mem(($.$mol_button_copy.prototype), "html_blob"));
+	($mol_mem(($.$mol_button_copy.prototype), "Icon"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    const mapping = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        '&': '&amp;',
+    };
+    function $mol_html_encode(text) {
+        return text.replace(/[&<">]/gi, str => mapping[str]);
+    }
+    $.$mol_html_encode = $mol_html_encode;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_button_copy extends $.$mol_button_copy {
+            data() {
+                return Object.fromEntries(this.blobs().map(blob => [blob.type, blob]));
+            }
+            html() {
+                return $mol_html_encode(this.text());
+            }
+            attachments() {
+                return [new ClipboardItem(this.data())];
+            }
+            click(event) {
+                const cb = $mol_wire_sync(this.$.$mol_dom_context.navigator.clipboard);
+                cb.writeText?.(this.text());
+                cb.write?.(this.attachments());
+                if (cb.writeText === undefined && cb.write === undefined) {
+                    throw new Error("doesn't support copy to clipoard");
+                }
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_button_copy.prototype, "html", null);
+        __decorate([
+            $mol_mem
+        ], $mol_button_copy.prototype, "attachments", null);
+        $$.$mol_button_copy = $mol_button_copy;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_text_code) = class $mol_text_code extends ($.$mol_stack) {
+		sidebar_showed(){
+			return false;
+		}
+		render_visible_only(){
+			return false;
+		}
+		row_numb(id){
+			return 0;
+		}
+		row_text(id){
+			return "";
+		}
+		syntax(){
+			return null;
+		}
+		uri_resolve(id){
+			return "";
+		}
+		highlight(){
+			return "";
+		}
+		Row(id){
+			const obj = new this.$.$mol_text_code_row();
+			(obj.numb_showed) = () => ((this?.sidebar_showed()));
+			(obj.numb) = () => ((this?.row_numb(id)));
+			(obj.text) = () => ((this?.row_text(id)));
+			(obj.syntax) = () => ((this?.syntax()));
+			(obj.uri_resolve) = (id) => ((this?.uri_resolve(id)));
+			(obj.highlight) = () => ((this?.highlight()));
+			return obj;
+		}
+		rows(){
+			return [(this?.Row("0"))];
+		}
+		Rows(){
+			const obj = new this.$.$mol_list();
+			(obj.render_visible_only) = () => ((this?.render_visible_only()));
+			(obj.rows) = () => ((this?.rows()));
+			return obj;
+		}
+		text_export(){
+			return "";
+		}
+		Copy(){
+			const obj = new this.$.$mol_button_copy();
+			(obj.hint) = () => ((this.$.$mol_locale.text("$mol_text_code_Copy_hint")));
+			(obj.text) = () => ((this?.text_export()));
+			return obj;
+		}
+		attr(){
+			return {...(super.attr()), "mol_text_code_sidebar_showed": (this?.sidebar_showed())};
+		}
+		text(){
+			return "";
+		}
+		text_lines(){
+			return [];
+		}
+		find_pos(id){
+			return null;
+		}
+		uri_base(){
+			return "";
+		}
+		sub(){
+			return [(this?.Rows()), (this?.Copy())];
+		}
+	};
+	($mol_mem_key(($.$mol_text_code.prototype), "Row"));
+	($mol_mem(($.$mol_text_code.prototype), "Rows"));
+	($mol_mem(($.$mol_text_code.prototype), "Copy"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_text_code extends $.$mol_text_code {
+            render_visible_only() {
+                return this.$.$mol_support_css_overflow_anchor();
+            }
+            text_lines() {
+                return (this.text() ?? '').split('\n');
+            }
+            rows() {
+                return this.text_lines().map((_, index) => this.Row(index + 1));
+            }
+            row_text(index) {
+                return this.text_lines()[index - 1];
+            }
+            row_numb(index) {
+                return index;
+            }
+            find_pos(offset) {
+                for (const [index, line] of this.text_lines().entries()) {
+                    if (line.length >= offset) {
+                        return this.Row(index + 1).find_pos(offset);
+                    }
+                    else {
+                        offset -= line.length + 1;
+                    }
+                }
+                return null;
+            }
+            sub() {
+                return [
+                    this.Rows(),
+                    ...this.sidebar_showed() ? [this.Copy()] : []
+                ];
+            }
+            syntax() {
+                return this.$.$mol_syntax2_md_code;
+            }
+            uri_base() {
+                return $mol_dom_context.document.location.href;
+            }
+            uri_resolve(uri) {
+                if (/^(\w+script+:)+/.test(uri))
+                    return null;
+                try {
+                    const url = new URL(uri, this.uri_base());
+                    return url.toString();
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                    return null;
+                }
+            }
+            text_export() {
+                return this.text() + '\n';
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_text_code.prototype, "text_lines", null);
+        __decorate([
+            $mol_mem
+        ], $mol_text_code.prototype, "rows", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code.prototype, "row_text", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code.prototype, "find_pos", null);
+        __decorate([
+            $mol_mem
+        ], $mol_text_code.prototype, "sub", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_text_code.prototype, "uri_resolve", null);
+        $$.$mol_text_code = $mol_text_code;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const { rem, px } = $mol_style_unit;
+        $mol_style_define($mol_text_code, {
+            whiteSpace: 'pre-wrap',
+            font: {
+                family: 'monospace',
+            },
+            Rows: {
+                padding: $mol_gap.text,
+            },
+            Row: {
+                font: {
+                    family: 'inherit',
+                },
+            },
+            Copy: {
+                alignSelf: 'flex-start',
+                justifySelf: 'flex-start',
+            },
+            '@': {
+                'mol_text_code_sidebar_showed': {
+                    true: {
+                        $mol_text_code_row: {
+                            margin: {
+                                left: rem(1.75),
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_textarea) = class $mol_textarea extends ($.$mol_stack) {
+		clickable(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		sidebar_showed(){
+			return false;
+		}
+		press(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		hover(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		value(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		hint(){
+			return " ";
+		}
+		enabled(){
+			return true;
+		}
+		spellcheck(){
+			return true;
+		}
+		length_max(){
+			return +Infinity;
+		}
+		selection(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		bring(){
+			return (this?.Edit()?.bring());
+		}
+		submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		submit_with_ctrl(){
+			return true;
+		}
+		Edit(){
+			const obj = new this.$.$mol_textarea_edit();
+			(obj.value) = (next) => ((this?.value(next)));
+			(obj.hint) = () => ((this?.hint()));
+			(obj.enabled) = () => ((this?.enabled()));
+			(obj.spellcheck) = () => ((this?.spellcheck()));
+			(obj.length_max) = () => ((this?.length_max()));
+			(obj.selection) = (next) => ((this?.selection(next)));
+			(obj.submit) = (next) => ((this?.submit(next)));
+			(obj.submit_with_ctrl) = () => ((this?.submit_with_ctrl()));
+			return obj;
+		}
+		row_numb(id){
+			return 0;
+		}
+		highlight(){
+			return "";
+		}
+		View(){
+			const obj = new this.$.$mol_text_code();
+			(obj.text) = () => ((this?.value()));
+			(obj.render_visible_only) = () => (false);
+			(obj.row_numb) = (id) => ((this?.row_numb(id)));
+			(obj.sidebar_showed) = () => ((this?.sidebar_showed()));
+			(obj.highlight) = () => ((this?.highlight()));
+			return obj;
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"mol_textarea_clickable": (this?.clickable()), 
+				"mol_textarea_sidebar_showed": (this?.sidebar_showed())
+			};
+		}
+		event(){
+			return {"keydown": (next) => (this?.press(next)), "pointermove": (next) => (this?.hover(next))};
+		}
+		sub(){
+			return [(this?.Edit()), (this?.View())];
+		}
+		symbols_alt(){
+			return {
+				"comma": "<", 
+				"period": ">", 
+				"dash": "−", 
+				"equals": "≈", 
+				"graveAccent": "́", 
+				"forwardSlash": "÷", 
+				"E": "€", 
+				"V": "✔", 
+				"X": "×", 
+				"C": "©", 
+				"P": "§", 
+				"H": "₽", 
+				"key0": "°", 
+				"key8": "•", 
+				"key2": "@", 
+				"key3": "#", 
+				"key4": "$", 
+				"key6": "^", 
+				"key7": "&", 
+				"bracketOpen": "[", 
+				"bracketClose": "]", 
+				"slashBack": "|"
+			};
+		}
+		symbols_alt_ctrl(){
+			return {"space": " "};
+		}
+		symbols_alt_shift(){
+			return {
+				"V": "✅", 
+				"X": "❌", 
+				"O": "⭕", 
+				"key1": "❗", 
+				"key4": "💲", 
+				"key7": "❓", 
+				"comma": "«", 
+				"period": "»", 
+				"semicolon": "“", 
+				"quoteSingle": "”", 
+				"dash": "—", 
+				"equals": "≠", 
+				"graveAccent": "̱", 
+				"bracketOpen": "{", 
+				"bracketClose": "}"
+			};
+		}
+	};
+	($mol_mem(($.$mol_textarea.prototype), "clickable"));
+	($mol_mem(($.$mol_textarea.prototype), "press"));
+	($mol_mem(($.$mol_textarea.prototype), "hover"));
+	($mol_mem(($.$mol_textarea.prototype), "value"));
+	($mol_mem(($.$mol_textarea.prototype), "selection"));
+	($mol_mem(($.$mol_textarea.prototype), "submit"));
+	($mol_mem(($.$mol_textarea.prototype), "Edit"));
+	($mol_mem(($.$mol_textarea.prototype), "View"));
+	($.$mol_textarea_edit) = class $mol_textarea_edit extends ($.$mol_string) {
+		dom_name(){
+			return "textarea";
+		}
+		enter(){
+			return "enter";
+		}
+		field(){
+			return {...(super.field()), "scrollTop": 0};
+		}
+	};
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_textarea extends $.$mol_textarea {
+            indent_inc() {
+                let text = this.value();
+                let [from, to] = this.selection();
+                const rows = text.split('\n');
+                let start = 0;
+                for (let i = 0; i < rows.length; ++i) {
+                    let end = start + rows[i].length;
+                    if (end >= from && start <= to) {
+                        if (to === from || start !== to) {
+                            rows[i] = '\t' + rows[i];
+                            to += 1;
+                            end += 1;
+                        }
+                    }
+                    start = end + 1;
+                }
+                this.value(rows.join('\n'));
+                this.selection([from + 1, to]);
+            }
+            indent_dec() {
+                let text = this.value();
+                let [from, to] = this.selection();
+                const rows = text.split('\n');
+                let start = 0;
+                for (let i = 0; i < rows.length; ++i) {
+                    const end = start + rows[i].length;
+                    if (end >= from && start <= to && rows[i].startsWith('\t')) {
+                        rows[i] = rows[i].slice(1);
+                        to -= 1;
+                        if (start < from)
+                            from -= 1;
+                    }
+                    start = end + 1;
+                }
+                this.value(rows.join('\n'));
+                this.selection([from, to]);
+            }
+            symbol_insert(event) {
+                const symbol = event.shiftKey
+                    ? this.symbols_alt_shift()[$mol_keyboard_code[event.keyCode]]
+                    : event.ctrlKey
+                        ? this.symbols_alt_ctrl()[$mol_keyboard_code[event.keyCode]]
+                        : this.symbols_alt()[$mol_keyboard_code[event.keyCode]];
+                if (!symbol)
+                    return;
+                event.preventDefault();
+                document.execCommand('insertText', false, symbol);
+            }
+            clickable(next) {
+                if (!this.enabled())
+                    return true;
+                return next ?? false;
+            }
+            hover(event) {
+                this.clickable(event.ctrlKey);
+            }
+            press(event) {
+                if (event.altKey) {
+                    this.symbol_insert(event);
+                }
+                else {
+                    switch (event.keyCode) {
+                        case !event.shiftKey && $mol_keyboard_code.tab:
+                            this.indent_inc();
+                            break;
+                        case event.shiftKey && $mol_keyboard_code.tab:
+                            this.indent_dec();
+                            break;
+                        default: return;
+                    }
+                    event.preventDefault();
+                }
+            }
+            row_numb(index) {
+                return index;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_textarea.prototype, "clickable", null);
+        $$.$mol_textarea = $mol_textarea;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/textarea/textarea.view.css", "[mol_textarea] {\n\tflex: 1 0 auto;\n\tflex-direction: column;\n\tvertical-align: top;\n\tmin-height: max-content;\n\twhite-space: pre-wrap;\n\tword-break: break-word;\n\tborder-radius: var(--mol_gap_round);\n\tfont-family: monospace;\n\tposition: relative;\n\ttab-size: 4;\n}\n\n[mol_textarea_view] {\n\tpointer-events: none;\n\twhite-space: inherit;\n\tfont-family: inherit;\n\ttab-size: inherit;\n\tuser-select: none;\n}\n\n[mol_textarea_view_copy] {\n\tpointer-events: all;\n}\n\n[mol_textarea_clickable] > [mol_textarea_view] {\n\tpointer-events: all;\n\tuser-select: auto;\n}\n\n[mol_textarea_clickable] > [mol_textarea_edit] {\n\tuser-select: none;\n}\n\n[mol_textarea_edit] {\n\tfont-family: inherit;\n\tpadding: var(--mol_gap_text);\n\tcolor: transparent !important;\n\tcaret-color: var(--mol_theme_text);\n\tresize: none;\n\ttext-align: inherit;\n\twhite-space: inherit;\n\tborder-radius: inherit;\n\toverflow-anchor: none;\n\tposition: absolute;\n\theight: 100%;\n\twidth: 100%;\n\ttab-size: inherit;\n}\n\n[mol_textarea_sidebar_showed] [mol_textarea_edit] {\n\tleft: 1.75rem;\n\twidth: calc( 100% - 1.75rem );\n}\n\n[mol_textarea_edit]:hover + [mol_textarea_view] {\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_textarea_edit]:focus + [mol_textarea_view] {\n\tz-index: var(--mol_layer_focus);\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_vector extends Array {
+        get length() {
+            return super.length;
+        }
+        constructor(...values) { super(...values); }
+        map(convert, self) {
+            return super.map(convert, self);
+        }
+        merged(patches, combine) {
+            return this.map((value, index) => combine(value, patches[index]));
+        }
+        limited(limits) {
+            return this.merged(limits, (value, [min, max]) => (value < min) ? min : (value > max) ? max : value);
+        }
+        added0(diff) {
+            return this.map(value => value + diff);
+        }
+        added1(diff) {
+            return this.merged(diff, (a, b) => a + b);
+        }
+        multed0(mult) {
+            return this.map(value => value * mult);
+        }
+        multed1(mults) {
+            return this.merged(mults, (a, b) => a * b);
+        }
+        powered0(mult) {
+            return this.map(value => value ** mult);
+        }
+        expanded1(point) {
+            return this.merged(point, (range, value) => range.expanded0(value));
+        }
+        expanded2(point) {
+            return this.merged(point, (range1, range2) => {
+                let next = range1;
+                const Range = range1.constructor;
+                if (range1[0] > range2[0])
+                    next = new Range(range2[0], next.max);
+                if (range1[1] < range2[1])
+                    next = new Range(next.min, range2[1]);
+                return next;
+            });
+        }
+        center() {
+            const Result = this[0].constructor;
+            return new Result(...this[0].map((_, i) => this.reduce((sum, point) => sum + point[i], 0) / this.length));
+        }
+        distance() {
+            let distance = 0;
+            for (let i = 1; i < this.length; ++i) {
+                distance += this[i - 1].reduce((sum, min, j) => sum + (min - this[i][j]) ** 2, 0) ** (1 / this[i].length);
+            }
+            return distance;
+        }
+        transponed() {
+            return this[0].map((_, i) => this.map(row => row[i]));
+        }
+        get x() { return this[0]; }
+        set x(next) { this[0] = next; }
+        get y() { return this[1]; }
+        set y(next) { this[1] = next; }
+        get z() { return this[2]; }
+        set z(next) { this[2] = next; }
+    }
+    $.$mol_vector = $mol_vector;
+    class $mol_vector_1d extends $mol_vector {
+    }
+    $.$mol_vector_1d = $mol_vector_1d;
+    class $mol_vector_2d extends $mol_vector {
+    }
+    $.$mol_vector_2d = $mol_vector_2d;
+    class $mol_vector_3d extends $mol_vector {
+    }
+    $.$mol_vector_3d = $mol_vector_3d;
+    class $mol_vector_range extends $mol_vector {
+        0;
+        1;
+        constructor(min, max = min) {
+            super(min, max);
+            this[0] = min;
+            this[1] = max;
+        }
+        get min() { return this[0]; }
+        set min(next) { this[0] = next; }
+        get max() { return this[1]; }
+        set max(next) { this[1] = next; }
+        get inversed() {
+            return new this.constructor(this.max, this.min);
+        }
+        expanded0(value) {
+            const Range = this.constructor;
+            let range = this;
+            if (value > range.max)
+                range = new Range(range.min, value);
+            if (value < range.min)
+                range = new Range(value, range.max);
+            return range;
+        }
+    }
+    $.$mol_vector_range = $mol_vector_range;
+    $.$mol_vector_range_full = new $mol_vector_range(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    class $mol_vector_matrix extends $mol_vector {
+        added2(diff) {
+            return this.merged(diff, (a, b) => a.map((a2, index) => a2 + b[index]));
+        }
+        multed2(diff) {
+            return this.merged(diff, (a, b) => a.map((a2, index) => a2 * b[index]));
+        }
+    }
+    $.$mol_vector_matrix = $mol_vector_matrix;
+})($ || ($ = {}));
+
+;
+	($.$mol_touch) = class $mol_touch extends ($.$mol_plugin) {
+		event_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_end(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_leave(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_wheel(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		start_zoom(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		start_distance(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		zoom(next){
+			if(next !== undefined) return next;
+			return 1;
+		}
+		allow_draw(){
+			return true;
+		}
+		allow_pan(){
+			return true;
+		}
+		allow_zoom(){
+			return true;
+		}
+		action_type(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		action_point(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+			return obj;
+		}
+		start_pan(next){
+			if(next !== undefined) return next;
+			return [0, 0];
+		}
+		pan(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_vector_2d(0, 0);
+			return obj;
+		}
+		pointer_center(){
+			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+			return obj;
+		}
+		start_pos(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_precision(){
+			return 16;
+		}
+		swipe_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw_end(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		style(){
+			return {
+				...(super.style()), 
+				"touch-action": "none", 
+				"overscroll-behavior": "none"
+			};
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"pointerdown": (next) => (this?.event_start(next)), 
+				"pointermove": (next) => (this?.event_move(next)), 
+				"pointerup": (next) => (this?.event_end(next)), 
+				"pointerleave": (next) => (this?.event_leave(next)), 
+				"wheel": (next) => (this?.event_wheel(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_touch.prototype), "event_start"));
+	($mol_mem(($.$mol_touch.prototype), "event_move"));
+	($mol_mem(($.$mol_touch.prototype), "event_end"));
+	($mol_mem(($.$mol_touch.prototype), "event_leave"));
+	($mol_mem(($.$mol_touch.prototype), "event_wheel"));
+	($mol_mem(($.$mol_touch.prototype), "start_zoom"));
+	($mol_mem(($.$mol_touch.prototype), "start_distance"));
+	($mol_mem(($.$mol_touch.prototype), "zoom"));
+	($mol_mem(($.$mol_touch.prototype), "action_type"));
+	($mol_mem(($.$mol_touch.prototype), "action_point"));
+	($mol_mem(($.$mol_touch.prototype), "start_pan"));
+	($mol_mem(($.$mol_touch.prototype), "pan"));
+	($mol_mem(($.$mol_touch.prototype), "pointer_center"));
+	($mol_mem(($.$mol_touch.prototype), "start_pos"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_top"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_top"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_top"));
+	($mol_mem(($.$mol_touch.prototype), "draw_start"));
+	($mol_mem(($.$mol_touch.prototype), "draw"));
+	($mol_mem(($.$mol_touch.prototype), "draw_end"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_touch extends $.$mol_touch {
+            auto() {
+                this.pointer_events();
+                this.start_pan();
+                this.start_pos();
+                this.start_distance();
+                this.start_zoom();
+                this.action_type();
+                this.view_rect();
+            }
+            pointer_events(next = []) {
+                return next;
+            }
+            pointer_coords() {
+                const events = this.pointer_events();
+                const touches = events.filter(e => e.pointerType === 'touch');
+                const pens = events.filter(e => e.pointerType === 'pen');
+                const mouses = events.filter(e => !e.pointerType || e.pointerType === 'mouse');
+                const choosen = touches.length ? touches : pens.length ? pens : mouses;
+                return new $mol_vector(...choosen.map(event => this.event_coords(event)));
+            }
+            pointer_center() {
+                const coords = this.pointer_coords();
+                return coords.length ? coords.center() : new $mol_vector_2d(NaN, NaN);
+            }
+            event_coords(event) {
+                const { left, top } = this.view_rect();
+                return new $mol_vector_2d(Math.round(event.pageX - left), Math.round(event.pageY - top));
+            }
+            action_point() {
+                const coord = this.pointer_center();
+                if (!coord)
+                    return null;
+                const zoom = this.zoom();
+                const pan = this.pan();
+                return new $mol_vector_2d((coord.x - pan.x) / zoom, (coord.y - pan.y) / zoom);
+            }
+            event_eat(event) {
+                if (event instanceof PointerEvent) {
+                    const events = this.pointer_events()
+                        .filter(e => e instanceof PointerEvent)
+                        .filter(e => e.pointerId !== event.pointerId);
+                    if (event.type !== 'pointerup' && event.type !== 'pointerleave')
+                        events.push(event);
+                    this.pointer_events(events);
+                    const touch_count = events.filter(e => e.pointerType === 'touch').length;
+                    if (this.allow_zoom() && touch_count === 2) {
+                        return this.action_type('zoom');
+                    }
+                    if (this.action_type() === 'zoom' && touch_count === 1) {
+                        return this.action_type('zoom');
+                    }
+                    let button;
+                    (function (button) {
+                        button[button["left"] = 1] = "left";
+                        button[button["right"] = 2] = "right";
+                        button[button["middle"] = 4] = "middle";
+                    })(button || (button = {}));
+                    if (events.length > 0) {
+                        if (event.ctrlKey && this.allow_zoom())
+                            return this.action_type('zoom');
+                        if (event.buttons === button.left && this.allow_draw())
+                            return this.action_type('draw');
+                        if (event.buttons && this.allow_pan())
+                            return this.action_type('pan');
+                    }
+                    return this.action_type('');
+                }
+                if (event instanceof WheelEvent) {
+                    this.pointer_events([event]);
+                    if (event.shiftKey)
+                        return this.action_type('pan');
+                    return this.action_type('zoom');
+                }
+                return this.action_type('');
+            }
+            event_start(event) {
+                if (event.defaultPrevented)
+                    return;
+                this.start_pan(this.pan());
+                const action_type = this.event_eat(event);
+                if (!action_type)
+                    return;
+                const coords = this.pointer_coords();
+                this.start_pos(coords.center());
+                if (action_type === 'draw') {
+                    this.draw_start(event);
+                    return;
+                }
+                this.start_distance(coords.distance());
+                this.start_zoom(this.zoom());
+            }
+            event_move(event) {
+                if (event.defaultPrevented)
+                    return;
+                const rect = this.view_rect();
+                if (!rect)
+                    return;
+                const start_pan = this.start_pan();
+                const action_type = this.event_eat(event);
+                const start_pos = this.start_pos();
+                let pos = this.pointer_center();
+                if (!action_type)
+                    return;
+                if (!start_pos)
+                    return;
+                if (action_type === 'draw') {
+                    const distance = new $mol_vector(start_pos, pos).distance();
+                    if (distance >= 4) {
+                        this.draw(event);
+                    }
+                    return;
+                }
+                if (action_type === 'pan') {
+                    this.dom_node().setPointerCapture(event.pointerId);
+                    this.pan(new $mol_vector_2d(start_pan[0] + pos[0] - start_pos[0], start_pan[1] + pos[1] - start_pos[1]));
+                }
+                const precision = this.swipe_precision();
+                if ((this.swipe_right !== $mol_touch.prototype.swipe_right
+                    || this.swipe_from_left !== $mol_touch.prototype.swipe_from_left
+                    || this.swipe_to_right !== $mol_touch.prototype.swipe_to_right)
+                    && pos[0] - start_pos[0] > precision * 2
+                    && Math.abs(pos[1] - start_pos[1]) < precision) {
+                    this.swipe_right(event);
+                }
+                if ((this.swipe_left !== $mol_touch.prototype.swipe_left
+                    || this.swipe_from_right !== $mol_touch.prototype.swipe_from_right
+                    || this.swipe_to_left !== $mol_touch.prototype.swipe_to_left)
+                    && start_pos[0] - pos[0] > precision * 2
+                    && Math.abs(pos[1] - start_pos[1]) < precision) {
+                    this.swipe_left(event);
+                }
+                if ((this.swipe_bottom !== $mol_touch.prototype.swipe_bottom
+                    || this.swipe_from_top !== $mol_touch.prototype.swipe_from_top
+                    || this.swipe_to_bottom !== $mol_touch.prototype.swipe_to_bottom)
+                    && pos[1] - start_pos[1] > precision * 2
+                    && Math.abs(pos[0] - start_pos[0]) < precision) {
+                    this.swipe_bottom(event);
+                }
+                if ((this.swipe_top !== $mol_touch.prototype.swipe_top
+                    || this.swipe_from_bottom !== $mol_touch.prototype.swipe_from_bottom
+                    || this.swipe_to_top !== $mol_touch.prototype.swipe_to_top)
+                    && start_pos[1] - pos[1] > precision * 2
+                    && Math.abs(pos[0] - start_pos[0]) < precision) {
+                    this.swipe_top(event);
+                }
+                if (action_type === 'zoom') {
+                    const coords = this.pointer_coords();
+                    const distance = coords.distance();
+                    const start_distance = this.start_distance();
+                    const center = coords.center();
+                    const start_zoom = this.start_zoom();
+                    let mult = Math.abs(distance - start_distance) < 32 ? 1 : distance / start_distance;
+                    this.zoom(start_zoom * mult);
+                    const pan = new $mol_vector_2d((start_pan[0] - center[0] + pos[0] - start_pos[0]) * mult + center[0], (start_pan[1] - center[1] + pos[1] - start_pos[1]) * mult + center[1]);
+                    this.pan(pan);
+                }
+            }
+            event_end(event) {
+                const action = this.action_type();
+                if (action === 'draw') {
+                    this.draw_end(event);
+                }
+                this.event_leave(event);
+            }
+            event_leave(event) {
+                this.event_eat(event);
+                this.dom_node().releasePointerCapture(event.pointerId);
+                this.start_pos(null);
+            }
+            swipe_left(event) {
+                if (this.view_rect().right - this.start_pos()[0] < this.swipe_precision() * 2)
+                    this.swipe_from_right(event);
+                else
+                    this.swipe_to_left(event);
+                this.event_end(event);
+            }
+            swipe_right(event) {
+                if (this.start_pos()[0] - this.view_rect().left < this.swipe_precision() * 2)
+                    this.swipe_from_left(event);
+                else
+                    this.swipe_to_right(event);
+                this.event_end(event);
+            }
+            swipe_top(event) {
+                if (this.view_rect().bottom - this.start_pos()[1] < this.swipe_precision() * 2)
+                    this.swipe_from_bottom(event);
+                else
+                    this.swipe_to_top(event);
+                this.event_end(event);
+            }
+            swipe_bottom(event) {
+                if (this.start_pos()[1] - this.view_rect().top < this.swipe_precision() * 2)
+                    this.swipe_from_top(event);
+                else
+                    this.swipe_to_bottom(event);
+                this.event_end(event);
+            }
+            event_wheel(event) {
+                if (event.defaultPrevented)
+                    return;
+                if (this.pan === $mol_touch.prototype.pan && this.zoom === $mol_touch.prototype.zoom)
+                    return;
+                if (this.pan !== $mol_touch.prototype.pan) {
+                    event.preventDefault();
+                }
+                const action_type = this.event_eat(event);
+                if (action_type === 'zoom') {
+                    const zoom_prev = this.zoom() || 0.001;
+                    const zoom_next = zoom_prev * (1 - .001 * Math.min(event.deltaY, 100));
+                    const mult = zoom_next / zoom_prev;
+                    this.zoom(zoom_next);
+                    const pan_prev = this.pan();
+                    const center = this.pointer_center();
+                    const pan_next = pan_prev.multed0(mult).added1(center.multed0(1 - mult));
+                    this.pan(pan_next);
+                }
+                if (action_type === 'pan') {
+                    const pan_prev = this.pan();
+                    const pan_next = new $mol_vector_2d(pan_prev.x - event.deltaX, pan_prev.y - event.deltaY);
+                    this.pan(pan_next);
+                }
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_events", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_coords", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_center", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "action_point", null);
+        $$.$mol_touch = $mol_touch;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$optimade_tmdne_swipe) = class $optimade_tmdne_swipe extends ($.$mol_view) {
+		allowed(){
+			return true;
+		}
+		pan(next){
+			return (this?.Touch()?.pan(next));
+		}
+		Touch(){
+			const obj = new this.$.$mol_touch();
+			(obj.allow_draw) = () => (false);
+			(obj.allow_pan) = () => ((this?.allowed()));
+			return obj;
+		}
+		threshold(){
+			return 60;
+		}
+		content(){
+			return [];
+		}
+		left(){
+			return "0px";
+		}
+		transition(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Float(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this?.content()));
+			(obj.style) = () => ({"left": (this?.left()), "transition": (this?.transition())});
+			return obj;
+		}
+		pointerdown(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pointerup(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		plugins(){
+			return [(this?.Touch())];
+		}
+		speed_threshold(){
+			return 1;
+		}
+		right_threshold(){
+			return (this?.threshold());
+		}
+		left_threshold(){
+			return (this?.threshold());
+		}
+		passed(){
+			return "";
+		}
+		passed_left(){
+			return false;
+		}
+		passed_right(){
+			return false;
+		}
+		swiped_to(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		on_swiped(){
+			return null;
+		}
+		reset(){
+			return null;
+		}
+		reset_hard(){
+			return null;
+		}
+		x(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		sub(){
+			return [(this?.Float())];
+		}
+		pointer_holding(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"pointerdown": (next) => (this?.pointerdown(next)), 
+				"pointerup": (next) => (this?.pointerup(next))
+			};
+		}
+	};
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Touch"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "transition"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Float"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerdown"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerup"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "swiped_to"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "x"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointer_holding"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_time_base {
+        static patterns = {};
+        static formatter(pattern) {
+            if (this.patterns[pattern])
+                return this.patterns[pattern];
+            var tokens = Object.keys(this.patterns)
+                .sort()
+                .reverse()
+                .map((token) => token.replace(/([-+*.\[\]()\^])/g, '\\$1'));
+            var lexer = RegExp('(.*?)(' + tokens.join('|') + '|$)', 'g');
+            var funcs = [];
+            pattern.replace(lexer, (str, text, token) => {
+                if (text)
+                    funcs.push(() => text);
+                if (token)
+                    funcs.push(this.patterns[token]);
+                return str;
+            });
+            return this.patterns[pattern] = (arg) => {
+                return funcs.reduce((res, func) => res + func(arg), '');
+            };
+        }
+        toString(pattern) {
+            const Base = this.constructor;
+            const formatter = Base.formatter(pattern);
+            return formatter(this);
+        }
+    }
+    $.$mol_time_base = $mol_time_base;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_time_duration extends $mol_time_base {
+        constructor(config = 0) {
+            super();
+            if (typeof config === 'number') {
+                if (!Number.isFinite(config))
+                    throw new RangeError(`Wrong ms count`);
+                this.second = config / 1000;
+                return;
+            }
+            if (typeof config === 'string') {
+                if (config === 'Z') {
+                    this.hour = 0;
+                    this.minute = 0;
+                    return;
+                }
+                duration: {
+                    const parser = /^P(?:([+-]?\d+(?:\.\d+)?)Y)?(?:([+-]?\d+(?:\.\d+)?)M)?(?:([+-]?\d+(?:\.\d+)?)D)?(?:T(?:([+-]?\d+(?:\.\d+)?)h)?(?:([+-]?\d+(?:\.\d+)?)m)?(?:([+-]?\d+(?:\.\d+)?)s)?)?$/i;
+                    const found = parser.exec(config);
+                    if (!found)
+                        break duration;
+                    if (found[1])
+                        this.year = Number(found[1]);
+                    if (found[2])
+                        this.month = Number(found[2]);
+                    if (found[3])
+                        this.day = Number(found[3]);
+                    if (found[4])
+                        this.hour = Number(found[4]);
+                    if (found[5])
+                        this.minute = Number(found[5]);
+                    if (found[6])
+                        this.second = Number(found[6]);
+                    return;
+                }
+                offset: {
+                    var parser = /^[+-](\d\d)(?::?(\d\d))?$/i;
+                    var found = parser.exec(config);
+                    if (!found)
+                        break offset;
+                    if (found[1])
+                        this.hour = Number(found[1]);
+                    if (found[2])
+                        this.minute = Number(found[2]);
+                    return;
+                }
+                throw new Error(`Can not parse time duration (${config})`);
+            }
+            this.year = config.year || 0;
+            this.month = config.month || 0;
+            this.day = config.day || 0;
+            this.hour = config.hour || 0;
+            this.minute = config.minute || 0;
+            this.second = config.second || 0;
+        }
+        year = 0;
+        month = 0;
+        day = 0;
+        hour = 0;
+        minute = 0;
+        second = 0;
+        get normal() {
+            let second = this.second ?? 0;
+            let minute = this.minute ?? 0;
+            let hour = this.hour ?? 0;
+            let day = this.day ?? 0;
+            minute += Math.floor(second / 60);
+            second = second % 60;
+            hour += Math.floor(minute / 60);
+            minute = minute % 60;
+            day += Math.floor(hour / 24);
+            hour = hour % 24;
+            return new $mol_time_duration({
+                year: this.year,
+                month: this.month,
+                day: day,
+                hour: hour,
+                minute: minute,
+                second: second,
+            });
+        }
+        summ(config) {
+            const duration = new $mol_time_duration(config);
+            return new $mol_time_duration({
+                year: this.year + duration.year,
+                month: this.month + duration.month,
+                day: this.day + duration.day,
+                hour: this.hour + duration.hour,
+                minute: this.minute + duration.minute,
+                second: this.second + duration.second,
+            });
+        }
+        mult(numb) {
+            return new $mol_time_duration({
+                year: this.year && this.year * numb,
+                month: this.month && this.month * numb,
+                day: this.day && this.day * numb,
+                hour: this.hour && this.hour * numb,
+                minute: this.minute && this.minute * numb,
+                second: this.second && this.second * numb,
+            });
+        }
+        count(config) {
+            const duration = new $mol_time_duration(config);
+            return this.valueOf() / duration.valueOf();
+        }
+        valueOf() {
+            var day = this.year * 365 + this.month * 30.4 + this.day;
+            var second = ((day * 24 + this.hour) * 60 + this.minute) * 60 + this.second;
+            return second * 1000;
+        }
+        toJSON() { return this.toString(); }
+        toString(pattern = 'P#Y#M#DT#h#m#s') {
+            return super.toString(pattern);
+        }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
+        static patterns = {
+            '#Y': (duration) => {
+                if (!duration.year)
+                    return '';
+                return duration.year + 'Y';
+            },
+            '#M': (duration) => {
+                if (!duration.month)
+                    return '';
+                return duration.month + 'M';
+            },
+            '#D': (duration) => {
+                if (!duration.day)
+                    return '';
+                return duration.day + 'D';
+            },
+            '#h': (duration) => {
+                if (!duration.hour)
+                    return '';
+                return duration.hour + 'H';
+            },
+            '#m': (duration) => {
+                if (!duration.minute)
+                    return '';
+                return duration.minute + 'M';
+            },
+            '#s': (duration) => {
+                if (!duration.second)
+                    return '';
+                return duration.second + 'S';
+            },
+            'hh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(100 + moment.hour).slice(1);
+            },
+            'h': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(moment.hour);
+            },
+            ':mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['mm'](moment);
+            },
+            'mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(100 + moment.minute).slice(1);
+            },
+            'm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(moment.minute);
+            },
+            ':ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['ss'](moment);
+            },
+            'ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(100 + moment.second | 0).slice(1);
+            },
+            's': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(moment.second | 0);
+            },
+            '.sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return '.' + $mol_time_moment.patterns['sss'](moment);
+            },
+            'sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
+            },
+        };
+    }
+    $.$mol_time_duration = $mol_time_duration;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    let $mol_time_moment_weekdays;
+    (function ($mol_time_moment_weekdays) {
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["monday"] = 0] = "monday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["tuesday"] = 1] = "tuesday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["wednesday"] = 2] = "wednesday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["thursday"] = 3] = "thursday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["friday"] = 4] = "friday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["saturday"] = 5] = "saturday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["sunday"] = 6] = "sunday";
+    })($mol_time_moment_weekdays = $.$mol_time_moment_weekdays || ($.$mol_time_moment_weekdays = {}));
+    function numb(str, max) {
+        const numb = Number(str);
+        if (numb < max)
+            return numb;
+        $mol_fail(new Error(`Wrong time component ${str}`));
+    }
+    class $mol_time_moment extends $mol_time_base {
+        constructor(config = new Date) {
+            super();
+            if (typeof config === 'number') {
+                config = new Date(config);
+                if (Number.isNaN(config.valueOf()))
+                    throw new RangeError(`Wrong ms count`);
+            }
+            if (typeof config === 'string') {
+                const parsed = /^(?:(\d\d?\d?\d?)(?:-?(\d\d?)(?:-?(\d\d?))?)?)?(?:[T ](?:(\d\d?)(?::?(\d\d?)(?::?(\d\d?(?:\.\d+)?))?)?)?(Z|[\+\-]\d\d?(?::?(?:\d\d?)?)?)?)?$/.exec(config);
+                if (!parsed)
+                    throw new Error(`Can not parse time moment (${config})`);
+                if (parsed[1])
+                    this.year = numb(parsed[1], 9999);
+                if (parsed[2])
+                    this.month = numb(parsed[2], 13) - 1;
+                if (parsed[3])
+                    this.day = numb(parsed[3], 32) - 1;
+                if (parsed[4])
+                    this.hour = numb(parsed[4], 60);
+                if (parsed[5])
+                    this.minute = numb(parsed[5], 60);
+                if (parsed[6])
+                    this.second = numb(parsed[6], 60);
+                if (parsed[7])
+                    this.offset = new $mol_time_duration(parsed[7]);
+                return;
+            }
+            if (config instanceof Date) {
+                this.year = config.getFullYear();
+                this.month = config.getMonth();
+                this.day = config.getDate() - 1;
+                this.hour = config.getHours();
+                this.minute = config.getMinutes();
+                this.second = config.getSeconds() + config.getMilliseconds() / 1000;
+                const offset = -config.getTimezoneOffset();
+                this.offset = new $mol_time_duration({
+                    hour: (offset < 0) ? Math.ceil(offset / 60) : Math.floor(offset / 60),
+                    minute: offset % 60
+                });
+                return;
+            }
+            this.year = config.year;
+            this.month = config.month;
+            this.day = config.day;
+            this.hour = config.hour;
+            this.minute = config.minute;
+            this.second = config.second;
+            this.offset = config.offset == null ? config.offset : new $mol_time_duration(config.offset);
+        }
+        year;
+        month;
+        day;
+        hour;
+        minute;
+        second;
+        offset;
+        get weekday() {
+            return (this.native.getDay() + 6) % 7;
+        }
+        _native;
+        get native() {
+            if (this._native)
+                return this._native;
+            const utc = this.toOffset('Z');
+            return this._native = new Date(Date.UTC(utc.year ?? 0, utc.month ?? 0, (utc.day ?? 0) + 1, utc.hour ?? 0, utc.minute ?? 0, utc.second != undefined ? Math.floor(utc.second) : 0, utc.second != undefined ? Math.floor((utc.second - Math.floor(utc.second)) * 1000) : 0));
+        }
+        _normal;
+        get normal() {
+            if (this._normal)
+                return this._normal;
+            const moment = new $mol_time_moment(this.native);
+            return this._normal = new $mol_time_moment({
+                year: this.year === undefined ? undefined : moment.year,
+                month: this.month === undefined ? undefined : moment.month,
+                day: this.day === undefined ? undefined : moment.day,
+                hour: this.hour === undefined ? undefined : moment.hour,
+                minute: this.minute === undefined ? undefined : moment.minute,
+                second: this.second === undefined ? undefined : moment.second,
+                offset: this.offset === undefined ? undefined : moment.offset,
+            });
+        }
+        merge(config) {
+            const moment = new $mol_time_moment(config);
+            return new $mol_time_moment({
+                year: moment.year === undefined ? this.year : moment.year,
+                month: moment.month === undefined ? this.month : moment.month,
+                day: moment.day === undefined ? this.day : moment.day,
+                hour: moment.hour === undefined ? this.hour : moment.hour,
+                minute: moment.minute === undefined ? this.minute : moment.minute,
+                second: moment.second === undefined ? this.second : moment.second,
+                offset: moment.offset === undefined ? this.offset : moment.offset,
+            });
+        }
+        shift(config) {
+            const duration = new $mol_time_duration(config);
+            const moment = new $mol_time_moment().merge({
+                year: this.year,
+                month: this.month,
+                day: this.day,
+                hour: this.hour ?? 0,
+                minute: this.minute ?? 0,
+                second: this.second ?? 0,
+                offset: this.offset ?? 0
+            });
+            const second = moment.second + (duration.second ?? 0);
+            const native = new Date(moment.year + (duration.year ?? 0), moment.month + (duration.month ?? 0), moment.day + 1 + (duration.day ?? 0), moment.hour + (duration.hour ?? 0), moment.minute + (duration.minute ?? 0), Math.floor(second), (second - Math.floor(second)) * 1000);
+            if (isNaN(native.valueOf()))
+                throw new Error('Wrong time');
+            return new $mol_time_moment({
+                year: this.year === undefined ? undefined : native.getFullYear(),
+                month: this.month === undefined ? undefined : native.getMonth(),
+                day: this.day === undefined ? undefined : native.getDate() - 1,
+                hour: this.hour === undefined ? undefined : native.getHours(),
+                minute: this.minute === undefined ? undefined : native.getMinutes(),
+                second: this.second === undefined ? undefined : native.getSeconds() + native.getMilliseconds() / 1000,
+                offset: this.offset,
+            });
+        }
+        mask(config) {
+            const mask = new $mol_time_moment(config);
+            return new $mol_time_moment({
+                year: mask.year === undefined ? undefined : this.year,
+                month: mask.month === undefined ? undefined : this.month,
+                day: mask.day === undefined ? undefined : this.day,
+                hour: mask.hour === undefined ? undefined : this.hour,
+                minute: mask.minute === undefined ? undefined : this.minute,
+                second: mask.second === undefined ? undefined : this.second,
+                offset: mask.offset === undefined ? undefined : this.offset,
+            });
+        }
+        toOffset(config = new $mol_time_moment().offset) {
+            const duration = new $mol_time_duration(config);
+            const offset = this.offset || new $mol_time_moment().offset;
+            let with_time = new $mol_time_moment('T00:00:00').merge(this);
+            const moment = with_time.shift(duration.summ(offset.mult(-1)));
+            return moment.merge({ offset: duration });
+        }
+        valueOf() { return this.native.getTime(); }
+        toJSON() { return this.toString(); }
+        toString(pattern = 'YYYY-MM-DDThh:mm:ss.sssZ') {
+            return super.toString(pattern);
+        }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
+        [$mol_dev_format_head]() {
+            return $mol_dev_format_span({}, $mol_dev_format_native(this), ' ', $mol_dev_format_accent(this.toString('YYYY-MM-DD hh:mm:ss.sss Z')));
+        }
+        static patterns = {
+            'YYYY': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(moment.year);
+            },
+            'AD': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(Math.floor(moment.year / 100) + 1);
+            },
+            'YY': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(moment.year % 100);
+            },
+            'Month': (pattern => (moment) => {
+                if (moment.month == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { month: 'long' })),
+            'DD Month': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['DD'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Month'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'long' })),
+            'D Month': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['D'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Month'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' })),
+            'Mon': (pattern => (moment) => {
+                if (moment.month == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { month: 'short' })),
+            'DD Mon': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['DD'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Mon'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short' })),
+            'D Mon': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['D'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Mon'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' })),
+            '-MM': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return '-' + $mol_time_moment.patterns['MM'](moment);
+            },
+            'MM': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return String(100 + moment.month + 1).slice(1);
+            },
+            'M': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return String(moment.month + 1);
+            },
+            'WeekDay': (pattern => (moment) => {
+                if (moment.day == null)
+                    return '';
+                if (moment.month == null)
+                    return '';
+                if (moment.year == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { weekday: 'long' })),
+            'WD': (pattern => (moment) => {
+                if (moment.day == null)
+                    return '';
+                if (moment.month == null)
+                    return '';
+                if (moment.year == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { weekday: 'short' })),
+            '-DD': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return '-' + $mol_time_moment.patterns['DD'](moment);
+            },
+            'DD': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return String(100 + moment.day + 1).slice(1);
+            },
+            'D': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return String(moment.day + 1);
+            },
+            'Thh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return 'T' + $mol_time_moment.patterns['hh'](moment);
+            },
+            'hh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(100 + moment.hour).slice(1);
+            },
+            'h': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(moment.hour);
+            },
+            ':mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['mm'](moment);
+            },
+            'mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(100 + moment.minute).slice(1);
+            },
+            'm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(moment.minute);
+            },
+            ':ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['ss'](moment);
+            },
+            'ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(100 + moment.second | 0).slice(1);
+            },
+            's': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(moment.second | 0);
+            },
+            '.sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                if (moment.second === (moment.second | 0))
+                    return '';
+                return '.' + $mol_time_moment.patterns['sss'](moment);
+            },
+            'sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
+            },
+            'Z': (moment) => {
+                const offset = moment.offset;
+                if (!offset)
+                    return '';
+                let hour = offset.hour;
+                let sign = '+';
+                if (hour < 0) {
+                    sign = '-';
+                    hour = -hour;
+                }
+                return sign + String(100 + hour).slice(1) + ':' + String(100 + offset.minute).slice(1);
+            }
+        };
+    }
+    $.$mol_time_moment = $mol_time_moment;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $optimade_tmdne_swipe extends $.$optimade_tmdne_swipe {
+            x(next) {
+                return next ?? (this.start_x + this.pan().x);
+            }
+            left() {
+                return this.x() + 'px';
+            }
+            auto() {
+                console.log(this.Touch().action_type());
+            }
+            start_x = 0;
+            start_time;
+            pointerdown(next) {
+                this.start_x = parseFloat($mol_dom_context.getComputedStyle(this.Float().dom_node()).left);
+                this.start_time = (new $mol_time_moment).valueOf();
+                this.pan(new $mol_vector_2d(0, 0));
+                this.transition('');
+                this.pointer_holding(true);
+            }
+            pointerup(next) {
+                const speed = this.x() / ((new $mol_time_moment).valueOf() - this.start_time);
+                this.transition('left 0.5s');
+                if (this.passed_right() || speed > this.speed_threshold())
+                    this.to_right();
+                else if (this.passed_left() || speed < (-this.speed_threshold()))
+                    this.to_left();
+                else
+                    this.reset();
+                this.pointer_holding(false);
+            }
+            reset() {
+                this.swiped_to('');
+                this.x(0);
+            }
+            reset_hard() {
+                this.transition('');
+                this.reset();
+            }
+            passed_left() {
+                return this.x() < (-this.left_threshold());
+            }
+            passed_right() {
+                return this.x() > this.right_threshold();
+            }
+            passed() {
+                return this.passed_left() ? 'left' :
+                    this.passed_right() ? 'right' : '';
+            }
+            to_right() {
+                this.swiped_to('right');
+                this.on_swiped();
+                this.x(900);
+            }
+            to_left() {
+                this.swiped_to('left');
+                this.on_swiped();
+                this.x(-900);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_swipe.prototype, "x", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_swipe.prototype, "left", null);
+        $$.$optimade_tmdne_swipe = $optimade_tmdne_swipe;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($optimade_tmdne_swipe, {
+            background: {
+                color: 'transparent',
+            },
+            Float: {
+                userSelect: 'none',
+                pointerEvents: 'none',
+                position: 'relative',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$optimade_tmdne_app) = class $optimade_tmdne_app extends ($.$mol_view) {
+		Theme(){
+			const obj = new this.$.$mol_theme_auto();
+			return obj;
+		}
+		player_fullscreen(next){
+			return (this?.Player()?.fullscreen(next));
+		}
+		json(){
+			return null;
+		}
+		player_pointerdown(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		player_pointerup(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Player(){
+			const obj = new this.$.$optimade_cifplayer_player();
+			(obj.attr) = () => ({"fullscreen": (this?.player_fullscreen()), "card_holding": (this?.card_holding())});
+			(obj.data) = () => ((this?.json()));
+			(obj.Fullscreen) = () => (null);
+			(obj.Overlays) = () => (null);
+			(obj.event) = () => ({"pointerdown": (next) => (this?.player_pointerdown(next)), "pointerup": (next) => (this?.player_pointerup(next))});
+			return obj;
+		}
+		Head(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Does this material exist?");
+			return obj;
+		}
+		Head_card(){
+			const obj = new this.$.$mol_list();
+			(obj.sub) = () => ([(this?.Head())]);
+			return obj;
+		}
+		Head_space(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this?.Head_card())]);
+			return obj;
+		}
+		param_name(id){
+			return "";
+		}
+		Param_name(id){
+			const obj = new this.$.$mol_paragraph();
+			(obj.minimal_height) = () => (16);
+			(obj.title) = () => ((this?.param_name(id)));
+			return obj;
+		}
+		param_symbol(id){
+			return "";
+		}
+		Param_symbol_html(id){
+			const obj = new this.$.$optimade_tmdne_html_view();
+			(obj.html) = () => ((this?.param_symbol(id)));
+			return obj;
+		}
+		param_value(id){
+			return "";
+		}
+		param_unit(id){
+			return "";
+		}
+		Param_unit(id){
+			const obj = new this.$.$optimade_tmdne_html_view();
+			(obj.html) = () => ((this?.param_unit(id)));
+			return obj;
+		}
+		param_mae(id){
+			return "";
+		}
+		Param_mae_unit(id){
+			const obj = new this.$.$optimade_tmdne_html_view();
+			(obj.html) = () => ((this?.param_unit(id)));
+			return obj;
+		}
+		Param_mae(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				"(±", 
+				(this?.param_mae(id)), 
+				(this?.Param_mae_unit(id)), 
+				")"
+			]);
+			return obj;
+		}
+		Param_value(id){
+			const obj = new this.$.$mol_view();
+			(obj.minimal_height) = () => (16);
+			(obj.sub) = () => ([
+				(this?.param_value(id)), 
+				(this?.Param_unit(id)), 
+				(this?.Param_mae(id))
+			]);
+			return obj;
+		}
+		Param(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this?.Param_name(id)), 
+				(this?.Param_symbol_html(id)), 
+				"=", 
+				(this?.Param_value(id))
+			]);
+			return obj;
+		}
+		params(){
+			return [(this?.Param(id))];
+		}
+		Prediction(){
+			const obj = new this.$.$mol_list();
+			(obj.attr) = () => ({"rotating": (this?.rotating())});
+			(obj.sub) = () => ((this?.params()));
+			return obj;
+		}
+		Hint_no(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["ᐊ No"]);
+			return obj;
+		}
+		Hint_yes(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Yes ᐅ"]);
+			return obj;
+		}
+		passed(){
+			return (this?.Swipeable()?.passed());
+		}
+		swiped_to(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		card_reset(){
+			return (this?.Swipeable()?.reset_hard());
+		}
+		update(){
+			return null;
+		}
+		loaded(){
+			return false;
+		}
+		card_position(){
+			return "";
+		}
+		name(){
+			return "";
+		}
+		Name(){
+			const obj = new this.$.$optimade_tmdne_html_view();
+			(obj.html) = () => ((this?.name()));
+			return obj;
+		}
+		Question(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Do you think it's synthesizable?");
+			return obj;
+		}
+		Why_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Why?");
+			return obj;
+		}
+		Why_optinal(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("(optinal)");
+			return obj;
+		}
+		Why_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this?.Why_title()), (this?.Why_optinal())]);
+			return obj;
+		}
+		why(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Why(){
+			const obj = new this.$.$mol_textarea();
+			(obj.value) = (next) => ((this?.why(next)));
+			return obj;
+		}
+		Card_content(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"card_position": (this?.card_position())});
+			(obj.sub) = () => ([
+				(this?.Name()), 
+				(this?.Question()), 
+				(this?.Why_label()), 
+				(this?.Why())
+			]);
+			return obj;
+		}
+		Card(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"loaded": (this?.loaded())});
+			(obj.sub) = () => ([(this?.Card_content())]);
+			return obj;
+		}
+		card_holding(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Swipeable(){
+			const obj = new this.$.$optimade_tmdne_swipe();
+			(obj.swiped_to) = (next) => ((this?.swiped_to(next)));
+			(obj.on_swiped) = () => ((this?.update()));
+			(obj.allowed) = () => ((this?.loaded()));
+			(obj.content) = () => ([(this?.Card())]);
+			(obj.pointer_holding) = (next) => ((this?.card_holding(next)));
+			return obj;
+		}
+		Foot(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"rotating": (this?.rotating())});
+			(obj.sub) = () => ([
+				(this?.Hint_no()), 
+				(this?.Hint_yes()), 
+				(this?.Swipeable())
+			]);
+			return obj;
+		}
+		title(){
+			return "This material does not exist";
+		}
+		number(next){
+			if(next !== undefined) return next;
+			return 1;
+		}
+		plugins(){
+			return [(this?.Theme())];
+		}
+		auto(){
+			return [(this?.update())];
+		}
+		rotating(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		sub(){
+			return [
+				(this?.Player()), 
+				(this?.Head_space()), 
+				(this?.Prediction()), 
+				(this?.Foot())
+			];
+		}
+	};
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Theme"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "player_pointerdown"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "player_pointerup"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Player"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Head"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_card"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_space"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_name"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_symbol_html"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_unit"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_mae_unit"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_mae"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_value"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Prediction"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Hint_no"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Hint_yes"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "swiped_to"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Name"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Question"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_title"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_optinal"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_label"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "why"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Why"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Card_content"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Card"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "card_holding"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Swipeable"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Foot"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "number"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "rotating"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $optimade_tmdne_app extends $.$optimade_tmdne_app {
+            json() {
+                return this.$.$mol_fetch.json(`https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${this.number()}`);
+            }
+            name() {
+                let str = this.json()?.data[0]?.attributes?.chemical_formula_reduced;
+                this.reset();
+                return formula_html(str);
+            }
+            reset() {
+                this.why('');
+                this.card_reset();
+            }
+            loaded() {
+                try {
+                    this.name();
+                    return true;
+                }
+                catch (error) {
+                    if ($mol_promise_like(error))
+                        return false;
+                }
+                return false;
+            }
+            update() {
+                this.number(random_int(1, 384937));
+            }
+            predict() {
+                $mol_wire_solid();
+                const params = new URLSearchParams({
+                    structure: JSON.stringify(this.json()),
+                });
+                const url = `https://labs.mpds.io/predict?${params.toString()}`;
+                return this.$.$mol_wire_sync(this).$.$mol_fetch.success(url, {
+                    method: 'post',
+                }).json() ?? {};
+            }
+            params() {
+                const keys = Object.keys(this.predict().prediction);
+                return keys.map(k => this.Param(k));
+            }
+            param_value(id) {
+                return this.predict().prediction[id].value ?? '';
+            }
+            param_mae(id) {
+                return this.predict().prediction[id].mae ?? '';
+            }
+            param_name(id) {
+                return this.predict().legend[id].name ?? '';
+            }
+            param_unit(id) {
+                return this.predict().legend[id].gui_units ?? '';
+            }
+            param_symbol(id) {
+                return this.predict().legend[id].symbol ?? '';
+            }
+            card_position() {
+                return this.swiped_to() || this.passed() || '';
+            }
+            player_pointerdown(next) {
+                this.rotating(true);
+            }
+            player_pointerup(next) {
+                this.rotating(false);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "json", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "name", null);
         __decorate([
             $mol_action
-        ], $mpds_tmdne_app.prototype, "update", null);
-        $$.$mpds_tmdne_app = $mpds_tmdne_app;
+        ], $optimade_tmdne_app.prototype, "reset", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "loaded", null);
+        __decorate([
+            $mol_action
+        ], $optimade_tmdne_app.prototype, "update", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "predict", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "params", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "param_value", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "param_mae", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "param_name", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "param_unit", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "param_symbol", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_app.prototype, "card_position", null);
+        $$.$optimade_tmdne_app = $optimade_tmdne_app;
         function random_int(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function formula_html(str) {
+            let sub = false;
+            let html = '';
+            for (let i = 0; i < str.length; i++) {
+                if (!isNaN(+str[i]) || str[i] == '.') {
+                    if (!sub) {
+                        html += '<sub>';
+                        sub = true;
+                    }
+                }
+                else {
+                    if (sub) {
+                        html += '</sub>';
+                        sub = false;
+                    }
+                }
+                html += str[i];
+            }
+            if (sub)
+                html += '</sub>';
+            return html ?? '';
         }
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -8031,37 +12277,205 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $mol_style_define($mpds_tmdne_app, {
-            padding: {
-                top: $mol_gap.block,
-                bottom: $mol_gap.block,
-            },
+        $mol_style_define($optimade_tmdne_app, {
+            overflow: 'hidden',
             flex: {
                 direction: 'column',
+            },
+            align: {
+                items: 'center',
             },
             Player: {
                 flex: {
                     grow: 1,
                 },
+                width: '100%',
+                opacity: 1,
+                transition: 'opacity 0.15s',
+                '[card_holding]': {
+                    'true': {
+                        opacity: 0.1,
+                    },
+                },
+            },
+            Head_space: {
+                position: 'absolute',
+                top: $mol_gap.block,
+                left: 0,
+                right: 0,
+                flex: {
+                    grow: 1,
+                },
+                pointerEvents: 'none',
+            },
+            Head_card: {
+                pointerEvents: 'auto',
+                margin: 'auto',
             },
             Head: {
                 justify: {
                     content: 'center',
                 },
             },
+            Prediction: {
+                font: {
+                    size: '0.7rem',
+                },
+                lineHeight: '16px',
+                flex: {
+                    grow: 0,
+                    wrap: 'wrap',
+                },
+                position: 'absolute',
+                left: $mol_gap.block,
+                bottom: '11rem',
+                pointerEvents: 'none',
+                opacity: 1,
+                transition: 'opacity 0.15s',
+                '[rotating]': {
+                    'true': {
+                        opacity: 0,
+                    },
+                },
+            },
+            Param: {
+                gap: '0.3rem',
+                flex: {
+                    wrap: 'wrap',
+                },
+            },
+            Param_name: {
+                font: {
+                    weight: 700,
+                },
+            },
+            Param_symbol_html: {
+                flex: {
+                    direction: 'row',
+                },
+            },
+            Param_unit: {
+                flex: {
+                    direction: 'row',
+                },
+            },
+            Param_mae_unit: {
+                flex: {
+                    direction: 'row',
+                },
+            },
+            Param_value: {
+                gap: '0.25rem',
+            },
+            Foot: {
+                width: '100%',
+                overflow: 'hidden',
+                position: 'absolute',
+                pointerEvents: 'none',
+                transition: 'opacity 0.2s',
+                opacity: 1,
+                bottom: 0,
+                '[rotating]': {
+                    'true': {
+                        opacity: 0,
+                    },
+                },
+            },
+            Swipeable: {
+                pointerEvents: 'auto',
+                margin: 'auto',
+                padding: '0.5rem',
+                Float: {
+                    margin: 'auto',
+                },
+            },
+            Card: {
+                background: {
+                    color: $mol_theme.back,
+                },
+                bottom: '-20rem',
+                position: 'relative',
+                transition: 'bottom 1s',
+                '[loaded]': {
+                    'true': {
+                        bottom: 0,
+                    },
+                },
+                border: {
+                    radius: $mol_gap.round,
+                },
+                boxShadow: '0 0 0.5rem 0rem hsla(0,0%,0%,.125)',
+            },
+            Card_content: {
+                flex: {
+                    direction: 'column',
+                },
+                background: {
+                    color: $mol_style_func.hsla(210, 80, 50, 0.3),
+                },
+                padding: $mol_gap.block,
+                border: {
+                    radius: $mol_gap.round,
+                },
+                '[card_position]': {
+                    'right': {
+                        background: {
+                            color: $mol_style_func.hsla(120, 80, 50, 0.3),
+                        },
+                    },
+                    'left': {
+                        background: {
+                            color: $mol_style_func.hsla(0, 80, 50, 0.3),
+                        },
+                    },
+                },
+            },
             Name: {
+                flex: {
+                    direction: 'row',
+                },
+                padding: {
+                    bottom: '0.5rem',
+                },
                 justify: {
                     content: 'center',
+                },
+                font: {
+                    weight: 700,
+                    size: '1.5rem',
                 },
             },
             Question: {
                 justify: {
                     content: 'center',
                 },
+                padding: {
+                    bottom: '0.5rem',
+                },
             },
-            Answer: {
-                justify: {
-                    content: 'center',
+            Hint_no: {
+                color: '#ff6666',
+                position: 'absolute',
+                left: '1rem',
+                bottom: '5rem',
+            },
+            Hint_yes: {
+                color: $mol_theme.current,
+                position: 'absolute',
+                right: '1rem',
+                bottom: '5rem',
+            },
+            Why: {
+                pointerEvents: 'auto',
+                maxWidth: '20rem',
+            },
+            Why_label: {
+                gap: '0.5rem',
+            },
+            Why_optinal: {
+                color: $mol_theme.shade,
+                font: {
+                    style: 'italic',
                 },
             },
         });
