@@ -1,21 +1,86 @@
 $optimade_tmdne_app $mol_view
 	title \This material does not exist
 	number? 1
+	plugins /
+		<= Theme $mol_theme_auto
 	auto /
 		<= update
+	rotating? false
 	sub /
-		<= Head $mol_paragraph
-			title \Does this material exist?
-		<= Name $mol_paragraph
-			title <= name \
-		<= Player $mpds_cifplayer_player
+		<= Player $optimade_cifplayer_player
+			fullscreen? => player_fullscreen?
+			attr *
+				fullscreen <= player_fullscreen?
+				card_holding <= card_holding
 			data <= json null
 			Fullscreen null
-		<= Question $mol_paragraph
-			title \Do you think it's synthesizable?
-		<= Answer $mol_row
+			Overlays null
+			event *
+				pointerdown? <=> player_pointerdown? null
+				pointerup? <=> player_pointerup? null
+		<= Head_space $mol_view
 			sub /
-				<= Yes $mol_button_major
-					click? <=> update? null
-				<= No $mol_button_major
-					click? <=> update?
+				<= Head_card $mol_list
+					sub /
+						<= Head $mol_paragraph
+							title \Does this material exist?
+		<= Prediction $mol_list
+			attr *
+				rotating <= rotating
+			sub <= params /
+				<= Param* $mol_view
+					sub /
+						<= Param_name* $mol_paragraph
+							minimal_height 16
+							title <= param_name* \
+						<= Param_symbol_html* $optimade_tmdne_html_view
+							html <= param_symbol* \
+						\=
+						<= Param_value* $mol_view
+							minimal_height 16
+							sub /
+								<= param_value* \
+								<= Param_unit* $optimade_tmdne_html_view
+									html <= param_unit* \
+								<= Param_mae* $mol_view
+									sub /
+										\(±
+										<= param_mae* \
+										<= Param_mae_unit* $optimade_tmdne_html_view
+											html <= param_unit* \
+										\)
+		<= Foot $mol_view
+			attr *
+				rotating <= rotating
+			sub /
+				<= Hint_no $mol_view
+					sub / \ᐊ No
+				<= Hint_yes $mol_view
+					sub / \Yes ᐅ
+				<= Swipeable $optimade_tmdne_swipe
+					passed => passed
+					swiped_to? <=> swiped_to? \
+					reset_hard => card_reset
+					on_swiped <= update null
+					allowed <= loaded false
+					content /
+						<= Card $mol_view
+							attr *
+								loaded <= loaded
+							sub / <= Card_content $mol_view
+								attr *
+									card_position <= card_position \
+								sub /
+									<= Name $optimade_tmdne_html_view
+										html <= name \
+									<= Question $mol_paragraph
+										title \Do you think it's synthesizable?
+									<= Why_label $mol_view
+										sub /
+											<= Why_title $mol_paragraph
+												title \Why?
+											<= Why_optinal $mol_paragraph
+												title \(optinal)
+									<= Why $mol_textarea
+										value? <=> why? \
+					pointer_holding? <=> card_holding? false
