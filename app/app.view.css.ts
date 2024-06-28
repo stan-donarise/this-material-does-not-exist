@@ -41,12 +41,14 @@ namespace $.$$ {
 		},
 
 		Head: {
+			userSelect: 'none',
 			justify: {
 				content: 'center',
 			},
 		},
 
 		Prediction: {
+			userSelect: 'none',
 			font: {
 				size: '0.7rem',
 			},
@@ -206,6 +208,7 @@ namespace $.$$ {
 		},
 
 		Hint_no: {
+			userSelect: 'none',
 			color: '#ff6666',
 			position: 'absolute',
 			left: '1rem',
@@ -213,6 +216,7 @@ namespace $.$$ {
 		},
 
 		Hint_yes: {
+			userSelect: 'none',
 			color: $mol_theme.current,
 			position: 'absolute',
 			right: '1rem',
