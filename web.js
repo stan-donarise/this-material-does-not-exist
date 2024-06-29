@@ -12389,7 +12389,8 @@ var $;
             swiped_to(id, next) {
                 const vote = next == 'left' ? 0 : next == 'right' ? 1 : undefined;
                 if (vote !== undefined) {
-                    this.$.$mol_wire_async(this.$.$mol_fetch).success('https://crus.absolidix.com', {
+                    this.update();
+                    this.$.$mol_fetch.success('https://crus.absolidix.com', {
                         method: 'post',
                         headers: {
                             "Content-Type": "application/json",
@@ -12398,7 +12399,6 @@ var $;
                             id, comment: this.why(id), vote
                         }),
                     });
-                    this.update();
                 }
                 return next ?? '';
             }
