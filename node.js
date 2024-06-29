@@ -9579,10 +9579,6 @@ var $;
                 this.swiped_to('left');
                 this.x(-300);
             }
-            reset_hard() {
-                this.transition('');
-                this.reset();
-            }
             passed_left() {
                 return this.x() < (-this.left_threshold());
             }
