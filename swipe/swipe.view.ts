@@ -13,10 +13,6 @@ namespace $.$$ {
 			return this.x() + 'px'
 		}
 
-		auto() {
-			console.log( this.Touch().action_type() )
-		}
-
 		start_x = 0
 		start_time?: number
 		pointerdown( next?: any ) {

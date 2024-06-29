@@ -38,8 +38,6 @@ namespace $.$$ {
 
 		@ $mol_mem
 		predict() {
-			$mol_wire_solid()
-
 			const params = new URLSearchParams({
 				structure: JSON.stringify(this.json()),
 			})
