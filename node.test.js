@@ -8848,9 +8848,6 @@ var $;
 		swipe_to_left(){
 			return null;
 		}
-		on_swiped(){
-			return null;
-		}
 		reset(){
 			return null;
 		}
@@ -9559,13 +9556,11 @@ var $;
             swipe_to_right() {
                 this.transition('left 0.5s');
                 this.swiped_to('right');
-                this.on_swiped();
                 this.x(300);
             }
             swipe_to_left() {
                 this.transition('left 0.5s');
                 this.swiped_to('left');
-                this.on_swiped();
                 this.x(-300);
             }
             reset_hard() {
@@ -10807,6 +10802,9 @@ var $;
 			const obj = new this.$.$mol_theme_auto();
 			return obj;
 		}
+		update(){
+			return null;
+		}
 		player_fullscreen(next){
 			return (this?.Player()?.fullscreen(next));
 		}
@@ -10954,8 +10952,9 @@ var $;
 			if(next !== undefined) return next;
 			return false;
 		}
-		update(){
-			return null;
+		swiped_to(id, next){
+			if(next !== undefined) return next;
+			return "";
 		}
 		swipe_to_right(id){
 			return (this?.Card(id)?.swipe_to_right());
@@ -10969,7 +10968,7 @@ var $;
 			(obj.loaded) = () => ((this?.card_loaded(id)));
 			(obj.why) = (next) => ((this?.why(id, next)));
 			(obj.pointer_holding) = (next) => ((this?.card_holding(next)));
-			(obj.on_swiped) = () => ((this?.update()));
+			(obj.swiped_to) = (next) => ((this?.swiped_to(id, next)));
 			return obj;
 		}
 		cards(){
@@ -11040,6 +11039,7 @@ var $;
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Hint_yes"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "why"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "card_holding"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "swiped_to"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Card"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Foot"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "number"));
@@ -11294,6 +11294,22 @@ var $;
             click_yes() {
                 this.swipe_to_right(this.number());
             }
+            swiped_to(id, next) {
+                const vote = next == 'left' ? 0 : next == 'right' ? 1 : undefined;
+                if (vote !== undefined) {
+                    this.$.$mol_wire_async(this.$.$mol_fetch).success('https://crus.absolidix.com', {
+                        method: 'post',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            id, comment: this.why(id), vote
+                        }),
+                    });
+                    this.update();
+                }
+                return next ?? '';
+            }
         }
         __decorate([
             $mol_mem_key
@@ -11337,6 +11353,9 @@ var $;
         __decorate([
             $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_symbol", null);
+        __decorate([
+            $mol_mem_key
+        ], $optimade_tmdne_app.prototype, "swiped_to", null);
         $$.$optimade_tmdne_app = $optimade_tmdne_app;
         function random_int(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;

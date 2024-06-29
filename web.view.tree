@@ -626,7 +626,6 @@ $optimade_tmdne_swipe $mol_view
 	swiped_to? \
 	swipe_to_right null
 	swipe_to_left null
-	on_swiped null
 	reset null
 	x? 0
 	sub /
@@ -819,7 +818,7 @@ $optimade_tmdne_app $mol_view
 	plugins /
 		<= Theme $mol_theme_auto
 	auto /
-		<= update
+		<= update null
 	rotating? false
 	number_swiped? 0
 	number_prefetch? 0
@@ -881,6 +880,6 @@ $optimade_tmdne_app $mol_view
 					loaded <= card_loaded* false
 					why? <=> why*? \
 					pointer_holding? <=> card_holding? false
-					on_swiped <= update null
+					swiped_to? <=> swiped_to*? \
 					swipe_to_right => swipe_to_right*
 					swipe_to_left => swipe_to_left*
