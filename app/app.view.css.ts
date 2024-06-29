@@ -40,7 +40,7 @@ namespace $.$$ {
 			margin: 'auto',
 		},
 
-		Head: {
+		Head_title: {
 			userSelect: 'none',
 			justify: {
 				content: 'center',
@@ -106,13 +106,16 @@ namespace $.$$ {
 		},
 
 		Foot: {
-			width: '100%',
-			overflow: 'hidden',
+			justify: {
+				content: 'space-between',
+			},
+			width: '24rem',
 			position: 'absolute',
+			bottom: '4rem',
+
 			pointerEvents: 'none',
 			transition: 'opacity 0.2s',
 			opacity: 1,
-			bottom: 0,
 			'[rotating]': {
 				'true': {
 					opacity: 0,
@@ -120,123 +123,14 @@ namespace $.$$ {
 			},
 		},
 
-		Swipeable: {
-			pointerEvents: 'auto',
-			margin: 'auto',
-			// width: '100%',
-			// overflow: 'hidden',
-			// width: 'max-content',
-			// position: 'absolute',
-			// flex: {
-			// 	grow: 1,
-			// },
-			// left: '50%',
-			// transform: 'translateX(-50%)',
-			// bottom: 0,
-			padding: '0.5rem',
-			Float: {
-				margin: 'auto',
-			},
-		},
-
-		Card: {
-			background: {
-				color: $mol_theme.back,
-			},
-			bottom: '-20rem',
-			position: 'relative',
-			transition: 'bottom 1s',
-			'[loaded]': {
-				'true': {
-					bottom: 0,
-				},
-			},
-			border: {
-				radius: $mol_gap.round,
-			},
-			boxShadow: '0 0 0.5rem 0rem hsla(0,0%,0%,.125)',
-		},
-
-		Card_content: {
-			flex: {
-				direction: 'column',
-			},
-			background: {
-				color: $mol_style_func.hsla( 210, 80, 50, 0.3 ),
-			},
-			padding: $mol_gap.block,
-			border: {
-				radius: $mol_gap.round,
-			},
-			'[card_position]': {
-				'right': {
-							background: {
-								color: $mol_style_func.hsla( 120, 80, 50, 0.3 ),
-							},
-				},
-				'left': {
-							background: {
-								color: $mol_style_func.hsla( 0, 80, 50, 0.3 ),
-							},
-				},
-			},
-		},
-
-		Name: {
-			flex: {
-				direction: 'row',
-			},
-			padding: {
-				bottom: '0.5rem',
-			},
-			justify: {
-				content: 'center',
-			},
-			font: {
-				weight: 700,
-				size: '1.5rem',
-			},
-		},
-
-		Question: {
-			justify: {
-				content: 'center',
-			},
-			padding: {
-				bottom: '0.5rem',
-			},
-		},
-
 		Hint_no: {
-			userSelect: 'none',
+			pointerEvents: 'auto',
 			color: '#ff6666',
-			position: 'absolute',
-			left: '1rem',
-			bottom: '5rem',
 		},
 
 		Hint_yes: {
-			userSelect: 'none',
-			color: $mol_theme.current,
-			position: 'absolute',
-			right: '1rem',
-			bottom: '5rem',
-		},
-
-		Why: {
 			pointerEvents: 'auto',
-			maxWidth: '20rem',
-		},
-
-		Why_label: {
-			gap: '0.5rem',
-		},
-
-		Why_optinal: {
-			color: $mol_theme.shade,
-			font: {
-				style: 'italic',
-			},
+			color: $mol_theme.current,
 		},
 
 	} )

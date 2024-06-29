@@ -28,18 +28,31 @@ namespace $.$$ {
 		pointerup( next?: any ) {
 			const speed = this.x() / ( (new $mol_time_moment).valueOf() - this.start_time! )
 
-			this.transition( 'left 0.5s' )
-
-			if( this.passed_right() || speed > this.speed_threshold() ) this.to_right()
-			else if( this.passed_left() || speed < ( - this.speed_threshold() ) ) this.to_left()
+			if( this.passed_right() || speed > this.speed_threshold() ) this.swipe_to_right()
+			else if( this.passed_left() || speed < ( - this.speed_threshold() ) ) this.swipe_to_left()
 			else this.reset()
 
 			this.pointer_holding( false )
 		}
 
 		reset() {
+			this.transition( 'left 0.5s' )
 			this.swiped_to('')
 			this.x( 0 )
+		}
+
+		swipe_to_right() {
+			this.transition( 'left 0.5s' )
+			this.swiped_to( 'right' )
+			this.on_swiped()
+			this.x( 300 )
+		}
+
+		swipe_to_left() {
+			this.transition( 'left 0.5s' )
+			this.swiped_to( 'left' )
+			this.on_swiped()
+			this.x( -300 )
 		}
 
 		reset_hard() {
@@ -58,18 +71,6 @@ namespace $.$$ {
 		passed(): string {
 			return this.passed_left() ? 'left' :
 				this.passed_right() ? 'right' : ''
-		}
-
-		to_right() {
-			this.swiped_to( 'right' )
-			this.on_swiped()
-			this.x( 900 )
-		}
-
-		to_left() {
-			this.swiped_to( 'left' )
-			this.on_swiped()
-			this.x( -900 )
 		}
 
 	}

@@ -11,9 +11,10 @@ $optimade_tmdne_swipe $mol_view
 	passed_left false
 	passed_right false
 	swiped_to? \
+	swipe_to_right null
+	swipe_to_left null
 	on_swiped null
 	reset null
-	reset_hard null
 	x? 0
 	sub /
 		<= Float $mol_view

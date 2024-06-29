@@ -2,50 +2,76 @@ namespace $.$$ {
 
 	export class $optimade_tmdne_app extends $.$optimade_tmdne_app {
 
+		@ $mol_mem_key
+		fetch_by_number( number: number ) {
+			$mol_wire_solid()
+			return this.$.$mol_fetch.json( `https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${number}` ) as any
+		}
+
+		@ $mol_mem_key
+		predict_by_number( number: number ) {
+			$mol_wire_solid()
+
+			const structure = JSON.stringify( this.fetch_by_number( number ) )
+			const params = new URLSearchParams({ structure })
+			const url = `https://labs.mpds.io/predict?${ params.toString() }`
+			
+			const prediction = this.$.$mol_wire_sync( this ).$.$mol_fetch.success( url, {
+				method: 'post',
+			} ).json() ?? {} as any
+			
+			return prediction
+		}
+
 		@ $mol_mem
 		json() {
-			return this.$.$mol_fetch.json( `https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${this.number()}` ) as any
+			return this.fetch_by_number( this.number() )
 		}
 
-		@ $mol_mem
-		name() {
-			let str = this.json()?.data[ 0 ]?.attributes?.chemical_formula_reduced
-			this.reset()
+		@ $mol_mem_key
+		card_name( n: number ) {
+			const json = this.fetch_by_number( n )
+			let str = json?.data[ 0 ]?.attributes?.chemical_formula_reduced
 			return formula_html( str )
 		}
-
-		@ $mol_action
-		reset() {
-			this.why('')
-			this.card_reset()
-		}
-
-		@ $mol_mem
-		loaded() {
+		
+		@ $mol_mem_key
+		card_loaded( n: number ) {
 			try {
-				this.name()
-				return true
+				this.card_name( n )
+				return this.number() === n
 			} catch (error) {
 				if( $mol_promise_like( error ) ) return false
 			}
 			return false
 		}
 
+		cards(): readonly ( any )[] {
+			const swiped = this.number_swiped()
+			return [ 
+				this.Card( this.number_prefetch() ),
+				... swiped ? [ this.Card( swiped ) ] : [],
+				this.Card( this.number() ),
+			]
+		}
+
+		@ $mol_mem
+		number_prefetch( next?: number ): number {
+			return next ?? random_int( 1, 384937 )
+		}
+
 		@ $mol_action
 		update() {
-			this.number( random_int( 1, 384937 ) )
+			this.number_swiped( this.number() )
+			this.number( this.number_prefetch() )
+			const prefetch = random_int( 1, 384937 )
+			this.number_prefetch( prefetch )
+			$mol_wire_async( this ).predict_by_number( prefetch )
 		}
 
 		@ $mol_mem
 		predict() {
-			const params = new URLSearchParams({
-				structure: JSON.stringify(this.json()),
-			})
-			const url = `https://labs.mpds.io/predict?${ params.toString() }`
-			
-			return this.$.$mol_wire_sync( this ).$.$mol_fetch.success( url, {
-				method: 'post',
-			} ).json() ?? {} as any
+			return this.predict_by_number( this.number() )
 		}
 
 		@ $mol_mem
@@ -54,34 +80,29 @@ namespace $.$$ {
 			return keys.map( k => this.Param( k ) )
 		}
 
-		@ $mol_mem
+		@ $mol_mem_key
 		param_value( id: any ): string {
 			return this.predict().prediction[id].value ?? ''
 		}
 
-		@ $mol_mem
+		@ $mol_mem_key
 		param_mae( id: any ): string {
 			return this.predict().prediction[id].mae ?? ''
 		}
 
-		@ $mol_mem
+		@ $mol_mem_key
 		param_name( id: any ): string {
 			return this.predict().legend[id].name ?? ''
 		}
 
-		@ $mol_mem
+		@ $mol_mem_key
 		param_unit( id: any ): string {
 			return this.predict().legend[id].gui_units ?? ''
 		}
 
-		@ $mol_mem
+		@ $mol_mem_key
 		param_symbol( id: any ): string {
 			return this.predict().legend[id].symbol ?? ''
-		}
-
-		@ $mol_mem
-		card_position(): string {
-			return this.swiped_to() || this.passed() || ''
 		}
 
 		player_pointerdown( next?: any ) {
@@ -90,6 +111,14 @@ namespace $.$$ {
 
 		player_pointerup( next?: any ) {
 			this.rotating( false )
+		}
+
+		click_no() {
+			this.swipe_to_left( this.number() )
+		}
+
+		click_yes() {
+			this.swipe_to_right( this.number() )
 		}
 		
 	}

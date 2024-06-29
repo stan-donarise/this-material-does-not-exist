@@ -6,6 +6,8 @@ $optimade_tmdne_app $mol_view
 	auto /
 		<= update
 	rotating? false
+	number_swiped? 0
+	number_prefetch? 0
 	sub /
 		<= Player $optimade_cifplayer_player
 			fullscreen? => player_fullscreen?
@@ -22,7 +24,7 @@ $optimade_tmdne_app $mol_view
 			sub /
 				<= Head_card $mol_list
 					sub /
-						<= Head $mol_paragraph
+						<= Head_title $mol_paragraph
 							title \Does this material exist?
 		<= Prediction $mol_list
 			attr *
@@ -53,34 +55,17 @@ $optimade_tmdne_app $mol_view
 			attr *
 				rotating <= rotating
 			sub /
-				<= Hint_no $mol_view
-					sub / \ᐊ No
-				<= Hint_yes $mol_view
-					sub / \Yes ᐅ
-				<= Swipeable $optimade_tmdne_swipe
-					passed => passed
-					swiped_to? <=> swiped_to? \
-					reset_hard => card_reset
-					on_swiped <= update null
-					allowed <= loaded false
-					content /
-						<= Card $mol_view
-							attr *
-								loaded <= loaded
-							sub / <= Card_content $mol_view
-								attr *
-									card_position <= card_position \
-								sub /
-									<= Name $optimade_tmdne_html_view
-										html <= name \
-									<= Question $mol_paragraph
-										title \Do you think it's synthesizable?
-									<= Why_label $mol_view
-										sub /
-											<= Why_title $mol_paragraph
-												title \Why?
-											<= Why_optinal $mol_paragraph
-												title \(optinal)
-									<= Why $mol_textarea
-										value? <=> why? \
+				<= Hint_no $mol_button_minor
+					title \ᐊ No
+					click? <=> click_no? null
+				<= Hint_yes $mol_button_minor
+					title \Yes ᐅ
+					click? <=> click_yes? null
+				^ cards / <= Card* $optimade_tmdne_card
+					name <= card_name* \
+					loaded <= card_loaded* false
+					why? <=> why*? \
 					pointer_holding? <=> card_holding? false
+					on_swiped <= update null
+					swipe_to_right => swipe_to_right*
+					swipe_to_left => swipe_to_left*
