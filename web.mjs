@@ -12091,7 +12091,7 @@ var $;
 		}
 		Param_name(id){
 			const obj = new this.$.$mol_paragraph();
-			(obj.minimal_height) = () => (16);
+			(obj.minimal_height) = () => (24);
 			(obj.title) = () => ((this?.param_name(id)));
 			return obj;
 		}
@@ -12134,7 +12134,7 @@ var $;
 		}
 		Param_value(id){
 			const obj = new this.$.$mol_view();
-			(obj.minimal_height) = () => (16);
+			(obj.minimal_height) = () => (24);
 			(obj.sub) = () => ([
 				(this?.param_value(id)), 
 				(this?.Param_unit(id)), 
@@ -12475,6 +12475,13 @@ var $;
             return html ?? '';
         }
     })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("optimade/tmdne/app/app.view.css", "@media all and (max-width: 900px) {\n\t[optimade_tmdne_app_param_mae], [optimade_tmdne_app_param_name] { display: none; }\n}\n");
 })($ || ($ = {}));
 
 ;

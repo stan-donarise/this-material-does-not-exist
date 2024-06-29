@@ -845,13 +845,13 @@ $optimade_tmdne_app $mol_view
 				<= Param* $mol_view
 					sub /
 						<= Param_name* $mol_paragraph
-							minimal_height 16
+							minimal_height 24
 							title <= param_name* \
 						<= Param_symbol_html* $optimade_tmdne_html_view
 							html <= param_symbol* \
 						\=
 						<= Param_value* $mol_view
-							minimal_height 16
+							minimal_height 24
 							sub /
 								<= param_value* \
 								<= Param_unit* $optimade_tmdne_html_view
