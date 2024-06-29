@@ -10630,14 +10630,14 @@ var $;
 			(obj.title) = () => ("Why?");
 			return obj;
 		}
-		Why_optinal(){
+		Why_optional(){
 			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("(optinal)");
+			(obj.title) = () => ("(optional)");
 			return obj;
 		}
 		Why_label(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this?.Why_title()), (this?.Why_optinal())]);
+			(obj.sub) = () => ([(this?.Why_title()), (this?.Why_optional())]);
 			return obj;
 		}
 		why(next){
@@ -10676,7 +10676,7 @@ var $;
 	($mol_mem(($.$optimade_tmdne_card.prototype), "Name"));
 	($mol_mem(($.$optimade_tmdne_card.prototype), "Question"));
 	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_title"));
-	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_optinal"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_optional"));
 	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_label"));
 	($mol_mem(($.$optimade_tmdne_card.prototype), "why"));
 	($mol_mem(($.$optimade_tmdne_card.prototype), "Why"));
@@ -10793,7 +10793,7 @@ var $;
             Why_label: {
                 gap: '0.5rem',
             },
-            Why_optinal: {
+            Why_optional: {
                 color: $mol_theme.shade,
                 font: {
                     style: 'italic',
@@ -10992,7 +10992,7 @@ var $;
 			return obj;
 		}
 		title(){
-			return "This material does not exist";
+			return "This Material Does Not Exist?";
 		}
 		number(next){
 			if(next !== undefined) return next;
@@ -11432,6 +11432,8 @@ var $;
             Head_card: {
                 pointerEvents: 'auto',
                 margin: 'auto',
+                width: '35%',
+                textAlign: 'center',
             },
             Head_title: {
                 userSelect: 'none',
@@ -11509,10 +11511,12 @@ var $;
             Hint_no: {
                 pointerEvents: 'auto',
                 color: '#ff6666',
+                zIndex: 10,
             },
             Hint_yes: {
                 pointerEvents: 'auto',
                 color: $mol_theme.current,
+                zIndex: 10,
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
