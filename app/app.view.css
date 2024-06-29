@@ -1,0 +1,3 @@
+@media all and (max-width: 900px) {
+	[optimade_tmdne_app_param_mae], [optimade_tmdne_app_param_name] { display: none; }
+}
