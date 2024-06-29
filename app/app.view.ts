@@ -15,11 +15,11 @@ namespace $.$$ {
 			const structure = JSON.stringify( this.fetch_by_number( number ) )
 			const params = new URLSearchParams({ structure })
 			const url = `https://labs.mpds.io/predict?${ params.toString() }`
-			
+
 			const prediction = this.$.$mol_wire_sync( this ).$.$mol_fetch.success( url, {
 				method: 'post',
 			} ).json() ?? {} as any
-			
+
 			return prediction
 		}
 
@@ -34,7 +34,7 @@ namespace $.$$ {
 			let str = json?.data[ 0 ]?.attributes?.chemical_formula_reduced
 			return formula_html( str )
 		}
-		
+
 		@ $mol_mem_key
 		card_loaded( n: number ) {
 			try {
@@ -48,7 +48,7 @@ namespace $.$$ {
 
 		cards(): readonly ( any )[] {
 			const swiped = this.number_swiped()
-			return [ 
+			return [
 				this.Card( this.number_prefetch() ),
 				... swiped ? [ this.Card( swiped ) ] : [],
 				this.Card( this.number() ),
@@ -123,27 +123,30 @@ namespace $.$$ {
 
 		@ $mol_mem_key
 		swiped_to( id: number, next?: string ) {
-			
+
 			const vote = next == 'left' ? 0 : next == 'right' ? 1 : undefined
 			if( vote !== undefined ) {
 
 				this.update()
-				
+				const params = new URLSearchParams( {
+					id: this.json()?.data[ 0 ]?.attributes?._gnome_material_id,
+					comment: this.why( id ),
+					vote
+				} )
+
 				this.$.$mol_fetch.success( 'https://crus.absolidix.com', {
 					method: 'post',
 					headers: {
-						"Content-Type": "application/json",
+						"Content-Type": "application/x-www-form-urlencoded",
 					},
-					body: JSON.stringify( {
-						id, comment: this.why( id ), vote
-					} ),
+					body: params.toString(),
 				} )
 
 			}
 
 			return next ?? ''
 		}
-		
+
 	}
 
 	function random_int( min: number, max: number ) {
@@ -170,5 +173,5 @@ namespace $.$$ {
 		if( sub ) html += '</sub>'
 		return html ?? ''
 	}
-	
+
 }
