@@ -1,7 +1,7 @@
 namespace $.$$ {
-	
+
 	$mol_style_define( $optimade_tmdne_card, {
-		
+
 		pointerEvents: 'auto',
 		width: 'max-content',
 		position: 'fixed',
@@ -101,13 +101,13 @@ namespace $.$$ {
 			gap: '0.5rem',
 		},
 
-		Why_optinal: {
+		Why_optional: {
 			color: $mol_theme.shade,
 			font: {
 				style: 'italic',
 			},
 		},
-		
+
 	} )
-	
+
 }
