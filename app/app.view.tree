@@ -1,0 +1,71 @@
+$optimade_tmdne_app $mol_view
+	title \This material does not exist
+	number? 1
+	plugins /
+		<= Theme $mol_theme_auto
+	auto /
+		<= update
+	rotating? false
+	number_swiped? 0
+	number_prefetch? 0
+	sub /
+		<= Player $optimade_cifplayer_player
+			fullscreen? => player_fullscreen?
+			attr *
+				fullscreen <= player_fullscreen?
+				card_holding <= card_holding
+			data <= json null
+			Fullscreen null
+			Overlays null
+			event *
+				pointerdown? <=> player_pointerdown? null
+				pointerup? <=> player_pointerup? null
+		<= Head_space $mol_view
+			sub /
+				<= Head_card $mol_list
+					sub /
+						<= Head_title $mol_paragraph
+							title \Does this material exist?
+		<= Prediction $mol_list
+			attr *
+				rotating <= rotating
+			sub <= params /
+				<= Param* $mol_view
+					sub /
+						<= Param_name* $mol_paragraph
+							minimal_height 16
+							title <= param_name* \
+						<= Param_symbol_html* $optimade_tmdne_html_view
+							html <= param_symbol* \
+						\=
+						<= Param_value* $mol_view
+							minimal_height 16
+							sub /
+								<= param_value* \
+								<= Param_unit* $optimade_tmdne_html_view
+									html <= param_unit* \
+								<= Param_mae* $mol_view
+									sub /
+										\(±
+										<= param_mae* \
+										<= Param_mae_unit* $optimade_tmdne_html_view
+											html <= param_unit* \
+										\)
+		<= Foot $mol_view
+			attr *
+				rotating <= rotating
+			sub /
+				<= Hint_no $mol_button_minor
+					title \ᐊ No
+					click? <=> click_no? null
+				<= Hint_yes $mol_button_minor
+					title \Yes ᐅ
+					click? <=> click_yes? null
+				^ cards / <= Card* $optimade_tmdne_card
+					name <= card_name* \
+					loaded <= card_loaded* false
+					why? <=> why*? \
+					pointer_holding? <=> card_holding? false
+					on_swiped <= update null
+					swipe_to_right => swipe_to_right*
+					swipe_to_left => swipe_to_left*
