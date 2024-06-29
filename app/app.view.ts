@@ -120,6 +120,29 @@ namespace $.$$ {
 		click_yes() {
 			this.swipe_to_right( this.number() )
 		}
+
+		@ $mol_mem_key
+		swiped_to( id: number, next?: string ) {
+			
+			const vote = next == 'left' ? 0 : next == 'right' ? 1 : undefined
+			if( vote !== undefined ) {
+
+				this.$.$mol_wire_async( this.$.$mol_fetch ).success( 'https://crus.absolidix.com', {
+					method: 'post',
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify( {
+						id, comment: this.why( id ), vote
+					} ),
+				} )
+
+				this.update()
+
+			}
+
+			return next ?? ''
+		}
 		
 	}
 

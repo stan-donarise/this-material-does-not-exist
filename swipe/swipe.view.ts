@@ -44,14 +44,12 @@ namespace $.$$ {
 		swipe_to_right() {
 			this.transition( 'left 0.5s' )
 			this.swiped_to( 'right' )
-			this.on_swiped()
 			this.x( 300 )
 		}
 
 		swipe_to_left() {
 			this.transition( 'left 0.5s' )
 			this.swiped_to( 'left' )
-			this.on_swiped()
 			this.x( -300 )
 		}
 
