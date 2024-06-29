@@ -53,11 +53,6 @@ namespace $.$$ {
 			this.x( -300 )
 		}
 
-		reset_hard() {
-			this.transition( '' )
-			this.reset()
-		}
-
 		passed_left(): boolean {
 			return this.x() < ( - this.left_threshold() )
 		}
