@@ -621,12 +621,10 @@ $optimade_tmdne_swipe $mol_view
 	right_threshold <= threshold 60
 	left_threshold <= threshold
 	passed \
-	passed_left false
-	passed_right false
 	swiped_to? \
 	swipe_to_right null
 	swipe_to_left null
-	reset null
+	move_to_middle null
 	x? 0
 	sub /
 		<= Float $mol_view

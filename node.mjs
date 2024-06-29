@@ -8848,12 +8848,6 @@ var $;
 		passed(){
 			return "";
 		}
-		passed_left(){
-			return false;
-		}
-		passed_right(){
-			return false;
-		}
 		swiped_to(next){
 			if(next !== undefined) return next;
 			return "";
@@ -8864,7 +8858,7 @@ var $;
 		swipe_to_left(){
 			return null;
 		}
-		reset(){
+		move_to_middle(){
 			return null;
 		}
 		x(next){
@@ -9556,15 +9550,15 @@ var $;
             }
             pointerup(next) {
                 const speed = this.x() / ((new $mol_time_moment).valueOf() - this.start_time);
-                if (this.passed_right() || speed > this.speed_threshold())
+                if ((this.passed() == 'right') || speed > this.speed_threshold())
                     this.swipe_to_right();
-                else if (this.passed_left() || speed < (-this.speed_threshold()))
+                else if ((this.passed() == 'left') || speed < (-this.speed_threshold()))
                     this.swipe_to_left();
                 else
-                    this.reset();
+                    this.move_to_middle();
                 this.pointer_holding(false);
             }
-            reset() {
+            move_to_middle() {
                 this.transition('left 0.5s');
                 this.swiped_to('');
                 this.x(0);
@@ -9579,15 +9573,13 @@ var $;
                 this.swiped_to('left');
                 this.x(-300);
             }
-            passed_left() {
-                return this.x() < (-this.left_threshold());
-            }
-            passed_right() {
-                return this.x() > this.right_threshold();
-            }
             passed() {
-                return this.passed_left() ? 'left' :
-                    this.passed_right() ? 'right' : '';
+                const x = this.x();
+                if (x < (-this.left_threshold()))
+                    return 'left';
+                if (x > this.right_threshold())
+                    return 'right';
+                return '';
             }
         }
         __decorate([
@@ -9596,6 +9588,9 @@ var $;
         __decorate([
             $mol_mem
         ], $optimade_tmdne_swipe.prototype, "left", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_swipe.prototype, "passed", null);
         $$.$optimade_tmdne_swipe = $optimade_tmdne_swipe;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
