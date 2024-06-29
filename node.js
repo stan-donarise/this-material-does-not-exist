@@ -8238,6 +8238,1388 @@ var $;
 })($ || ($ = {}));
 
 ;
+"use strict";
+var $;
+(function ($) {
+    class $mol_vector extends Array {
+        get length() {
+            return super.length;
+        }
+        constructor(...values) { super(...values); }
+        map(convert, self) {
+            return super.map(convert, self);
+        }
+        merged(patches, combine) {
+            return this.map((value, index) => combine(value, patches[index]));
+        }
+        limited(limits) {
+            return this.merged(limits, (value, [min, max]) => (value < min) ? min : (value > max) ? max : value);
+        }
+        added0(diff) {
+            return this.map(value => value + diff);
+        }
+        added1(diff) {
+            return this.merged(diff, (a, b) => a + b);
+        }
+        multed0(mult) {
+            return this.map(value => value * mult);
+        }
+        multed1(mults) {
+            return this.merged(mults, (a, b) => a * b);
+        }
+        powered0(mult) {
+            return this.map(value => value ** mult);
+        }
+        expanded1(point) {
+            return this.merged(point, (range, value) => range.expanded0(value));
+        }
+        expanded2(point) {
+            return this.merged(point, (range1, range2) => {
+                let next = range1;
+                const Range = range1.constructor;
+                if (range1[0] > range2[0])
+                    next = new Range(range2[0], next.max);
+                if (range1[1] < range2[1])
+                    next = new Range(next.min, range2[1]);
+                return next;
+            });
+        }
+        center() {
+            const Result = this[0].constructor;
+            return new Result(...this[0].map((_, i) => this.reduce((sum, point) => sum + point[i], 0) / this.length));
+        }
+        distance() {
+            let distance = 0;
+            for (let i = 1; i < this.length; ++i) {
+                distance += this[i - 1].reduce((sum, min, j) => sum + (min - this[i][j]) ** 2, 0) ** (1 / this[i].length);
+            }
+            return distance;
+        }
+        transponed() {
+            return this[0].map((_, i) => this.map(row => row[i]));
+        }
+        get x() { return this[0]; }
+        set x(next) { this[0] = next; }
+        get y() { return this[1]; }
+        set y(next) { this[1] = next; }
+        get z() { return this[2]; }
+        set z(next) { this[2] = next; }
+    }
+    $.$mol_vector = $mol_vector;
+    class $mol_vector_1d extends $mol_vector {
+    }
+    $.$mol_vector_1d = $mol_vector_1d;
+    class $mol_vector_2d extends $mol_vector {
+    }
+    $.$mol_vector_2d = $mol_vector_2d;
+    class $mol_vector_3d extends $mol_vector {
+    }
+    $.$mol_vector_3d = $mol_vector_3d;
+    class $mol_vector_range extends $mol_vector {
+        0;
+        1;
+        constructor(min, max = min) {
+            super(min, max);
+            this[0] = min;
+            this[1] = max;
+        }
+        get min() { return this[0]; }
+        set min(next) { this[0] = next; }
+        get max() { return this[1]; }
+        set max(next) { this[1] = next; }
+        get inversed() {
+            return new this.constructor(this.max, this.min);
+        }
+        expanded0(value) {
+            const Range = this.constructor;
+            let range = this;
+            if (value > range.max)
+                range = new Range(range.min, value);
+            if (value < range.min)
+                range = new Range(value, range.max);
+            return range;
+        }
+    }
+    $.$mol_vector_range = $mol_vector_range;
+    $.$mol_vector_range_full = new $mol_vector_range(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    class $mol_vector_matrix extends $mol_vector {
+        added2(diff) {
+            return this.merged(diff, (a, b) => a.map((a2, index) => a2 + b[index]));
+        }
+        multed2(diff) {
+            return this.merged(diff, (a, b) => a.map((a2, index) => a2 * b[index]));
+        }
+    }
+    $.$mol_vector_matrix = $mol_vector_matrix;
+})($ || ($ = {}));
+
+;
+	($.$mol_touch) = class $mol_touch extends ($.$mol_plugin) {
+		event_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_end(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_leave(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_wheel(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		start_zoom(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		start_distance(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		zoom(next){
+			if(next !== undefined) return next;
+			return 1;
+		}
+		allow_draw(){
+			return true;
+		}
+		allow_pan(){
+			return true;
+		}
+		allow_zoom(){
+			return true;
+		}
+		action_type(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		action_point(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+			return obj;
+		}
+		start_pan(next){
+			if(next !== undefined) return next;
+			return [0, 0];
+		}
+		pan(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_vector_2d(0, 0);
+			return obj;
+		}
+		pointer_center(){
+			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+			return obj;
+		}
+		start_pos(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_precision(){
+			return 16;
+		}
+		swipe_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_from_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_right(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_bottom(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_left(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		swipe_to_top(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		draw_end(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		style(){
+			return {
+				...(super.style()), 
+				"touch-action": "none", 
+				"overscroll-behavior": "none"
+			};
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"pointerdown": (next) => (this?.event_start(next)), 
+				"pointermove": (next) => (this?.event_move(next)), 
+				"pointerup": (next) => (this?.event_end(next)), 
+				"pointerleave": (next) => (this?.event_leave(next)), 
+				"wheel": (next) => (this?.event_wheel(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_touch.prototype), "event_start"));
+	($mol_mem(($.$mol_touch.prototype), "event_move"));
+	($mol_mem(($.$mol_touch.prototype), "event_end"));
+	($mol_mem(($.$mol_touch.prototype), "event_leave"));
+	($mol_mem(($.$mol_touch.prototype), "event_wheel"));
+	($mol_mem(($.$mol_touch.prototype), "start_zoom"));
+	($mol_mem(($.$mol_touch.prototype), "start_distance"));
+	($mol_mem(($.$mol_touch.prototype), "zoom"));
+	($mol_mem(($.$mol_touch.prototype), "action_type"));
+	($mol_mem(($.$mol_touch.prototype), "action_point"));
+	($mol_mem(($.$mol_touch.prototype), "start_pan"));
+	($mol_mem(($.$mol_touch.prototype), "pan"));
+	($mol_mem(($.$mol_touch.prototype), "pointer_center"));
+	($mol_mem(($.$mol_touch.prototype), "start_pos"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_top"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_from_top"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_right"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_bottom"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_left"));
+	($mol_mem(($.$mol_touch.prototype), "swipe_to_top"));
+	($mol_mem(($.$mol_touch.prototype), "draw_start"));
+	($mol_mem(($.$mol_touch.prototype), "draw"));
+	($mol_mem(($.$mol_touch.prototype), "draw_end"));
+
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_touch extends $.$mol_touch {
+            auto() {
+                this.pointer_events();
+                this.start_pan();
+                this.start_pos();
+                this.start_distance();
+                this.start_zoom();
+                this.action_type();
+                this.view_rect();
+            }
+            pointer_events(next = []) {
+                return next;
+            }
+            pointer_coords() {
+                const events = this.pointer_events();
+                const touches = events.filter(e => e.pointerType === 'touch');
+                const pens = events.filter(e => e.pointerType === 'pen');
+                const mouses = events.filter(e => !e.pointerType || e.pointerType === 'mouse');
+                const choosen = touches.length ? touches : pens.length ? pens : mouses;
+                return new $mol_vector(...choosen.map(event => this.event_coords(event)));
+            }
+            pointer_center() {
+                const coords = this.pointer_coords();
+                return coords.length ? coords.center() : new $mol_vector_2d(NaN, NaN);
+            }
+            event_coords(event) {
+                const { left, top } = this.view_rect();
+                return new $mol_vector_2d(Math.round(event.pageX - left), Math.round(event.pageY - top));
+            }
+            action_point() {
+                const coord = this.pointer_center();
+                if (!coord)
+                    return null;
+                const zoom = this.zoom();
+                const pan = this.pan();
+                return new $mol_vector_2d((coord.x - pan.x) / zoom, (coord.y - pan.y) / zoom);
+            }
+            event_eat(event) {
+                if (event instanceof PointerEvent) {
+                    const events = this.pointer_events()
+                        .filter(e => e instanceof PointerEvent)
+                        .filter(e => e.pointerId !== event.pointerId);
+                    if (event.type !== 'pointerup' && event.type !== 'pointerleave')
+                        events.push(event);
+                    this.pointer_events(events);
+                    const touch_count = events.filter(e => e.pointerType === 'touch').length;
+                    if (this.allow_zoom() && touch_count === 2) {
+                        return this.action_type('zoom');
+                    }
+                    if (this.action_type() === 'zoom' && touch_count === 1) {
+                        return this.action_type('zoom');
+                    }
+                    let button;
+                    (function (button) {
+                        button[button["left"] = 1] = "left";
+                        button[button["right"] = 2] = "right";
+                        button[button["middle"] = 4] = "middle";
+                    })(button || (button = {}));
+                    if (events.length > 0) {
+                        if (event.ctrlKey && this.allow_zoom())
+                            return this.action_type('zoom');
+                        if (event.buttons === button.left && this.allow_draw())
+                            return this.action_type('draw');
+                        if (event.buttons && this.allow_pan())
+                            return this.action_type('pan');
+                    }
+                    return this.action_type('');
+                }
+                if (event instanceof WheelEvent) {
+                    this.pointer_events([event]);
+                    if (event.shiftKey)
+                        return this.action_type('pan');
+                    return this.action_type('zoom');
+                }
+                return this.action_type('');
+            }
+            event_start(event) {
+                if (event.defaultPrevented)
+                    return;
+                this.start_pan(this.pan());
+                const action_type = this.event_eat(event);
+                if (!action_type)
+                    return;
+                const coords = this.pointer_coords();
+                this.start_pos(coords.center());
+                if (action_type === 'draw') {
+                    this.draw_start(event);
+                    return;
+                }
+                this.start_distance(coords.distance());
+                this.start_zoom(this.zoom());
+            }
+            event_move(event) {
+                if (event.defaultPrevented)
+                    return;
+                const rect = this.view_rect();
+                if (!rect)
+                    return;
+                const start_pan = this.start_pan();
+                const action_type = this.event_eat(event);
+                const start_pos = this.start_pos();
+                let pos = this.pointer_center();
+                if (!action_type)
+                    return;
+                if (!start_pos)
+                    return;
+                if (action_type === 'draw') {
+                    const distance = new $mol_vector(start_pos, pos).distance();
+                    if (distance >= 4) {
+                        this.draw(event);
+                    }
+                    return;
+                }
+                if (action_type === 'pan') {
+                    this.dom_node().setPointerCapture(event.pointerId);
+                    this.pan(new $mol_vector_2d(start_pan[0] + pos[0] - start_pos[0], start_pan[1] + pos[1] - start_pos[1]));
+                }
+                const precision = this.swipe_precision();
+                if ((this.swipe_right !== $mol_touch.prototype.swipe_right
+                    || this.swipe_from_left !== $mol_touch.prototype.swipe_from_left
+                    || this.swipe_to_right !== $mol_touch.prototype.swipe_to_right)
+                    && pos[0] - start_pos[0] > precision * 2
+                    && Math.abs(pos[1] - start_pos[1]) < precision) {
+                    this.swipe_right(event);
+                }
+                if ((this.swipe_left !== $mol_touch.prototype.swipe_left
+                    || this.swipe_from_right !== $mol_touch.prototype.swipe_from_right
+                    || this.swipe_to_left !== $mol_touch.prototype.swipe_to_left)
+                    && start_pos[0] - pos[0] > precision * 2
+                    && Math.abs(pos[1] - start_pos[1]) < precision) {
+                    this.swipe_left(event);
+                }
+                if ((this.swipe_bottom !== $mol_touch.prototype.swipe_bottom
+                    || this.swipe_from_top !== $mol_touch.prototype.swipe_from_top
+                    || this.swipe_to_bottom !== $mol_touch.prototype.swipe_to_bottom)
+                    && pos[1] - start_pos[1] > precision * 2
+                    && Math.abs(pos[0] - start_pos[0]) < precision) {
+                    this.swipe_bottom(event);
+                }
+                if ((this.swipe_top !== $mol_touch.prototype.swipe_top
+                    || this.swipe_from_bottom !== $mol_touch.prototype.swipe_from_bottom
+                    || this.swipe_to_top !== $mol_touch.prototype.swipe_to_top)
+                    && start_pos[1] - pos[1] > precision * 2
+                    && Math.abs(pos[0] - start_pos[0]) < precision) {
+                    this.swipe_top(event);
+                }
+                if (action_type === 'zoom') {
+                    const coords = this.pointer_coords();
+                    const distance = coords.distance();
+                    const start_distance = this.start_distance();
+                    const center = coords.center();
+                    const start_zoom = this.start_zoom();
+                    let mult = Math.abs(distance - start_distance) < 32 ? 1 : distance / start_distance;
+                    this.zoom(start_zoom * mult);
+                    const pan = new $mol_vector_2d((start_pan[0] - center[0] + pos[0] - start_pos[0]) * mult + center[0], (start_pan[1] - center[1] + pos[1] - start_pos[1]) * mult + center[1]);
+                    this.pan(pan);
+                }
+            }
+            event_end(event) {
+                const action = this.action_type();
+                if (action === 'draw') {
+                    this.draw_end(event);
+                }
+                this.event_leave(event);
+            }
+            event_leave(event) {
+                this.event_eat(event);
+                this.dom_node().releasePointerCapture(event.pointerId);
+                this.start_pos(null);
+            }
+            swipe_left(event) {
+                if (this.view_rect().right - this.start_pos()[0] < this.swipe_precision() * 2)
+                    this.swipe_from_right(event);
+                else
+                    this.swipe_to_left(event);
+                this.event_end(event);
+            }
+            swipe_right(event) {
+                if (this.start_pos()[0] - this.view_rect().left < this.swipe_precision() * 2)
+                    this.swipe_from_left(event);
+                else
+                    this.swipe_to_right(event);
+                this.event_end(event);
+            }
+            swipe_top(event) {
+                if (this.view_rect().bottom - this.start_pos()[1] < this.swipe_precision() * 2)
+                    this.swipe_from_bottom(event);
+                else
+                    this.swipe_to_top(event);
+                this.event_end(event);
+            }
+            swipe_bottom(event) {
+                if (this.start_pos()[1] - this.view_rect().top < this.swipe_precision() * 2)
+                    this.swipe_from_top(event);
+                else
+                    this.swipe_to_bottom(event);
+                this.event_end(event);
+            }
+            event_wheel(event) {
+                if (event.defaultPrevented)
+                    return;
+                if (this.pan === $mol_touch.prototype.pan && this.zoom === $mol_touch.prototype.zoom)
+                    return;
+                if (this.pan !== $mol_touch.prototype.pan) {
+                    event.preventDefault();
+                }
+                const action_type = this.event_eat(event);
+                if (action_type === 'zoom') {
+                    const zoom_prev = this.zoom() || 0.001;
+                    const zoom_next = zoom_prev * (1 - .001 * Math.min(event.deltaY, 100));
+                    const mult = zoom_next / zoom_prev;
+                    this.zoom(zoom_next);
+                    const pan_prev = this.pan();
+                    const center = this.pointer_center();
+                    const pan_next = pan_prev.multed0(mult).added1(center.multed0(1 - mult));
+                    this.pan(pan_next);
+                }
+                if (action_type === 'pan') {
+                    const pan_prev = this.pan();
+                    const pan_next = new $mol_vector_2d(pan_prev.x - event.deltaX, pan_prev.y - event.deltaY);
+                    this.pan(pan_next);
+                }
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_events", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_coords", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "pointer_center", null);
+        __decorate([
+            $mol_mem
+        ], $mol_touch.prototype, "action_point", null);
+        $$.$mol_touch = $mol_touch;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$optimade_tmdne_swipe) = class $optimade_tmdne_swipe extends ($.$mol_view) {
+		allowed(){
+			return true;
+		}
+		pan(next){
+			return (this?.Touch()?.pan(next));
+		}
+		Touch(){
+			const obj = new this.$.$mol_touch();
+			(obj.allow_draw) = () => (false);
+			(obj.allow_pan) = () => ((this?.allowed()));
+			return obj;
+		}
+		threshold(){
+			return 60;
+		}
+		content(){
+			return [];
+		}
+		left(){
+			return "0px";
+		}
+		transition(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Float(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this?.content()));
+			(obj.style) = () => ({"left": (this?.left()), "transition": (this?.transition())});
+			return obj;
+		}
+		pointerdown(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pointerup(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		plugins(){
+			return [(this?.Touch())];
+		}
+		speed_threshold(){
+			return 1;
+		}
+		right_threshold(){
+			return (this?.threshold());
+		}
+		left_threshold(){
+			return (this?.threshold());
+		}
+		passed(){
+			return "";
+		}
+		passed_left(){
+			return false;
+		}
+		passed_right(){
+			return false;
+		}
+		swiped_to(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		swipe_to_right(){
+			return null;
+		}
+		swipe_to_left(){
+			return null;
+		}
+		on_swiped(){
+			return null;
+		}
+		reset(){
+			return null;
+		}
+		x(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		sub(){
+			return [(this?.Float())];
+		}
+		pointer_holding(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"pointerdown": (next) => (this?.pointerdown(next)), 
+				"pointerup": (next) => (this?.pointerup(next))
+			};
+		}
+	};
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Touch"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "transition"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Float"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerdown"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerup"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "swiped_to"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "x"));
+	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointer_holding"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_time_base {
+        static patterns = {};
+        static formatter(pattern) {
+            if (this.patterns[pattern])
+                return this.patterns[pattern];
+            var tokens = Object.keys(this.patterns)
+                .sort()
+                .reverse()
+                .map((token) => token.replace(/([-+*.\[\]()\^])/g, '\\$1'));
+            var lexer = RegExp('(.*?)(' + tokens.join('|') + '|$)', 'g');
+            var funcs = [];
+            pattern.replace(lexer, (str, text, token) => {
+                if (text)
+                    funcs.push(() => text);
+                if (token)
+                    funcs.push(this.patterns[token]);
+                return str;
+            });
+            return this.patterns[pattern] = (arg) => {
+                return funcs.reduce((res, func) => res + func(arg), '');
+            };
+        }
+        toString(pattern) {
+            const Base = this.constructor;
+            const formatter = Base.formatter(pattern);
+            return formatter(this);
+        }
+    }
+    $.$mol_time_base = $mol_time_base;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_time_duration extends $mol_time_base {
+        constructor(config = 0) {
+            super();
+            if (typeof config === 'number') {
+                if (!Number.isFinite(config))
+                    throw new RangeError(`Wrong ms count`);
+                this.second = config / 1000;
+                return;
+            }
+            if (typeof config === 'string') {
+                if (config === 'Z') {
+                    this.hour = 0;
+                    this.minute = 0;
+                    return;
+                }
+                duration: {
+                    const parser = /^P(?:([+-]?\d+(?:\.\d+)?)Y)?(?:([+-]?\d+(?:\.\d+)?)M)?(?:([+-]?\d+(?:\.\d+)?)D)?(?:T(?:([+-]?\d+(?:\.\d+)?)h)?(?:([+-]?\d+(?:\.\d+)?)m)?(?:([+-]?\d+(?:\.\d+)?)s)?)?$/i;
+                    const found = parser.exec(config);
+                    if (!found)
+                        break duration;
+                    if (found[1])
+                        this.year = Number(found[1]);
+                    if (found[2])
+                        this.month = Number(found[2]);
+                    if (found[3])
+                        this.day = Number(found[3]);
+                    if (found[4])
+                        this.hour = Number(found[4]);
+                    if (found[5])
+                        this.minute = Number(found[5]);
+                    if (found[6])
+                        this.second = Number(found[6]);
+                    return;
+                }
+                offset: {
+                    var parser = /^[+-](\d\d)(?::?(\d\d))?$/i;
+                    var found = parser.exec(config);
+                    if (!found)
+                        break offset;
+                    if (found[1])
+                        this.hour = Number(found[1]);
+                    if (found[2])
+                        this.minute = Number(found[2]);
+                    return;
+                }
+                throw new Error(`Can not parse time duration (${config})`);
+            }
+            this.year = config.year || 0;
+            this.month = config.month || 0;
+            this.day = config.day || 0;
+            this.hour = config.hour || 0;
+            this.minute = config.minute || 0;
+            this.second = config.second || 0;
+        }
+        year = 0;
+        month = 0;
+        day = 0;
+        hour = 0;
+        minute = 0;
+        second = 0;
+        get normal() {
+            let second = this.second ?? 0;
+            let minute = this.minute ?? 0;
+            let hour = this.hour ?? 0;
+            let day = this.day ?? 0;
+            minute += Math.floor(second / 60);
+            second = second % 60;
+            hour += Math.floor(minute / 60);
+            minute = minute % 60;
+            day += Math.floor(hour / 24);
+            hour = hour % 24;
+            return new $mol_time_duration({
+                year: this.year,
+                month: this.month,
+                day: day,
+                hour: hour,
+                minute: minute,
+                second: second,
+            });
+        }
+        summ(config) {
+            const duration = new $mol_time_duration(config);
+            return new $mol_time_duration({
+                year: this.year + duration.year,
+                month: this.month + duration.month,
+                day: this.day + duration.day,
+                hour: this.hour + duration.hour,
+                minute: this.minute + duration.minute,
+                second: this.second + duration.second,
+            });
+        }
+        mult(numb) {
+            return new $mol_time_duration({
+                year: this.year && this.year * numb,
+                month: this.month && this.month * numb,
+                day: this.day && this.day * numb,
+                hour: this.hour && this.hour * numb,
+                minute: this.minute && this.minute * numb,
+                second: this.second && this.second * numb,
+            });
+        }
+        count(config) {
+            const duration = new $mol_time_duration(config);
+            return this.valueOf() / duration.valueOf();
+        }
+        valueOf() {
+            var day = this.year * 365 + this.month * 30.4 + this.day;
+            var second = ((day * 24 + this.hour) * 60 + this.minute) * 60 + this.second;
+            return second * 1000;
+        }
+        toJSON() { return this.toString(); }
+        toString(pattern = 'P#Y#M#DT#h#m#s') {
+            return super.toString(pattern);
+        }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
+        static patterns = {
+            '#Y': (duration) => {
+                if (!duration.year)
+                    return '';
+                return duration.year + 'Y';
+            },
+            '#M': (duration) => {
+                if (!duration.month)
+                    return '';
+                return duration.month + 'M';
+            },
+            '#D': (duration) => {
+                if (!duration.day)
+                    return '';
+                return duration.day + 'D';
+            },
+            '#h': (duration) => {
+                if (!duration.hour)
+                    return '';
+                return duration.hour + 'H';
+            },
+            '#m': (duration) => {
+                if (!duration.minute)
+                    return '';
+                return duration.minute + 'M';
+            },
+            '#s': (duration) => {
+                if (!duration.second)
+                    return '';
+                return duration.second + 'S';
+            },
+            'hh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(100 + moment.hour).slice(1);
+            },
+            'h': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(moment.hour);
+            },
+            ':mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['mm'](moment);
+            },
+            'mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(100 + moment.minute).slice(1);
+            },
+            'm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(moment.minute);
+            },
+            ':ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['ss'](moment);
+            },
+            'ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(100 + moment.second | 0).slice(1);
+            },
+            's': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(moment.second | 0);
+            },
+            '.sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return '.' + $mol_time_moment.patterns['sss'](moment);
+            },
+            'sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
+            },
+        };
+    }
+    $.$mol_time_duration = $mol_time_duration;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    let $mol_time_moment_weekdays;
+    (function ($mol_time_moment_weekdays) {
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["monday"] = 0] = "monday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["tuesday"] = 1] = "tuesday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["wednesday"] = 2] = "wednesday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["thursday"] = 3] = "thursday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["friday"] = 4] = "friday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["saturday"] = 5] = "saturday";
+        $mol_time_moment_weekdays[$mol_time_moment_weekdays["sunday"] = 6] = "sunday";
+    })($mol_time_moment_weekdays = $.$mol_time_moment_weekdays || ($.$mol_time_moment_weekdays = {}));
+    function numb(str, max) {
+        const numb = Number(str);
+        if (numb < max)
+            return numb;
+        $mol_fail(new Error(`Wrong time component ${str}`));
+    }
+    class $mol_time_moment extends $mol_time_base {
+        constructor(config = new Date) {
+            super();
+            if (typeof config === 'number') {
+                config = new Date(config);
+                if (Number.isNaN(config.valueOf()))
+                    throw new RangeError(`Wrong ms count`);
+            }
+            if (typeof config === 'string') {
+                const parsed = /^(?:(\d\d?\d?\d?)(?:-?(\d\d?)(?:-?(\d\d?))?)?)?(?:[T ](?:(\d\d?)(?::?(\d\d?)(?::?(\d\d?(?:\.\d+)?))?)?)?(Z|[\+\-]\d\d?(?::?(?:\d\d?)?)?)?)?$/.exec(config);
+                if (!parsed)
+                    throw new Error(`Can not parse time moment (${config})`);
+                if (parsed[1])
+                    this.year = numb(parsed[1], 9999);
+                if (parsed[2])
+                    this.month = numb(parsed[2], 13) - 1;
+                if (parsed[3])
+                    this.day = numb(parsed[3], 32) - 1;
+                if (parsed[4])
+                    this.hour = numb(parsed[4], 60);
+                if (parsed[5])
+                    this.minute = numb(parsed[5], 60);
+                if (parsed[6])
+                    this.second = numb(parsed[6], 60);
+                if (parsed[7])
+                    this.offset = new $mol_time_duration(parsed[7]);
+                return;
+            }
+            if (config instanceof Date) {
+                this.year = config.getFullYear();
+                this.month = config.getMonth();
+                this.day = config.getDate() - 1;
+                this.hour = config.getHours();
+                this.minute = config.getMinutes();
+                this.second = config.getSeconds() + config.getMilliseconds() / 1000;
+                const offset = -config.getTimezoneOffset();
+                this.offset = new $mol_time_duration({
+                    hour: (offset < 0) ? Math.ceil(offset / 60) : Math.floor(offset / 60),
+                    minute: offset % 60
+                });
+                return;
+            }
+            this.year = config.year;
+            this.month = config.month;
+            this.day = config.day;
+            this.hour = config.hour;
+            this.minute = config.minute;
+            this.second = config.second;
+            this.offset = config.offset == null ? config.offset : new $mol_time_duration(config.offset);
+        }
+        year;
+        month;
+        day;
+        hour;
+        minute;
+        second;
+        offset;
+        get weekday() {
+            return (this.native.getDay() + 6) % 7;
+        }
+        _native;
+        get native() {
+            if (this._native)
+                return this._native;
+            const utc = this.toOffset('Z');
+            return this._native = new Date(Date.UTC(utc.year ?? 0, utc.month ?? 0, (utc.day ?? 0) + 1, utc.hour ?? 0, utc.minute ?? 0, utc.second != undefined ? Math.floor(utc.second) : 0, utc.second != undefined ? Math.floor((utc.second - Math.floor(utc.second)) * 1000) : 0));
+        }
+        _normal;
+        get normal() {
+            if (this._normal)
+                return this._normal;
+            const moment = new $mol_time_moment(this.native);
+            return this._normal = new $mol_time_moment({
+                year: this.year === undefined ? undefined : moment.year,
+                month: this.month === undefined ? undefined : moment.month,
+                day: this.day === undefined ? undefined : moment.day,
+                hour: this.hour === undefined ? undefined : moment.hour,
+                minute: this.minute === undefined ? undefined : moment.minute,
+                second: this.second === undefined ? undefined : moment.second,
+                offset: this.offset === undefined ? undefined : moment.offset,
+            });
+        }
+        merge(config) {
+            const moment = new $mol_time_moment(config);
+            return new $mol_time_moment({
+                year: moment.year === undefined ? this.year : moment.year,
+                month: moment.month === undefined ? this.month : moment.month,
+                day: moment.day === undefined ? this.day : moment.day,
+                hour: moment.hour === undefined ? this.hour : moment.hour,
+                minute: moment.minute === undefined ? this.minute : moment.minute,
+                second: moment.second === undefined ? this.second : moment.second,
+                offset: moment.offset === undefined ? this.offset : moment.offset,
+            });
+        }
+        shift(config) {
+            const duration = new $mol_time_duration(config);
+            const moment = new $mol_time_moment().merge({
+                year: this.year,
+                month: this.month,
+                day: this.day,
+                hour: this.hour ?? 0,
+                minute: this.minute ?? 0,
+                second: this.second ?? 0,
+                offset: this.offset ?? 0
+            });
+            const second = moment.second + (duration.second ?? 0);
+            const native = new Date(moment.year + (duration.year ?? 0), moment.month + (duration.month ?? 0), moment.day + 1 + (duration.day ?? 0), moment.hour + (duration.hour ?? 0), moment.minute + (duration.minute ?? 0), Math.floor(second), (second - Math.floor(second)) * 1000);
+            if (isNaN(native.valueOf()))
+                throw new Error('Wrong time');
+            return new $mol_time_moment({
+                year: this.year === undefined ? undefined : native.getFullYear(),
+                month: this.month === undefined ? undefined : native.getMonth(),
+                day: this.day === undefined ? undefined : native.getDate() - 1,
+                hour: this.hour === undefined ? undefined : native.getHours(),
+                minute: this.minute === undefined ? undefined : native.getMinutes(),
+                second: this.second === undefined ? undefined : native.getSeconds() + native.getMilliseconds() / 1000,
+                offset: this.offset,
+            });
+        }
+        mask(config) {
+            const mask = new $mol_time_moment(config);
+            return new $mol_time_moment({
+                year: mask.year === undefined ? undefined : this.year,
+                month: mask.month === undefined ? undefined : this.month,
+                day: mask.day === undefined ? undefined : this.day,
+                hour: mask.hour === undefined ? undefined : this.hour,
+                minute: mask.minute === undefined ? undefined : this.minute,
+                second: mask.second === undefined ? undefined : this.second,
+                offset: mask.offset === undefined ? undefined : this.offset,
+            });
+        }
+        toOffset(config = new $mol_time_moment().offset) {
+            const duration = new $mol_time_duration(config);
+            const offset = this.offset || new $mol_time_moment().offset;
+            let with_time = new $mol_time_moment('T00:00:00').merge(this);
+            const moment = with_time.shift(duration.summ(offset.mult(-1)));
+            return moment.merge({ offset: duration });
+        }
+        valueOf() { return this.native.getTime(); }
+        toJSON() { return this.toString(); }
+        toString(pattern = 'YYYY-MM-DDThh:mm:ss.sssZ') {
+            return super.toString(pattern);
+        }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
+        [$mol_dev_format_head]() {
+            return $mol_dev_format_span({}, $mol_dev_format_native(this), ' ', $mol_dev_format_accent(this.toString('YYYY-MM-DD hh:mm:ss.sss Z')));
+        }
+        static patterns = {
+            'YYYY': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(moment.year);
+            },
+            'AD': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(Math.floor(moment.year / 100) + 1);
+            },
+            'YY': (moment) => {
+                if (moment.year == null)
+                    return '';
+                return String(moment.year % 100);
+            },
+            'Month': (pattern => (moment) => {
+                if (moment.month == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { month: 'long' })),
+            'DD Month': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['DD'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Month'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'long' })),
+            'D Month': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['D'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Month'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' })),
+            'Mon': (pattern => (moment) => {
+                if (moment.month == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { month: 'short' })),
+            'DD Mon': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['DD'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Mon'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short' })),
+            'D Mon': (pattern => (moment) => {
+                if (moment.month == null) {
+                    if (moment.day == null) {
+                        return '';
+                    }
+                    else {
+                        return $mol_time_moment.patterns['D'](moment);
+                    }
+                }
+                else {
+                    if (moment.day == null) {
+                        return $mol_time_moment.patterns['Mon'](moment);
+                    }
+                    else {
+                        return pattern.format(moment.native);
+                    }
+                }
+            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' })),
+            '-MM': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return '-' + $mol_time_moment.patterns['MM'](moment);
+            },
+            'MM': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return String(100 + moment.month + 1).slice(1);
+            },
+            'M': (moment) => {
+                if (moment.month == null)
+                    return '';
+                return String(moment.month + 1);
+            },
+            'WeekDay': (pattern => (moment) => {
+                if (moment.day == null)
+                    return '';
+                if (moment.month == null)
+                    return '';
+                if (moment.year == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { weekday: 'long' })),
+            'WD': (pattern => (moment) => {
+                if (moment.day == null)
+                    return '';
+                if (moment.month == null)
+                    return '';
+                if (moment.year == null)
+                    return '';
+                return pattern.format(moment.native);
+            })(new Intl.DateTimeFormat(undefined, { weekday: 'short' })),
+            '-DD': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return '-' + $mol_time_moment.patterns['DD'](moment);
+            },
+            'DD': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return String(100 + moment.day + 1).slice(1);
+            },
+            'D': (moment) => {
+                if (moment.day == null)
+                    return '';
+                return String(moment.day + 1);
+            },
+            'Thh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return 'T' + $mol_time_moment.patterns['hh'](moment);
+            },
+            'hh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(100 + moment.hour).slice(1);
+            },
+            'h': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(moment.hour);
+            },
+            ':mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['mm'](moment);
+            },
+            'mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(100 + moment.minute).slice(1);
+            },
+            'm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(moment.minute);
+            },
+            ':ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['ss'](moment);
+            },
+            'ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(100 + moment.second | 0).slice(1);
+            },
+            's': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(moment.second | 0);
+            },
+            '.sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                if (moment.second === (moment.second | 0))
+                    return '';
+                return '.' + $mol_time_moment.patterns['sss'](moment);
+            },
+            'sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
+            },
+            'Z': (moment) => {
+                const offset = moment.offset;
+                if (!offset)
+                    return '';
+                let hour = offset.hour;
+                let sign = '+';
+                if (hour < 0) {
+                    sign = '-';
+                    hour = -hour;
+                }
+                return sign + String(100 + hour).slice(1) + ':' + String(100 + offset.minute).slice(1);
+            }
+        };
+    }
+    $.$mol_time_moment = $mol_time_moment;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $optimade_tmdne_swipe extends $.$optimade_tmdne_swipe {
+            x(next) {
+                return next ?? (this.start_x + this.pan().x);
+            }
+            left() {
+                return this.x() + 'px';
+            }
+            start_x = 0;
+            start_time;
+            pointerdown(next) {
+                this.start_x = parseFloat($mol_dom_context.getComputedStyle(this.Float().dom_node()).left);
+                this.start_time = (new $mol_time_moment).valueOf();
+                this.pan(new $mol_vector_2d(0, 0));
+                this.transition('');
+                this.pointer_holding(true);
+            }
+            pointerup(next) {
+                const speed = this.x() / ((new $mol_time_moment).valueOf() - this.start_time);
+                if (this.passed_right() || speed > this.speed_threshold())
+                    this.swipe_to_right();
+                else if (this.passed_left() || speed < (-this.speed_threshold()))
+                    this.swipe_to_left();
+                else
+                    this.reset();
+                this.pointer_holding(false);
+            }
+            reset() {
+                this.transition('left 0.5s');
+                this.swiped_to('');
+                this.x(0);
+            }
+            swipe_to_right() {
+                this.transition('left 0.5s');
+                this.swiped_to('right');
+                this.on_swiped();
+                this.x(300);
+            }
+            swipe_to_left() {
+                this.transition('left 0.5s');
+                this.swiped_to('left');
+                this.on_swiped();
+                this.x(-300);
+            }
+            reset_hard() {
+                this.transition('');
+                this.reset();
+            }
+            passed_left() {
+                return this.x() < (-this.left_threshold());
+            }
+            passed_right() {
+                return this.x() > this.right_threshold();
+            }
+            passed() {
+                return this.passed_left() ? 'left' :
+                    this.passed_right() ? 'right' : '';
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_swipe.prototype, "x", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_tmdne_swipe.prototype, "left", null);
+        $$.$optimade_tmdne_swipe = $optimade_tmdne_swipe;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($optimade_tmdne_swipe, {
+            background: {
+                color: 'transparent',
+            },
+            Float: {
+                userSelect: 'none',
+                pointerEvents: 'none',
+                position: 'relative',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$mol_stack) = class $mol_stack extends ($.$mol_view) {};
 
 
@@ -9228,1287 +10610,84 @@ var $;
 })($ || ($ = {}));
 
 ;
-"use strict";
-var $;
-(function ($) {
-    class $mol_vector extends Array {
-        get length() {
-            return super.length;
-        }
-        constructor(...values) { super(...values); }
-        map(convert, self) {
-            return super.map(convert, self);
-        }
-        merged(patches, combine) {
-            return this.map((value, index) => combine(value, patches[index]));
-        }
-        limited(limits) {
-            return this.merged(limits, (value, [min, max]) => (value < min) ? min : (value > max) ? max : value);
-        }
-        added0(diff) {
-            return this.map(value => value + diff);
-        }
-        added1(diff) {
-            return this.merged(diff, (a, b) => a + b);
-        }
-        multed0(mult) {
-            return this.map(value => value * mult);
-        }
-        multed1(mults) {
-            return this.merged(mults, (a, b) => a * b);
-        }
-        powered0(mult) {
-            return this.map(value => value ** mult);
-        }
-        expanded1(point) {
-            return this.merged(point, (range, value) => range.expanded0(value));
-        }
-        expanded2(point) {
-            return this.merged(point, (range1, range2) => {
-                let next = range1;
-                const Range = range1.constructor;
-                if (range1[0] > range2[0])
-                    next = new Range(range2[0], next.max);
-                if (range1[1] < range2[1])
-                    next = new Range(next.min, range2[1]);
-                return next;
-            });
-        }
-        center() {
-            const Result = this[0].constructor;
-            return new Result(...this[0].map((_, i) => this.reduce((sum, point) => sum + point[i], 0) / this.length));
-        }
-        distance() {
-            let distance = 0;
-            for (let i = 1; i < this.length; ++i) {
-                distance += this[i - 1].reduce((sum, min, j) => sum + (min - this[i][j]) ** 2, 0) ** (1 / this[i].length);
-            }
-            return distance;
-        }
-        transponed() {
-            return this[0].map((_, i) => this.map(row => row[i]));
-        }
-        get x() { return this[0]; }
-        set x(next) { this[0] = next; }
-        get y() { return this[1]; }
-        set y(next) { this[1] = next; }
-        get z() { return this[2]; }
-        set z(next) { this[2] = next; }
-    }
-    $.$mol_vector = $mol_vector;
-    class $mol_vector_1d extends $mol_vector {
-    }
-    $.$mol_vector_1d = $mol_vector_1d;
-    class $mol_vector_2d extends $mol_vector {
-    }
-    $.$mol_vector_2d = $mol_vector_2d;
-    class $mol_vector_3d extends $mol_vector {
-    }
-    $.$mol_vector_3d = $mol_vector_3d;
-    class $mol_vector_range extends $mol_vector {
-        0;
-        1;
-        constructor(min, max = min) {
-            super(min, max);
-            this[0] = min;
-            this[1] = max;
-        }
-        get min() { return this[0]; }
-        set min(next) { this[0] = next; }
-        get max() { return this[1]; }
-        set max(next) { this[1] = next; }
-        get inversed() {
-            return new this.constructor(this.max, this.min);
-        }
-        expanded0(value) {
-            const Range = this.constructor;
-            let range = this;
-            if (value > range.max)
-                range = new Range(range.min, value);
-            if (value < range.min)
-                range = new Range(value, range.max);
-            return range;
-        }
-    }
-    $.$mol_vector_range = $mol_vector_range;
-    $.$mol_vector_range_full = new $mol_vector_range(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
-    class $mol_vector_matrix extends $mol_vector {
-        added2(diff) {
-            return this.merged(diff, (a, b) => a.map((a2, index) => a2 + b[index]));
-        }
-        multed2(diff) {
-            return this.merged(diff, (a, b) => a.map((a2, index) => a2 * b[index]));
-        }
-    }
-    $.$mol_vector_matrix = $mol_vector_matrix;
-})($ || ($ = {}));
-
-;
-	($.$mol_touch) = class $mol_touch extends ($.$mol_plugin) {
-		event_start(next){
-			if(next !== undefined) return next;
-			return null;
+	($.$optimade_tmdne_card) = class $optimade_tmdne_card extends ($.$optimade_tmdne_swipe) {
+		loaded(){
+			return false;
 		}
-		event_move(next){
-			if(next !== undefined) return next;
-			return null;
+		card_position(){
+			return "";
 		}
-		event_end(next){
-			if(next !== undefined) return next;
-			return null;
+		name(){
+			return "";
 		}
-		event_leave(next){
-			if(next !== undefined) return next;
-			return null;
+		Name(){
+			const obj = new this.$.$optimade_tmdne_html_view();
+			(obj.html) = () => ((this?.name()));
+			return obj;
 		}
-		event_wheel(next){
-			if(next !== undefined) return next;
-			return null;
+		Question(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Do you think it's synthesizable?");
+			return obj;
 		}
-		start_zoom(next){
-			if(next !== undefined) return next;
-			return 0;
+		Why_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Why?");
+			return obj;
 		}
-		start_distance(next){
-			if(next !== undefined) return next;
-			return 0;
+		Why_optinal(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("(optinal)");
+			return obj;
 		}
-		zoom(next){
-			if(next !== undefined) return next;
-			return 1;
+		Why_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this?.Why_title()), (this?.Why_optinal())]);
+			return obj;
 		}
-		allow_draw(){
-			return true;
-		}
-		allow_pan(){
-			return true;
-		}
-		allow_zoom(){
-			return true;
-		}
-		action_type(next){
+		why(next){
 			if(next !== undefined) return next;
 			return "";
 		}
-		action_point(next){
-			if(next !== undefined) return next;
-			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+		Why(){
+			const obj = new this.$.$mol_textarea();
+			(obj.value) = (next) => ((this?.why(next)));
 			return obj;
 		}
-		start_pan(next){
-			if(next !== undefined) return next;
-			return [0, 0];
-		}
-		pan(next){
-			if(next !== undefined) return next;
-			const obj = new this.$.$mol_vector_2d(0, 0);
+		Card_content(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"card_position": (this?.card_position())});
+			(obj.sub) = () => ([
+				(this?.Name()), 
+				(this?.Question()), 
+				(this?.Why_label()), 
+				(this?.Why())
+			]);
 			return obj;
 		}
-		pointer_center(){
-			const obj = new this.$.$mol_vector_2d(NaN, NaN);
+		Card_float(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"loaded": (this?.loaded())});
+			(obj.sub) = () => ([(this?.Card_content())]);
 			return obj;
 		}
-		start_pos(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_precision(){
-			return 16;
-		}
-		swipe_right(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_bottom(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_left(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_top(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_from_right(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_from_bottom(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_from_left(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_from_top(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_to_right(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_to_bottom(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_to_left(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		swipe_to_top(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		draw_start(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		draw(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		draw_end(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		style(){
-			return {
-				...(super.style()), 
-				"touch-action": "none", 
-				"overscroll-behavior": "none"
-			};
-		}
-		event(){
-			return {
-				...(super.event()), 
-				"pointerdown": (next) => (this?.event_start(next)), 
-				"pointermove": (next) => (this?.event_move(next)), 
-				"pointerup": (next) => (this?.event_end(next)), 
-				"pointerleave": (next) => (this?.event_leave(next)), 
-				"wheel": (next) => (this?.event_wheel(next))
-			};
-		}
-	};
-	($mol_mem(($.$mol_touch.prototype), "event_start"));
-	($mol_mem(($.$mol_touch.prototype), "event_move"));
-	($mol_mem(($.$mol_touch.prototype), "event_end"));
-	($mol_mem(($.$mol_touch.prototype), "event_leave"));
-	($mol_mem(($.$mol_touch.prototype), "event_wheel"));
-	($mol_mem(($.$mol_touch.prototype), "start_zoom"));
-	($mol_mem(($.$mol_touch.prototype), "start_distance"));
-	($mol_mem(($.$mol_touch.prototype), "zoom"));
-	($mol_mem(($.$mol_touch.prototype), "action_type"));
-	($mol_mem(($.$mol_touch.prototype), "action_point"));
-	($mol_mem(($.$mol_touch.prototype), "start_pan"));
-	($mol_mem(($.$mol_touch.prototype), "pan"));
-	($mol_mem(($.$mol_touch.prototype), "pointer_center"));
-	($mol_mem(($.$mol_touch.prototype), "start_pos"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_right"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_bottom"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_left"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_top"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_from_right"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_from_bottom"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_from_left"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_from_top"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_to_right"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_to_bottom"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_to_left"));
-	($mol_mem(($.$mol_touch.prototype), "swipe_to_top"));
-	($mol_mem(($.$mol_touch.prototype), "draw_start"));
-	($mol_mem(($.$mol_touch.prototype), "draw"));
-	($mol_mem(($.$mol_touch.prototype), "draw_end"));
-
-
-;
-"use strict";
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $mol_touch extends $.$mol_touch {
-            auto() {
-                this.pointer_events();
-                this.start_pan();
-                this.start_pos();
-                this.start_distance();
-                this.start_zoom();
-                this.action_type();
-                this.view_rect();
-            }
-            pointer_events(next = []) {
-                return next;
-            }
-            pointer_coords() {
-                const events = this.pointer_events();
-                const touches = events.filter(e => e.pointerType === 'touch');
-                const pens = events.filter(e => e.pointerType === 'pen');
-                const mouses = events.filter(e => !e.pointerType || e.pointerType === 'mouse');
-                const choosen = touches.length ? touches : pens.length ? pens : mouses;
-                return new $mol_vector(...choosen.map(event => this.event_coords(event)));
-            }
-            pointer_center() {
-                const coords = this.pointer_coords();
-                return coords.length ? coords.center() : new $mol_vector_2d(NaN, NaN);
-            }
-            event_coords(event) {
-                const { left, top } = this.view_rect();
-                return new $mol_vector_2d(Math.round(event.pageX - left), Math.round(event.pageY - top));
-            }
-            action_point() {
-                const coord = this.pointer_center();
-                if (!coord)
-                    return null;
-                const zoom = this.zoom();
-                const pan = this.pan();
-                return new $mol_vector_2d((coord.x - pan.x) / zoom, (coord.y - pan.y) / zoom);
-            }
-            event_eat(event) {
-                if (event instanceof PointerEvent) {
-                    const events = this.pointer_events()
-                        .filter(e => e instanceof PointerEvent)
-                        .filter(e => e.pointerId !== event.pointerId);
-                    if (event.type !== 'pointerup' && event.type !== 'pointerleave')
-                        events.push(event);
-                    this.pointer_events(events);
-                    const touch_count = events.filter(e => e.pointerType === 'touch').length;
-                    if (this.allow_zoom() && touch_count === 2) {
-                        return this.action_type('zoom');
-                    }
-                    if (this.action_type() === 'zoom' && touch_count === 1) {
-                        return this.action_type('zoom');
-                    }
-                    let button;
-                    (function (button) {
-                        button[button["left"] = 1] = "left";
-                        button[button["right"] = 2] = "right";
-                        button[button["middle"] = 4] = "middle";
-                    })(button || (button = {}));
-                    if (events.length > 0) {
-                        if (event.ctrlKey && this.allow_zoom())
-                            return this.action_type('zoom');
-                        if (event.buttons === button.left && this.allow_draw())
-                            return this.action_type('draw');
-                        if (event.buttons && this.allow_pan())
-                            return this.action_type('pan');
-                    }
-                    return this.action_type('');
-                }
-                if (event instanceof WheelEvent) {
-                    this.pointer_events([event]);
-                    if (event.shiftKey)
-                        return this.action_type('pan');
-                    return this.action_type('zoom');
-                }
-                return this.action_type('');
-            }
-            event_start(event) {
-                if (event.defaultPrevented)
-                    return;
-                this.start_pan(this.pan());
-                const action_type = this.event_eat(event);
-                if (!action_type)
-                    return;
-                const coords = this.pointer_coords();
-                this.start_pos(coords.center());
-                if (action_type === 'draw') {
-                    this.draw_start(event);
-                    return;
-                }
-                this.start_distance(coords.distance());
-                this.start_zoom(this.zoom());
-            }
-            event_move(event) {
-                if (event.defaultPrevented)
-                    return;
-                const rect = this.view_rect();
-                if (!rect)
-                    return;
-                const start_pan = this.start_pan();
-                const action_type = this.event_eat(event);
-                const start_pos = this.start_pos();
-                let pos = this.pointer_center();
-                if (!action_type)
-                    return;
-                if (!start_pos)
-                    return;
-                if (action_type === 'draw') {
-                    const distance = new $mol_vector(start_pos, pos).distance();
-                    if (distance >= 4) {
-                        this.draw(event);
-                    }
-                    return;
-                }
-                if (action_type === 'pan') {
-                    this.dom_node().setPointerCapture(event.pointerId);
-                    this.pan(new $mol_vector_2d(start_pan[0] + pos[0] - start_pos[0], start_pan[1] + pos[1] - start_pos[1]));
-                }
-                const precision = this.swipe_precision();
-                if ((this.swipe_right !== $mol_touch.prototype.swipe_right
-                    || this.swipe_from_left !== $mol_touch.prototype.swipe_from_left
-                    || this.swipe_to_right !== $mol_touch.prototype.swipe_to_right)
-                    && pos[0] - start_pos[0] > precision * 2
-                    && Math.abs(pos[1] - start_pos[1]) < precision) {
-                    this.swipe_right(event);
-                }
-                if ((this.swipe_left !== $mol_touch.prototype.swipe_left
-                    || this.swipe_from_right !== $mol_touch.prototype.swipe_from_right
-                    || this.swipe_to_left !== $mol_touch.prototype.swipe_to_left)
-                    && start_pos[0] - pos[0] > precision * 2
-                    && Math.abs(pos[1] - start_pos[1]) < precision) {
-                    this.swipe_left(event);
-                }
-                if ((this.swipe_bottom !== $mol_touch.prototype.swipe_bottom
-                    || this.swipe_from_top !== $mol_touch.prototype.swipe_from_top
-                    || this.swipe_to_bottom !== $mol_touch.prototype.swipe_to_bottom)
-                    && pos[1] - start_pos[1] > precision * 2
-                    && Math.abs(pos[0] - start_pos[0]) < precision) {
-                    this.swipe_bottom(event);
-                }
-                if ((this.swipe_top !== $mol_touch.prototype.swipe_top
-                    || this.swipe_from_bottom !== $mol_touch.prototype.swipe_from_bottom
-                    || this.swipe_to_top !== $mol_touch.prototype.swipe_to_top)
-                    && start_pos[1] - pos[1] > precision * 2
-                    && Math.abs(pos[0] - start_pos[0]) < precision) {
-                    this.swipe_top(event);
-                }
-                if (action_type === 'zoom') {
-                    const coords = this.pointer_coords();
-                    const distance = coords.distance();
-                    const start_distance = this.start_distance();
-                    const center = coords.center();
-                    const start_zoom = this.start_zoom();
-                    let mult = Math.abs(distance - start_distance) < 32 ? 1 : distance / start_distance;
-                    this.zoom(start_zoom * mult);
-                    const pan = new $mol_vector_2d((start_pan[0] - center[0] + pos[0] - start_pos[0]) * mult + center[0], (start_pan[1] - center[1] + pos[1] - start_pos[1]) * mult + center[1]);
-                    this.pan(pan);
-                }
-            }
-            event_end(event) {
-                const action = this.action_type();
-                if (action === 'draw') {
-                    this.draw_end(event);
-                }
-                this.event_leave(event);
-            }
-            event_leave(event) {
-                this.event_eat(event);
-                this.dom_node().releasePointerCapture(event.pointerId);
-                this.start_pos(null);
-            }
-            swipe_left(event) {
-                if (this.view_rect().right - this.start_pos()[0] < this.swipe_precision() * 2)
-                    this.swipe_from_right(event);
-                else
-                    this.swipe_to_left(event);
-                this.event_end(event);
-            }
-            swipe_right(event) {
-                if (this.start_pos()[0] - this.view_rect().left < this.swipe_precision() * 2)
-                    this.swipe_from_left(event);
-                else
-                    this.swipe_to_right(event);
-                this.event_end(event);
-            }
-            swipe_top(event) {
-                if (this.view_rect().bottom - this.start_pos()[1] < this.swipe_precision() * 2)
-                    this.swipe_from_bottom(event);
-                else
-                    this.swipe_to_top(event);
-                this.event_end(event);
-            }
-            swipe_bottom(event) {
-                if (this.start_pos()[1] - this.view_rect().top < this.swipe_precision() * 2)
-                    this.swipe_from_top(event);
-                else
-                    this.swipe_to_bottom(event);
-                this.event_end(event);
-            }
-            event_wheel(event) {
-                if (event.defaultPrevented)
-                    return;
-                if (this.pan === $mol_touch.prototype.pan && this.zoom === $mol_touch.prototype.zoom)
-                    return;
-                if (this.pan !== $mol_touch.prototype.pan) {
-                    event.preventDefault();
-                }
-                const action_type = this.event_eat(event);
-                if (action_type === 'zoom') {
-                    const zoom_prev = this.zoom() || 0.001;
-                    const zoom_next = zoom_prev * (1 - .001 * Math.min(event.deltaY, 100));
-                    const mult = zoom_next / zoom_prev;
-                    this.zoom(zoom_next);
-                    const pan_prev = this.pan();
-                    const center = this.pointer_center();
-                    const pan_next = pan_prev.multed0(mult).added1(center.multed0(1 - mult));
-                    this.pan(pan_next);
-                }
-                if (action_type === 'pan') {
-                    const pan_prev = this.pan();
-                    const pan_next = new $mol_vector_2d(pan_prev.x - event.deltaX, pan_prev.y - event.deltaY);
-                    this.pan(pan_next);
-                }
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_touch.prototype, "pointer_events", null);
-        __decorate([
-            $mol_mem
-        ], $mol_touch.prototype, "pointer_coords", null);
-        __decorate([
-            $mol_mem
-        ], $mol_touch.prototype, "pointer_center", null);
-        __decorate([
-            $mol_mem
-        ], $mol_touch.prototype, "action_point", null);
-        $$.$mol_touch = $mol_touch;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$optimade_tmdne_swipe) = class $optimade_tmdne_swipe extends ($.$mol_view) {
 		allowed(){
-			return true;
-		}
-		pan(next){
-			return (this?.Touch()?.pan(next));
-		}
-		Touch(){
-			const obj = new this.$.$mol_touch();
-			(obj.allow_draw) = () => (false);
-			(obj.allow_pan) = () => ((this?.allowed()));
-			return obj;
-		}
-		threshold(){
-			return 60;
+			return (this?.loaded());
 		}
 		content(){
-			return [];
-		}
-		left(){
-			return "0px";
-		}
-		transition(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		Float(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this?.content()));
-			(obj.style) = () => ({"left": (this?.left()), "transition": (this?.transition())});
-			return obj;
-		}
-		pointerdown(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		pointerup(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		plugins(){
-			return [(this?.Touch())];
-		}
-		speed_threshold(){
-			return 1;
-		}
-		right_threshold(){
-			return (this?.threshold());
-		}
-		left_threshold(){
-			return (this?.threshold());
-		}
-		passed(){
-			return "";
-		}
-		passed_left(){
-			return false;
-		}
-		passed_right(){
-			return false;
-		}
-		swiped_to(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		on_swiped(){
-			return null;
-		}
-		reset(){
-			return null;
-		}
-		reset_hard(){
-			return null;
-		}
-		x(next){
-			if(next !== undefined) return next;
-			return 0;
-		}
-		sub(){
-			return [(this?.Float())];
-		}
-		pointer_holding(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		event(){
-			return {
-				...(super.event()), 
-				"pointerdown": (next) => (this?.pointerdown(next)), 
-				"pointerup": (next) => (this?.pointerup(next))
-			};
+			return [(this?.Card_float())];
 		}
 	};
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Touch"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "transition"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "Float"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerdown"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointerup"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "swiped_to"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "x"));
-	($mol_mem(($.$optimade_tmdne_swipe.prototype), "pointer_holding"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Name"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Question"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_title"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_optinal"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Why_label"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "why"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Why"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Card_content"));
+	($mol_mem(($.$optimade_tmdne_card.prototype), "Card_float"));
 
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $mol_time_base {
-        static patterns = {};
-        static formatter(pattern) {
-            if (this.patterns[pattern])
-                return this.patterns[pattern];
-            var tokens = Object.keys(this.patterns)
-                .sort()
-                .reverse()
-                .map((token) => token.replace(/([-+*.\[\]()\^])/g, '\\$1'));
-            var lexer = RegExp('(.*?)(' + tokens.join('|') + '|$)', 'g');
-            var funcs = [];
-            pattern.replace(lexer, (str, text, token) => {
-                if (text)
-                    funcs.push(() => text);
-                if (token)
-                    funcs.push(this.patterns[token]);
-                return str;
-            });
-            return this.patterns[pattern] = (arg) => {
-                return funcs.reduce((res, func) => res + func(arg), '');
-            };
-        }
-        toString(pattern) {
-            const Base = this.constructor;
-            const formatter = Base.formatter(pattern);
-            return formatter(this);
-        }
-    }
-    $.$mol_time_base = $mol_time_base;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $mol_time_duration extends $mol_time_base {
-        constructor(config = 0) {
-            super();
-            if (typeof config === 'number') {
-                if (!Number.isFinite(config))
-                    throw new RangeError(`Wrong ms count`);
-                this.second = config / 1000;
-                return;
-            }
-            if (typeof config === 'string') {
-                if (config === 'Z') {
-                    this.hour = 0;
-                    this.minute = 0;
-                    return;
-                }
-                duration: {
-                    const parser = /^P(?:([+-]?\d+(?:\.\d+)?)Y)?(?:([+-]?\d+(?:\.\d+)?)M)?(?:([+-]?\d+(?:\.\d+)?)D)?(?:T(?:([+-]?\d+(?:\.\d+)?)h)?(?:([+-]?\d+(?:\.\d+)?)m)?(?:([+-]?\d+(?:\.\d+)?)s)?)?$/i;
-                    const found = parser.exec(config);
-                    if (!found)
-                        break duration;
-                    if (found[1])
-                        this.year = Number(found[1]);
-                    if (found[2])
-                        this.month = Number(found[2]);
-                    if (found[3])
-                        this.day = Number(found[3]);
-                    if (found[4])
-                        this.hour = Number(found[4]);
-                    if (found[5])
-                        this.minute = Number(found[5]);
-                    if (found[6])
-                        this.second = Number(found[6]);
-                    return;
-                }
-                offset: {
-                    var parser = /^[+-](\d\d)(?::?(\d\d))?$/i;
-                    var found = parser.exec(config);
-                    if (!found)
-                        break offset;
-                    if (found[1])
-                        this.hour = Number(found[1]);
-                    if (found[2])
-                        this.minute = Number(found[2]);
-                    return;
-                }
-                throw new Error(`Can not parse time duration (${config})`);
-            }
-            this.year = config.year || 0;
-            this.month = config.month || 0;
-            this.day = config.day || 0;
-            this.hour = config.hour || 0;
-            this.minute = config.minute || 0;
-            this.second = config.second || 0;
-        }
-        year = 0;
-        month = 0;
-        day = 0;
-        hour = 0;
-        minute = 0;
-        second = 0;
-        get normal() {
-            let second = this.second ?? 0;
-            let minute = this.minute ?? 0;
-            let hour = this.hour ?? 0;
-            let day = this.day ?? 0;
-            minute += Math.floor(second / 60);
-            second = second % 60;
-            hour += Math.floor(minute / 60);
-            minute = minute % 60;
-            day += Math.floor(hour / 24);
-            hour = hour % 24;
-            return new $mol_time_duration({
-                year: this.year,
-                month: this.month,
-                day: day,
-                hour: hour,
-                minute: minute,
-                second: second,
-            });
-        }
-        summ(config) {
-            const duration = new $mol_time_duration(config);
-            return new $mol_time_duration({
-                year: this.year + duration.year,
-                month: this.month + duration.month,
-                day: this.day + duration.day,
-                hour: this.hour + duration.hour,
-                minute: this.minute + duration.minute,
-                second: this.second + duration.second,
-            });
-        }
-        mult(numb) {
-            return new $mol_time_duration({
-                year: this.year && this.year * numb,
-                month: this.month && this.month * numb,
-                day: this.day && this.day * numb,
-                hour: this.hour && this.hour * numb,
-                minute: this.minute && this.minute * numb,
-                second: this.second && this.second * numb,
-            });
-        }
-        count(config) {
-            const duration = new $mol_time_duration(config);
-            return this.valueOf() / duration.valueOf();
-        }
-        valueOf() {
-            var day = this.year * 365 + this.month * 30.4 + this.day;
-            var second = ((day * 24 + this.hour) * 60 + this.minute) * 60 + this.second;
-            return second * 1000;
-        }
-        toJSON() { return this.toString(); }
-        toString(pattern = 'P#Y#M#DT#h#m#s') {
-            return super.toString(pattern);
-        }
-        [Symbol.toPrimitive](mode) {
-            return mode === 'number' ? this.valueOf() : this.toString();
-        }
-        static patterns = {
-            '#Y': (duration) => {
-                if (!duration.year)
-                    return '';
-                return duration.year + 'Y';
-            },
-            '#M': (duration) => {
-                if (!duration.month)
-                    return '';
-                return duration.month + 'M';
-            },
-            '#D': (duration) => {
-                if (!duration.day)
-                    return '';
-                return duration.day + 'D';
-            },
-            '#h': (duration) => {
-                if (!duration.hour)
-                    return '';
-                return duration.hour + 'H';
-            },
-            '#m': (duration) => {
-                if (!duration.minute)
-                    return '';
-                return duration.minute + 'M';
-            },
-            '#s': (duration) => {
-                if (!duration.second)
-                    return '';
-                return duration.second + 'S';
-            },
-            'hh': (moment) => {
-                if (moment.hour == null)
-                    return '';
-                return String(100 + moment.hour).slice(1);
-            },
-            'h': (moment) => {
-                if (moment.hour == null)
-                    return '';
-                return String(moment.hour);
-            },
-            ':mm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return ':' + $mol_time_moment.patterns['mm'](moment);
-            },
-            'mm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return String(100 + moment.minute).slice(1);
-            },
-            'm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return String(moment.minute);
-            },
-            ':ss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return ':' + $mol_time_moment.patterns['ss'](moment);
-            },
-            'ss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return String(100 + moment.second | 0).slice(1);
-            },
-            's': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return String(moment.second | 0);
-            },
-            '.sss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return '.' + $mol_time_moment.patterns['sss'](moment);
-            },
-            'sss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
-                return millisecond.slice(2);
-            },
-        };
-    }
-    $.$mol_time_duration = $mol_time_duration;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    let $mol_time_moment_weekdays;
-    (function ($mol_time_moment_weekdays) {
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["monday"] = 0] = "monday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["tuesday"] = 1] = "tuesday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["wednesday"] = 2] = "wednesday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["thursday"] = 3] = "thursday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["friday"] = 4] = "friday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["saturday"] = 5] = "saturday";
-        $mol_time_moment_weekdays[$mol_time_moment_weekdays["sunday"] = 6] = "sunday";
-    })($mol_time_moment_weekdays = $.$mol_time_moment_weekdays || ($.$mol_time_moment_weekdays = {}));
-    function numb(str, max) {
-        const numb = Number(str);
-        if (numb < max)
-            return numb;
-        $mol_fail(new Error(`Wrong time component ${str}`));
-    }
-    class $mol_time_moment extends $mol_time_base {
-        constructor(config = new Date) {
-            super();
-            if (typeof config === 'number') {
-                config = new Date(config);
-                if (Number.isNaN(config.valueOf()))
-                    throw new RangeError(`Wrong ms count`);
-            }
-            if (typeof config === 'string') {
-                const parsed = /^(?:(\d\d?\d?\d?)(?:-?(\d\d?)(?:-?(\d\d?))?)?)?(?:[T ](?:(\d\d?)(?::?(\d\d?)(?::?(\d\d?(?:\.\d+)?))?)?)?(Z|[\+\-]\d\d?(?::?(?:\d\d?)?)?)?)?$/.exec(config);
-                if (!parsed)
-                    throw new Error(`Can not parse time moment (${config})`);
-                if (parsed[1])
-                    this.year = numb(parsed[1], 9999);
-                if (parsed[2])
-                    this.month = numb(parsed[2], 13) - 1;
-                if (parsed[3])
-                    this.day = numb(parsed[3], 32) - 1;
-                if (parsed[4])
-                    this.hour = numb(parsed[4], 60);
-                if (parsed[5])
-                    this.minute = numb(parsed[5], 60);
-                if (parsed[6])
-                    this.second = numb(parsed[6], 60);
-                if (parsed[7])
-                    this.offset = new $mol_time_duration(parsed[7]);
-                return;
-            }
-            if (config instanceof Date) {
-                this.year = config.getFullYear();
-                this.month = config.getMonth();
-                this.day = config.getDate() - 1;
-                this.hour = config.getHours();
-                this.minute = config.getMinutes();
-                this.second = config.getSeconds() + config.getMilliseconds() / 1000;
-                const offset = -config.getTimezoneOffset();
-                this.offset = new $mol_time_duration({
-                    hour: (offset < 0) ? Math.ceil(offset / 60) : Math.floor(offset / 60),
-                    minute: offset % 60
-                });
-                return;
-            }
-            this.year = config.year;
-            this.month = config.month;
-            this.day = config.day;
-            this.hour = config.hour;
-            this.minute = config.minute;
-            this.second = config.second;
-            this.offset = config.offset == null ? config.offset : new $mol_time_duration(config.offset);
-        }
-        year;
-        month;
-        day;
-        hour;
-        minute;
-        second;
-        offset;
-        get weekday() {
-            return (this.native.getDay() + 6) % 7;
-        }
-        _native;
-        get native() {
-            if (this._native)
-                return this._native;
-            const utc = this.toOffset('Z');
-            return this._native = new Date(Date.UTC(utc.year ?? 0, utc.month ?? 0, (utc.day ?? 0) + 1, utc.hour ?? 0, utc.minute ?? 0, utc.second != undefined ? Math.floor(utc.second) : 0, utc.second != undefined ? Math.floor((utc.second - Math.floor(utc.second)) * 1000) : 0));
-        }
-        _normal;
-        get normal() {
-            if (this._normal)
-                return this._normal;
-            const moment = new $mol_time_moment(this.native);
-            return this._normal = new $mol_time_moment({
-                year: this.year === undefined ? undefined : moment.year,
-                month: this.month === undefined ? undefined : moment.month,
-                day: this.day === undefined ? undefined : moment.day,
-                hour: this.hour === undefined ? undefined : moment.hour,
-                minute: this.minute === undefined ? undefined : moment.minute,
-                second: this.second === undefined ? undefined : moment.second,
-                offset: this.offset === undefined ? undefined : moment.offset,
-            });
-        }
-        merge(config) {
-            const moment = new $mol_time_moment(config);
-            return new $mol_time_moment({
-                year: moment.year === undefined ? this.year : moment.year,
-                month: moment.month === undefined ? this.month : moment.month,
-                day: moment.day === undefined ? this.day : moment.day,
-                hour: moment.hour === undefined ? this.hour : moment.hour,
-                minute: moment.minute === undefined ? this.minute : moment.minute,
-                second: moment.second === undefined ? this.second : moment.second,
-                offset: moment.offset === undefined ? this.offset : moment.offset,
-            });
-        }
-        shift(config) {
-            const duration = new $mol_time_duration(config);
-            const moment = new $mol_time_moment().merge({
-                year: this.year,
-                month: this.month,
-                day: this.day,
-                hour: this.hour ?? 0,
-                minute: this.minute ?? 0,
-                second: this.second ?? 0,
-                offset: this.offset ?? 0
-            });
-            const second = moment.second + (duration.second ?? 0);
-            const native = new Date(moment.year + (duration.year ?? 0), moment.month + (duration.month ?? 0), moment.day + 1 + (duration.day ?? 0), moment.hour + (duration.hour ?? 0), moment.minute + (duration.minute ?? 0), Math.floor(second), (second - Math.floor(second)) * 1000);
-            if (isNaN(native.valueOf()))
-                throw new Error('Wrong time');
-            return new $mol_time_moment({
-                year: this.year === undefined ? undefined : native.getFullYear(),
-                month: this.month === undefined ? undefined : native.getMonth(),
-                day: this.day === undefined ? undefined : native.getDate() - 1,
-                hour: this.hour === undefined ? undefined : native.getHours(),
-                minute: this.minute === undefined ? undefined : native.getMinutes(),
-                second: this.second === undefined ? undefined : native.getSeconds() + native.getMilliseconds() / 1000,
-                offset: this.offset,
-            });
-        }
-        mask(config) {
-            const mask = new $mol_time_moment(config);
-            return new $mol_time_moment({
-                year: mask.year === undefined ? undefined : this.year,
-                month: mask.month === undefined ? undefined : this.month,
-                day: mask.day === undefined ? undefined : this.day,
-                hour: mask.hour === undefined ? undefined : this.hour,
-                minute: mask.minute === undefined ? undefined : this.minute,
-                second: mask.second === undefined ? undefined : this.second,
-                offset: mask.offset === undefined ? undefined : this.offset,
-            });
-        }
-        toOffset(config = new $mol_time_moment().offset) {
-            const duration = new $mol_time_duration(config);
-            const offset = this.offset || new $mol_time_moment().offset;
-            let with_time = new $mol_time_moment('T00:00:00').merge(this);
-            const moment = with_time.shift(duration.summ(offset.mult(-1)));
-            return moment.merge({ offset: duration });
-        }
-        valueOf() { return this.native.getTime(); }
-        toJSON() { return this.toString(); }
-        toString(pattern = 'YYYY-MM-DDThh:mm:ss.sssZ') {
-            return super.toString(pattern);
-        }
-        [Symbol.toPrimitive](mode) {
-            return mode === 'number' ? this.valueOf() : this.toString();
-        }
-        [$mol_dev_format_head]() {
-            return $mol_dev_format_span({}, $mol_dev_format_native(this), ' ', $mol_dev_format_accent(this.toString('YYYY-MM-DD hh:mm:ss.sss Z')));
-        }
-        static patterns = {
-            'YYYY': (moment) => {
-                if (moment.year == null)
-                    return '';
-                return String(moment.year);
-            },
-            'AD': (moment) => {
-                if (moment.year == null)
-                    return '';
-                return String(Math.floor(moment.year / 100) + 1);
-            },
-            'YY': (moment) => {
-                if (moment.year == null)
-                    return '';
-                return String(moment.year % 100);
-            },
-            'Month': (pattern => (moment) => {
-                if (moment.month == null)
-                    return '';
-                return pattern.format(moment.native);
-            })(new Intl.DateTimeFormat(undefined, { month: 'long' })),
-            'DD Month': (pattern => (moment) => {
-                if (moment.month == null) {
-                    if (moment.day == null) {
-                        return '';
-                    }
-                    else {
-                        return $mol_time_moment.patterns['DD'](moment);
-                    }
-                }
-                else {
-                    if (moment.day == null) {
-                        return $mol_time_moment.patterns['Month'](moment);
-                    }
-                    else {
-                        return pattern.format(moment.native);
-                    }
-                }
-            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'long' })),
-            'D Month': (pattern => (moment) => {
-                if (moment.month == null) {
-                    if (moment.day == null) {
-                        return '';
-                    }
-                    else {
-                        return $mol_time_moment.patterns['D'](moment);
-                    }
-                }
-                else {
-                    if (moment.day == null) {
-                        return $mol_time_moment.patterns['Month'](moment);
-                    }
-                    else {
-                        return pattern.format(moment.native);
-                    }
-                }
-            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' })),
-            'Mon': (pattern => (moment) => {
-                if (moment.month == null)
-                    return '';
-                return pattern.format(moment.native);
-            })(new Intl.DateTimeFormat(undefined, { month: 'short' })),
-            'DD Mon': (pattern => (moment) => {
-                if (moment.month == null) {
-                    if (moment.day == null) {
-                        return '';
-                    }
-                    else {
-                        return $mol_time_moment.patterns['DD'](moment);
-                    }
-                }
-                else {
-                    if (moment.day == null) {
-                        return $mol_time_moment.patterns['Mon'](moment);
-                    }
-                    else {
-                        return pattern.format(moment.native);
-                    }
-                }
-            })(new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short' })),
-            'D Mon': (pattern => (moment) => {
-                if (moment.month == null) {
-                    if (moment.day == null) {
-                        return '';
-                    }
-                    else {
-                        return $mol_time_moment.patterns['D'](moment);
-                    }
-                }
-                else {
-                    if (moment.day == null) {
-                        return $mol_time_moment.patterns['Mon'](moment);
-                    }
-                    else {
-                        return pattern.format(moment.native);
-                    }
-                }
-            })(new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' })),
-            '-MM': (moment) => {
-                if (moment.month == null)
-                    return '';
-                return '-' + $mol_time_moment.patterns['MM'](moment);
-            },
-            'MM': (moment) => {
-                if (moment.month == null)
-                    return '';
-                return String(100 + moment.month + 1).slice(1);
-            },
-            'M': (moment) => {
-                if (moment.month == null)
-                    return '';
-                return String(moment.month + 1);
-            },
-            'WeekDay': (pattern => (moment) => {
-                if (moment.day == null)
-                    return '';
-                if (moment.month == null)
-                    return '';
-                if (moment.year == null)
-                    return '';
-                return pattern.format(moment.native);
-            })(new Intl.DateTimeFormat(undefined, { weekday: 'long' })),
-            'WD': (pattern => (moment) => {
-                if (moment.day == null)
-                    return '';
-                if (moment.month == null)
-                    return '';
-                if (moment.year == null)
-                    return '';
-                return pattern.format(moment.native);
-            })(new Intl.DateTimeFormat(undefined, { weekday: 'short' })),
-            '-DD': (moment) => {
-                if (moment.day == null)
-                    return '';
-                return '-' + $mol_time_moment.patterns['DD'](moment);
-            },
-            'DD': (moment) => {
-                if (moment.day == null)
-                    return '';
-                return String(100 + moment.day + 1).slice(1);
-            },
-            'D': (moment) => {
-                if (moment.day == null)
-                    return '';
-                return String(moment.day + 1);
-            },
-            'Thh': (moment) => {
-                if (moment.hour == null)
-                    return '';
-                return 'T' + $mol_time_moment.patterns['hh'](moment);
-            },
-            'hh': (moment) => {
-                if (moment.hour == null)
-                    return '';
-                return String(100 + moment.hour).slice(1);
-            },
-            'h': (moment) => {
-                if (moment.hour == null)
-                    return '';
-                return String(moment.hour);
-            },
-            ':mm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return ':' + $mol_time_moment.patterns['mm'](moment);
-            },
-            'mm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return String(100 + moment.minute).slice(1);
-            },
-            'm': (moment) => {
-                if (moment.minute == null)
-                    return '';
-                return String(moment.minute);
-            },
-            ':ss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return ':' + $mol_time_moment.patterns['ss'](moment);
-            },
-            'ss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return String(100 + moment.second | 0).slice(1);
-            },
-            's': (moment) => {
-                if (moment.second == null)
-                    return '';
-                return String(moment.second | 0);
-            },
-            '.sss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                if (moment.second === (moment.second | 0))
-                    return '';
-                return '.' + $mol_time_moment.patterns['sss'](moment);
-            },
-            'sss': (moment) => {
-                if (moment.second == null)
-                    return '';
-                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
-                return millisecond.slice(2);
-            },
-            'Z': (moment) => {
-                const offset = moment.offset;
-                if (!offset)
-                    return '';
-                let hour = offset.hour;
-                let sign = '+';
-                if (hour < 0) {
-                    sign = '-';
-                    hour = -hour;
-                }
-                return sign + String(100 + hour).slice(1) + ':' + String(100 + offset.minute).slice(1);
-            }
-        };
-    }
-    $.$mol_time_moment = $mol_time_moment;
-})($ || ($ = {}));
 
 ;
 "use strict";
@@ -10519,72 +10698,15 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        class $optimade_tmdne_swipe extends $.$optimade_tmdne_swipe {
-            x(next) {
-                return next ?? (this.start_x + this.pan().x);
-            }
-            left() {
-                return this.x() + 'px';
-            }
-            auto() {
-                console.log(this.Touch().action_type());
-            }
-            start_x = 0;
-            start_time;
-            pointerdown(next) {
-                this.start_x = parseFloat($mol_dom_context.getComputedStyle(this.Float().dom_node()).left);
-                this.start_time = (new $mol_time_moment).valueOf();
-                this.pan(new $mol_vector_2d(0, 0));
-                this.transition('');
-                this.pointer_holding(true);
-            }
-            pointerup(next) {
-                const speed = this.x() / ((new $mol_time_moment).valueOf() - this.start_time);
-                this.transition('left 0.5s');
-                if (this.passed_right() || speed > this.speed_threshold())
-                    this.to_right();
-                else if (this.passed_left() || speed < (-this.speed_threshold()))
-                    this.to_left();
-                else
-                    this.reset();
-                this.pointer_holding(false);
-            }
-            reset() {
-                this.swiped_to('');
-                this.x(0);
-            }
-            reset_hard() {
-                this.transition('');
-                this.reset();
-            }
-            passed_left() {
-                return this.x() < (-this.left_threshold());
-            }
-            passed_right() {
-                return this.x() > this.right_threshold();
-            }
-            passed() {
-                return this.passed_left() ? 'left' :
-                    this.passed_right() ? 'right' : '';
-            }
-            to_right() {
-                this.swiped_to('right');
-                this.on_swiped();
-                this.x(900);
-            }
-            to_left() {
-                this.swiped_to('left');
-                this.on_swiped();
-                this.x(-900);
+        class $optimade_tmdne_card extends $.$optimade_tmdne_card {
+            card_position() {
+                return this.swiped_to() || this.passed() || '';
             }
         }
         __decorate([
             $mol_mem
-        ], $optimade_tmdne_swipe.prototype, "x", null);
-        __decorate([
-            $mol_mem
-        ], $optimade_tmdne_swipe.prototype, "left", null);
-        $$.$optimade_tmdne_swipe = $optimade_tmdne_swipe;
+        ], $optimade_tmdne_card.prototype, "card_position", null);
+        $$.$optimade_tmdne_card = $optimade_tmdne_card;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
@@ -10594,14 +10716,93 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $mol_style_define($optimade_tmdne_swipe, {
-            background: {
-                color: 'transparent',
-            },
+        $mol_style_define($optimade_tmdne_card, {
+            pointerEvents: 'auto',
+            width: 'max-content',
+            position: 'fixed',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: 0,
+            padding: '0.5rem',
             Float: {
-                userSelect: 'none',
-                pointerEvents: 'none',
+                margin: 'auto',
+            },
+            Card_float: {
+                background: {
+                    color: $mol_theme.back,
+                },
+                bottom: '-10rem',
                 position: 'relative',
+                transition: 'bottom 0.7s',
+                '[loaded]': {
+                    'true': {
+                        bottom: 0,
+                    },
+                },
+                border: {
+                    radius: $mol_gap.round,
+                },
+                boxShadow: '0 0 0.5rem 0rem hsla(0,0%,0%,.125)',
+            },
+            Card_content: {
+                flex: {
+                    direction: 'column',
+                },
+                background: {
+                    color: $mol_style_func.hsla(210, 80, 50, 0.3),
+                },
+                padding: $mol_gap.block,
+                border: {
+                    radius: $mol_gap.round,
+                },
+                '[card_position]': {
+                    'right': {
+                        background: {
+                            color: $mol_style_func.hsla(120, 80, 50, 0.3),
+                        },
+                    },
+                    'left': {
+                        background: {
+                            color: $mol_style_func.hsla(0, 80, 50, 0.3),
+                        },
+                    },
+                },
+            },
+            Name: {
+                flex: {
+                    direction: 'row',
+                },
+                padding: {
+                    bottom: '0.5rem',
+                },
+                justify: {
+                    content: 'center',
+                },
+                font: {
+                    weight: 700,
+                    size: '1.5rem',
+                },
+            },
+            Question: {
+                justify: {
+                    content: 'center',
+                },
+                padding: {
+                    bottom: '0.5rem',
+                },
+            },
+            Why: {
+                pointerEvents: 'auto',
+                maxWidth: '20rem',
+            },
+            Why_label: {
+                gap: '0.5rem',
+            },
+            Why_optinal: {
+                color: $mol_theme.shade,
+                font: {
+                    style: 'italic',
+                },
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -10636,14 +10837,14 @@ var $;
 			(obj.event) = () => ({"pointerdown": (next) => (this?.player_pointerdown(next)), "pointerup": (next) => (this?.player_pointerup(next))});
 			return obj;
 		}
-		Head(){
+		Head_title(){
 			const obj = new this.$.$mol_paragraph();
 			(obj.title) = () => ("Does this material exist?");
 			return obj;
 		}
 		Head_card(){
 			const obj = new this.$.$mol_list();
-			(obj.sub) = () => ([(this?.Head())]);
+			(obj.sub) = () => ([(this?.Head_title())]);
 			return obj;
 		}
 		Head_space(){
@@ -10726,101 +10927,60 @@ var $;
 			(obj.sub) = () => ((this?.params()));
 			return obj;
 		}
-		Hint_no(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["ᐊ No"]);
-			return obj;
-		}
-		Hint_yes(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Yes ᐅ"]);
-			return obj;
-		}
-		passed(){
-			return (this?.Swipeable()?.passed());
-		}
-		swiped_to(next){
+		click_no(next){
 			if(next !== undefined) return next;
-			return "";
-		}
-		card_reset(){
-			return (this?.Swipeable()?.reset_hard());
-		}
-		update(){
 			return null;
 		}
-		loaded(){
+		Hint_no(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("ᐊ No");
+			(obj.click) = (next) => ((this?.click_no(next)));
+			return obj;
+		}
+		click_yes(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Hint_yes(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Yes ᐅ");
+			(obj.click) = (next) => ((this?.click_yes(next)));
+			return obj;
+		}
+		card_name(id){
+			return "";
+		}
+		card_loaded(id){
 			return false;
 		}
-		card_position(){
-			return "";
-		}
-		name(){
-			return "";
-		}
-		Name(){
-			const obj = new this.$.$optimade_tmdne_html_view();
-			(obj.html) = () => ((this?.name()));
-			return obj;
-		}
-		Question(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Do you think it's synthesizable?");
-			return obj;
-		}
-		Why_title(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Why?");
-			return obj;
-		}
-		Why_optinal(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("(optinal)");
-			return obj;
-		}
-		Why_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this?.Why_title()), (this?.Why_optinal())]);
-			return obj;
-		}
-		why(next){
+		why(id, next){
 			if(next !== undefined) return next;
 			return "";
-		}
-		Why(){
-			const obj = new this.$.$mol_textarea();
-			(obj.value) = (next) => ((this?.why(next)));
-			return obj;
-		}
-		Card_content(){
-			const obj = new this.$.$mol_view();
-			(obj.attr) = () => ({"card_position": (this?.card_position())});
-			(obj.sub) = () => ([
-				(this?.Name()), 
-				(this?.Question()), 
-				(this?.Why_label()), 
-				(this?.Why())
-			]);
-			return obj;
-		}
-		Card(){
-			const obj = new this.$.$mol_view();
-			(obj.attr) = () => ({"loaded": (this?.loaded())});
-			(obj.sub) = () => ([(this?.Card_content())]);
-			return obj;
 		}
 		card_holding(next){
 			if(next !== undefined) return next;
 			return false;
 		}
-		Swipeable(){
-			const obj = new this.$.$optimade_tmdne_swipe();
-			(obj.swiped_to) = (next) => ((this?.swiped_to(next)));
-			(obj.on_swiped) = () => ((this?.update()));
-			(obj.allowed) = () => ((this?.loaded()));
-			(obj.content) = () => ([(this?.Card())]);
+		update(){
+			return null;
+		}
+		swipe_to_right(id){
+			return (this?.Card(id)?.swipe_to_right());
+		}
+		swipe_to_left(id){
+			return (this?.Card(id)?.swipe_to_left());
+		}
+		Card(id){
+			const obj = new this.$.$optimade_tmdne_card();
+			(obj.name) = () => ((this?.card_name(id)));
+			(obj.loaded) = () => ((this?.card_loaded(id)));
+			(obj.why) = (next) => ((this?.why(id, next)));
 			(obj.pointer_holding) = (next) => ((this?.card_holding(next)));
+			(obj.on_swiped) = () => ((this?.update()));
 			return obj;
+		}
+		cards(){
+			return [(this?.Card(id))];
 		}
 		Foot(){
 			const obj = new this.$.$mol_view();
@@ -10828,7 +10988,7 @@ var $;
 			(obj.sub) = () => ([
 				(this?.Hint_no()), 
 				(this?.Hint_yes()), 
-				(this?.Swipeable())
+				...(this.cards())
 			]);
 			return obj;
 		}
@@ -10849,6 +11009,14 @@ var $;
 			if(next !== undefined) return next;
 			return false;
 		}
+		number_swiped(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		number_prefetch(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
 		sub(){
 			return [
 				(this?.Player()), 
@@ -10862,7 +11030,7 @@ var $;
 	($mol_mem(($.$optimade_tmdne_app.prototype), "player_pointerdown"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "player_pointerup"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Player"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Head"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_title"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_card"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_space"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_name"));
@@ -10873,23 +11041,18 @@ var $;
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_value"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Prediction"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "click_no"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Hint_no"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "click_yes"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Hint_yes"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "swiped_to"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Name"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Question"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_title"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_optinal"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Why_label"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "why"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Why"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Card_content"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Card"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "why"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "card_holding"));
-	($mol_mem(($.$optimade_tmdne_app.prototype), "Swipeable"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Card"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Foot"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "number"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "rotating"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "number_swiped"));
+	($mol_mem(($.$optimade_tmdne_app.prototype), "number_prefetch"));
 
 
 ;
@@ -11053,22 +11216,32 @@ var $;
     var $$;
     (function ($$) {
         class $optimade_tmdne_app extends $.$optimade_tmdne_app {
-            json() {
-                return this.$.$mol_fetch.json(`https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${this.number()}`);
+            fetch_by_number(number) {
+                $mol_wire_solid();
+                return this.$.$mol_fetch.json(`https://optimade-gnome.odbx.science/v1/structures?page_limit=1&page_offset=${number}`);
             }
-            name() {
-                let str = this.json()?.data[0]?.attributes?.chemical_formula_reduced;
-                this.reset();
+            predict_by_number(number) {
+                $mol_wire_solid();
+                const structure = JSON.stringify(this.fetch_by_number(number));
+                const params = new URLSearchParams({ structure });
+                const url = `https://labs.mpds.io/predict?${params.toString()}`;
+                const prediction = this.$.$mol_wire_sync(this).$.$mol_fetch.success(url, {
+                    method: 'post',
+                }).json() ?? {};
+                return prediction;
+            }
+            json() {
+                return this.fetch_by_number(this.number());
+            }
+            card_name(n) {
+                const json = this.fetch_by_number(n);
+                let str = json?.data[0]?.attributes?.chemical_formula_reduced;
                 return formula_html(str);
             }
-            reset() {
-                this.why('');
-                this.card_reset();
-            }
-            loaded() {
+            card_loaded(n) {
                 try {
-                    this.name();
-                    return true;
+                    this.card_name(n);
+                    return this.number() === n;
                 }
                 catch (error) {
                     if ($mol_promise_like(error))
@@ -11076,18 +11249,26 @@ var $;
                 }
                 return false;
             }
+            cards() {
+                const swiped = this.number_swiped();
+                return [
+                    this.Card(this.number_prefetch()),
+                    ...swiped ? [this.Card(swiped)] : [],
+                    this.Card(this.number()),
+                ];
+            }
+            number_prefetch(next) {
+                return next ?? random_int(1, 384937);
+            }
             update() {
-                this.number(random_int(1, 384937));
+                this.number_swiped(this.number());
+                this.number(this.number_prefetch());
+                const prefetch = random_int(1, 384937);
+                this.number_prefetch(prefetch);
+                $mol_wire_async(this).predict_by_number(prefetch);
             }
             predict() {
-                $mol_wire_solid();
-                const params = new URLSearchParams({
-                    structure: JSON.stringify(this.json()),
-                });
-                const url = `https://labs.mpds.io/predict?${params.toString()}`;
-                return this.$.$mol_wire_sync(this).$.$mol_fetch.success(url, {
-                    method: 'post',
-                }).json() ?? {};
+                return this.predict_by_number(this.number());
             }
             params() {
                 const keys = Object.keys(this.predict().prediction);
@@ -11108,28 +11289,37 @@ var $;
             param_symbol(id) {
                 return this.predict().legend[id].symbol ?? '';
             }
-            card_position() {
-                return this.swiped_to() || this.passed() || '';
-            }
             player_pointerdown(next) {
                 this.rotating(true);
             }
             player_pointerup(next) {
                 this.rotating(false);
             }
+            click_no() {
+                this.swipe_to_left(this.number());
+            }
+            click_yes() {
+                this.swipe_to_right(this.number());
+            }
         }
+        __decorate([
+            $mol_mem_key
+        ], $optimade_tmdne_app.prototype, "fetch_by_number", null);
+        __decorate([
+            $mol_mem_key
+        ], $optimade_tmdne_app.prototype, "predict_by_number", null);
         __decorate([
             $mol_mem
         ], $optimade_tmdne_app.prototype, "json", null);
         __decorate([
-            $mol_mem
-        ], $optimade_tmdne_app.prototype, "name", null);
+            $mol_mem_key
+        ], $optimade_tmdne_app.prototype, "card_name", null);
         __decorate([
-            $mol_action
-        ], $optimade_tmdne_app.prototype, "reset", null);
+            $mol_mem_key
+        ], $optimade_tmdne_app.prototype, "card_loaded", null);
         __decorate([
             $mol_mem
-        ], $optimade_tmdne_app.prototype, "loaded", null);
+        ], $optimade_tmdne_app.prototype, "number_prefetch", null);
         __decorate([
             $mol_action
         ], $optimade_tmdne_app.prototype, "update", null);
@@ -11140,23 +11330,20 @@ var $;
             $mol_mem
         ], $optimade_tmdne_app.prototype, "params", null);
         __decorate([
-            $mol_mem
+            $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_value", null);
         __decorate([
-            $mol_mem
+            $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_mae", null);
         __decorate([
-            $mol_mem
+            $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_name", null);
         __decorate([
-            $mol_mem
+            $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_unit", null);
         __decorate([
-            $mol_mem
+            $mol_mem_key
         ], $optimade_tmdne_app.prototype, "param_symbol", null);
-        __decorate([
-            $mol_mem
-        ], $optimade_tmdne_app.prototype, "card_position", null);
         $$.$optimade_tmdne_app = $optimade_tmdne_app;
         function random_int(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -11227,7 +11414,7 @@ var $;
                 pointerEvents: 'auto',
                 margin: 'auto',
             },
-            Head: {
+            Head_title: {
                 userSelect: 'none',
                 justify: {
                     content: 'center',
@@ -11285,117 +11472,28 @@ var $;
                 gap: '0.25rem',
             },
             Foot: {
-                width: '100%',
-                overflow: 'hidden',
+                justify: {
+                    content: 'space-between',
+                },
+                width: '24rem',
                 position: 'absolute',
+                bottom: '4rem',
                 pointerEvents: 'none',
                 transition: 'opacity 0.2s',
                 opacity: 1,
-                bottom: 0,
                 '[rotating]': {
                     'true': {
                         opacity: 0,
                     },
                 },
             },
-            Swipeable: {
-                pointerEvents: 'auto',
-                margin: 'auto',
-                padding: '0.5rem',
-                Float: {
-                    margin: 'auto',
-                },
-            },
-            Card: {
-                background: {
-                    color: $mol_theme.back,
-                },
-                bottom: '-20rem',
-                position: 'relative',
-                transition: 'bottom 1s',
-                '[loaded]': {
-                    'true': {
-                        bottom: 0,
-                    },
-                },
-                border: {
-                    radius: $mol_gap.round,
-                },
-                boxShadow: '0 0 0.5rem 0rem hsla(0,0%,0%,.125)',
-            },
-            Card_content: {
-                flex: {
-                    direction: 'column',
-                },
-                background: {
-                    color: $mol_style_func.hsla(210, 80, 50, 0.3),
-                },
-                padding: $mol_gap.block,
-                border: {
-                    radius: $mol_gap.round,
-                },
-                '[card_position]': {
-                    'right': {
-                        background: {
-                            color: $mol_style_func.hsla(120, 80, 50, 0.3),
-                        },
-                    },
-                    'left': {
-                        background: {
-                            color: $mol_style_func.hsla(0, 80, 50, 0.3),
-                        },
-                    },
-                },
-            },
-            Name: {
-                flex: {
-                    direction: 'row',
-                },
-                padding: {
-                    bottom: '0.5rem',
-                },
-                justify: {
-                    content: 'center',
-                },
-                font: {
-                    weight: 700,
-                    size: '1.5rem',
-                },
-            },
-            Question: {
-                justify: {
-                    content: 'center',
-                },
-                padding: {
-                    bottom: '0.5rem',
-                },
-            },
             Hint_no: {
-                userSelect: 'none',
+                pointerEvents: 'auto',
                 color: '#ff6666',
-                position: 'absolute',
-                left: '1rem',
-                bottom: '5rem',
             },
             Hint_yes: {
-                userSelect: 'none',
-                color: $mol_theme.current,
-                position: 'absolute',
-                right: '1rem',
-                bottom: '5rem',
-            },
-            Why: {
                 pointerEvents: 'auto',
-                maxWidth: '20rem',
-            },
-            Why_label: {
-                gap: '0.5rem',
-            },
-            Why_optinal: {
-                color: $mol_theme.shade,
-                font: {
-                    style: 'italic',
-                },
+                color: $mol_theme.current,
             },
         });
     })($$ = $.$$ || ($.$$ = {}));

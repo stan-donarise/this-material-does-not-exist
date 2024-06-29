@@ -554,6 +554,93 @@ $optimade_tmdne_html_view $mol_html_view
 		needle <= highlight
 		haystack <= text*
 
+$mol_touch $mol_plugin
+	start_zoom? 0
+	start_distance? 0
+	zoom? 1
+	allow_draw true
+	allow_pan true
+	allow_zoom true
+	action_type? \
+	action_point? $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pan? /
+		0
+		0
+	pan? $mol_vector_2d<number> /
+		0
+		0
+	pointer_center $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pos? null
+	swipe_precision 16
+	-
+	swipe_right? null
+	swipe_bottom? null
+	swipe_left? null
+	swipe_top? null
+	-
+	swipe_from_right? null
+	swipe_from_bottom? null
+	swipe_from_left? null
+	swipe_from_top? null
+	-
+	swipe_to_right? null
+	swipe_to_bottom? null
+	swipe_to_left? null
+	swipe_to_top? null
+	-
+	draw_start?event null
+	draw?event null
+	draw_end?event null
+	-
+	style *
+		^
+		touch-action \none
+		overscroll-behavior \none
+	-
+	event *
+		^
+		pointerdown?event <=> event_start?event null
+		pointermove?event <=> event_move?event null
+		pointerup?event <=> event_end?event null
+		pointerleave?event <=> event_leave?event null
+		wheel?event <=> event_wheel?event null
+
+$optimade_tmdne_swipe $mol_view
+	plugins /
+		<= Touch $mol_touch
+			allow_draw false
+			allow_pan <= allowed true
+			pan? => pan?
+	speed_threshold 1
+	right_threshold <= threshold 60
+	left_threshold <= threshold
+	passed \
+	passed_left false
+	passed_right false
+	swiped_to? \
+	swipe_to_right null
+	swipe_to_left null
+	on_swiped null
+	reset null
+	x? 0
+	sub /
+		<= Float $mol_view
+			sub <= content /
+			style *
+				left <= left \0px
+				transition <= transition? \
+	pointer_holding? false
+	event *
+		^
+		pointerdown? <=> pointerdown? null
+		pointerup? <=> pointerup? null
+
 $mol_stack $mol_view
 
 $mol_text_code_token $mol_dimmer
@@ -703,91 +790,28 @@ $mol_textarea_edit $mol_string
 		^
 		scrollTop 0
 
-$mol_touch $mol_plugin
-	start_zoom? 0
-	start_distance? 0
-	zoom? 1
-	allow_draw true
-	allow_pan true
-	allow_zoom true
-	action_type? \
-	action_point? $mol_vector_2d<number> /
-		NaN
-		NaN
-	-
-	start_pan? /
-		0
-		0
-	pan? $mol_vector_2d<number> /
-		0
-		0
-	pointer_center $mol_vector_2d<number> /
-		NaN
-		NaN
-	-
-	start_pos? null
-	swipe_precision 16
-	-
-	swipe_right? null
-	swipe_bottom? null
-	swipe_left? null
-	swipe_top? null
-	-
-	swipe_from_right? null
-	swipe_from_bottom? null
-	swipe_from_left? null
-	swipe_from_top? null
-	-
-	swipe_to_right? null
-	swipe_to_bottom? null
-	swipe_to_left? null
-	swipe_to_top? null
-	-
-	draw_start?event null
-	draw?event null
-	draw_end?event null
-	-
-	style *
-		^
-		touch-action \none
-		overscroll-behavior \none
-	-
-	event *
-		^
-		pointerdown?event <=> event_start?event null
-		pointermove?event <=> event_move?event null
-		pointerup?event <=> event_end?event null
-		pointerleave?event <=> event_leave?event null
-		wheel?event <=> event_wheel?event null
-
-$optimade_tmdne_swipe $mol_view
-	plugins /
-		<= Touch $mol_touch
-			allow_draw false
-			allow_pan <= allowed true
-			pan? => pan?
-	speed_threshold 1
-	right_threshold <= threshold 60
-	left_threshold <= threshold
-	passed \
-	passed_left false
-	passed_right false
-	swiped_to? \
-	on_swiped null
-	reset null
-	reset_hard null
-	x? 0
-	sub /
-		<= Float $mol_view
-			sub <= content /
-			style *
-				left <= left \0px
-				transition <= transition? \
-	pointer_holding? false
-	event *
-		^
-		pointerdown? <=> pointerdown? null
-		pointerup? <=> pointerup? null
+$optimade_tmdne_card $optimade_tmdne_swipe
+	allowed <= loaded false
+	content /
+		<= Card_float $mol_view
+			attr *
+				loaded <= loaded
+			sub / <= Card_content $mol_view
+				attr *
+					card_position <= card_position \
+				sub /
+					<= Name $optimade_tmdne_html_view
+						html <= name \
+					<= Question $mol_paragraph
+						title \Do you think it's synthesizable?
+					<= Why_label $mol_view
+						sub /
+							<= Why_title $mol_paragraph
+								title \Why?
+							<= Why_optinal $mol_paragraph
+								title \(optinal)
+					<= Why $mol_textarea
+						value? <=> why? \
 
 $optimade_tmdne_app $mol_view
 	title \This material does not exist
@@ -797,6 +821,8 @@ $optimade_tmdne_app $mol_view
 	auto /
 		<= update
 	rotating? false
+	number_swiped? 0
+	number_prefetch? 0
 	sub /
 		<= Player $optimade_cifplayer_player
 			fullscreen? => player_fullscreen?
@@ -813,7 +839,7 @@ $optimade_tmdne_app $mol_view
 			sub /
 				<= Head_card $mol_list
 					sub /
-						<= Head $mol_paragraph
+						<= Head_title $mol_paragraph
 							title \Does this material exist?
 		<= Prediction $mol_list
 			attr *
@@ -844,34 +870,17 @@ $optimade_tmdne_app $mol_view
 			attr *
 				rotating <= rotating
 			sub /
-				<= Hint_no $mol_view
-					sub / \ᐊ No
-				<= Hint_yes $mol_view
-					sub / \Yes ᐅ
-				<= Swipeable $optimade_tmdne_swipe
-					passed => passed
-					swiped_to? <=> swiped_to? \
-					reset_hard => card_reset
-					on_swiped <= update null
-					allowed <= loaded false
-					content /
-						<= Card $mol_view
-							attr *
-								loaded <= loaded
-							sub / <= Card_content $mol_view
-								attr *
-									card_position <= card_position \
-								sub /
-									<= Name $optimade_tmdne_html_view
-										html <= name \
-									<= Question $mol_paragraph
-										title \Do you think it's synthesizable?
-									<= Why_label $mol_view
-										sub /
-											<= Why_title $mol_paragraph
-												title \Why?
-											<= Why_optinal $mol_paragraph
-												title \(optinal)
-									<= Why $mol_textarea
-										value? <=> why? \
+				<= Hint_no $mol_button_minor
+					title \ᐊ No
+					click? <=> click_no? null
+				<= Hint_yes $mol_button_minor
+					title \Yes ᐅ
+					click? <=> click_yes? null
+				^ cards / <= Card* $optimade_tmdne_card
+					name <= card_name* \
+					loaded <= card_loaded* false
+					why? <=> why*? \
 					pointer_holding? <=> card_holding? false
+					on_swiped <= update null
+					swipe_to_right => swipe_to_right*
+					swipe_to_left => swipe_to_left*
