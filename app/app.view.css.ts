@@ -1,5 +1,5 @@
 namespace $.$$ {
-	
+
 	$mol_style_define( $optimade_tmdne_app, {
 
 		overflow: 'hidden',
@@ -38,6 +38,8 @@ namespace $.$$ {
 		Head_card: {
 			pointerEvents: 'auto',
 			margin: 'auto',
+			width: '35%',
+			textAlign: 'center',
 		},
 
 		Head_title: {
@@ -126,13 +128,15 @@ namespace $.$$ {
 		Hint_no: {
 			pointerEvents: 'auto',
 			color: '#ff6666',
+			zIndex: 10,
 		},
 
 		Hint_yes: {
 			pointerEvents: 'auto',
 			color: $mol_theme.current,
+			zIndex: 10,
 		},
 
 	} )
-	
+
 }

@@ -1,5 +1,5 @@
 $optimade_tmdne_app $mol_view
-	title \This material does not exist
+	title \This Material Does Not Exist?
 	number? 1
 	plugins /
 		<= Theme $mol_theme_auto

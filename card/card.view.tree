@@ -16,7 +16,7 @@ $optimade_tmdne_card $optimade_tmdne_swipe
 						sub /
 							<= Why_title $mol_paragraph
 								title \Why?
-							<= Why_optinal $mol_paragraph
-								title \(optinal)
+							<= Why_optional $mol_paragraph
+								title \(optional)
 					<= Why $mol_textarea
 						value? <=> why? \
