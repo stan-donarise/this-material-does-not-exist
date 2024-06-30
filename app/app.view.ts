@@ -129,9 +129,9 @@ namespace $.$$ {
 
 				this.update()
 				const params = new URLSearchParams( {
-					id: this.json()?.data[ 0 ]?.attributes?._gnome_material_id,
+					id: this.fetch_by_number( id )?.data[ 0 ]?.attributes?._gnome_material_id,
 					comment: this.why( id ),
-					vote
+					vote: vote.toString(),
 				} )
 
 				this.$.$mol_fetch.success( 'https://crus.absolidix.com', {
