@@ -7869,6 +7869,16 @@ var $;
 			(obj.sub) = () => ((this?.content(id)));
 			return obj;
 		}
+		Subscript(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
+		Superscript(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this?.content(id)));
+			return obj;
+		}
 		Code(id){
 			const obj = new this.$.$mol_paragraph();
 			(obj.sub) = () => ((this?.content(id)));
@@ -7905,6 +7915,8 @@ var $;
 	($mol_mem_key(($.$mol_html_view.prototype), "Emphasis"));
 	($mol_mem_key(($.$mol_html_view.prototype), "Deleted"));
 	($mol_mem_key(($.$mol_html_view.prototype), "Inserted"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Subscript"));
+	($mol_mem_key(($.$mol_html_view.prototype), "Superscript"));
 	($mol_mem_key(($.$mol_html_view.prototype), "Code"));
 	($mol_mem_key(($.$mol_html_view.prototype), "Link"));
 	($mol_mem_key(($.$mol_html_view.prototype), "Image"));
@@ -8037,6 +8049,20 @@ var $;
             display: 'inline',
             color: $mol_theme.special,
         },
+        Subscript: {
+            font: {
+                size: '.75em',
+            },
+            position: 'relative',
+            bottom: '-0.5em',
+        },
+        Superscript: {
+            font: {
+                size: '.75em',
+            },
+            position: 'relative',
+            top: '-0.25em',
+        },
         Link: {
             margin: rem(-.5),
         },
@@ -8119,6 +8145,10 @@ var $;
                     case 'INS':
                     case 'U':
                         return [this.Inserted(node)];
+                    case 'SUB':
+                        return [this.Subscript(node)];
+                    case 'SUP':
+                        return [this.Superscript(node)];
                     case 'A':
                         return [this.Link(node)];
                     case 'PRE':
@@ -8170,80 +8200,6 @@ var $;
         ], $mol_html_view.prototype, "content", null);
         $$.$mol_html_view = $mol_html_view;
     })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$optimade_tmdne_html_view) = class $optimade_tmdne_html_view extends ($.$mol_html_view) {
-		minimal_height(){
-			return 16;
-		}
-		Subscript(id){
-			const obj = new this.$.$mol_view();
-			(obj.dom_name) = () => ("sub");
-			(obj.sub) = () => ((this?.content(id)));
-			return obj;
-		}
-		Superscript(id){
-			const obj = new this.$.$mol_view();
-			(obj.dom_name) = () => ("sup");
-			(obj.sub) = () => ((this?.content(id)));
-			return obj;
-		}
-		Text(id){
-			const obj = new this.$.$mol_dimmer();
-			(obj.minimal_height) = () => (16);
-			(obj.needle) = () => ((this?.highlight()));
-			(obj.haystack) = () => ((this?.text(id)));
-			return obj;
-		}
-	};
-	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Subscript"));
-	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Superscript"));
-	($mol_mem_key(($.$optimade_tmdne_html_view.prototype), "Text"));
-
-
-;
-"use strict";
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $optimade_tmdne_html_view extends $.$optimade_tmdne_html_view {
-            views(node) {
-                if (node.nodeName == 'SUB')
-                    return [this.Subscript(node)];
-                if (node.nodeName == 'SUP')
-                    return [this.Superscript(node)];
-                return super.views(node);
-            }
-        }
-        $$.$optimade_tmdne_html_view = $optimade_tmdne_html_view;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_define($optimade_tmdne_html_view, {
-        Subscript: {
-            font: {
-                size: '.75em',
-            },
-            position: 'relative',
-            bottom: '-0.5em',
-        },
-        Superscript: {
-            font: {
-                size: '.75em',
-            },
-            position: 'relative',
-            top: '-0.25em',
-        },
-    });
 })($ || ($ = {}));
 
 ;
@@ -8844,6 +8800,12 @@ var $;
 		}
 		left_threshold(){
 			return (this?.threshold());
+		}
+		swipe_distance(){
+			return 300;
+		}
+		transition_smooth(){
+			return "left 0.5s";
 		}
 		passed(){
 			return "";
@@ -9559,19 +9521,19 @@ var $;
                 this.pointer_holding(false);
             }
             move_to_middle() {
-                this.transition('left 0.5s');
+                this.transition(this.transition_smooth());
                 this.swiped_to('');
                 this.x(0);
             }
             swipe_to_right() {
-                this.transition('left 0.5s');
+                this.transition(this.transition_smooth());
                 this.swiped_to('right');
-                this.x(300);
+                this.x(this.swipe_distance());
             }
             swipe_to_left() {
-                this.transition('left 0.5s');
+                this.transition(this.transition_smooth());
                 this.swiped_to('left');
-                this.x(-300);
+                this.x(-this.swipe_distance());
             }
             passed() {
                 const x = this.x();
@@ -10616,7 +10578,8 @@ var $;
 			return "";
 		}
 		Name(){
-			const obj = new this.$.$optimade_tmdne_html_view();
+			const obj = new this.$.$mol_html_view();
+			(obj.minimal_height) = () => (24);
 			(obj.html) = () => ((this?.name()));
 			return obj;
 		}
@@ -10726,12 +10689,11 @@ var $;
                 background: {
                     color: $mol_theme.back,
                 },
-                bottom: '-10rem',
-                position: 'relative',
-                transition: 'bottom 0.7s',
+                transform: 'translateY(110%)',
+                transition: 'transform 0.7s',
                 '[loaded]': {
                     'true': {
-                        bottom: 0,
+                        transform: 'none',
                     },
                 },
                 border: {
@@ -10863,7 +10825,8 @@ var $;
 			return "";
 		}
 		Param_symbol_html(id){
-			const obj = new this.$.$optimade_tmdne_html_view();
+			const obj = new this.$.$mol_html_view();
+			(obj.minimal_height) = () => (24);
 			(obj.html) = () => ((this?.param_symbol(id)));
 			return obj;
 		}
@@ -10874,7 +10837,8 @@ var $;
 			return "";
 		}
 		Param_unit(id){
-			const obj = new this.$.$optimade_tmdne_html_view();
+			const obj = new this.$.$mol_html_view();
+			(obj.minimal_height) = () => (24);
 			(obj.html) = () => ((this?.param_unit(id)));
 			return obj;
 		}
@@ -10882,7 +10846,8 @@ var $;
 			return "";
 		}
 		Param_mae_unit(id){
-			const obj = new this.$.$optimade_tmdne_html_view();
+			const obj = new this.$.$mol_html_view();
+			(obj.minimal_height) = () => (24);
 			(obj.html) = () => ((this?.param_unit(id)));
 			return obj;
 		}
@@ -11305,14 +11270,17 @@ var $;
                 const vote = next == 'left' ? 0 : next == 'right' ? 1 : undefined;
                 if (vote !== undefined) {
                     this.update();
+                    const params = new URLSearchParams({
+                        id: this.fetch_by_number(id)?.data[0]?.attributes?._gnome_material_id,
+                        comment: this.why(id),
+                        vote: vote.toString(),
+                    });
                     this.$.$mol_fetch.success('https://crus.absolidix.com', {
                         method: 'post',
                         headers: {
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/x-www-form-urlencoded",
                         },
-                        body: JSON.stringify({
-                            id, comment: this.why(id), vote
-                        }),
+                        body: params.toString(),
                     });
                 }
                 return next ?? '';
