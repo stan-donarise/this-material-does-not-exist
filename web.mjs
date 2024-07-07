@@ -2752,6 +2752,25 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $mol_media extends $mol_object2 {
+        static match(query, next) {
+            if (next !== undefined)
+                return next;
+            const res = this.$.$mol_dom_context.matchMedia?.(query) ?? {};
+            res.onchange = () => this.match(query, res.matches);
+            return res.matches;
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $mol_media, "match", null);
+    $.$mol_media = $mol_media;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     $.$mol_mem_persist = $mol_wire_solid;
 })($ || ($ = {}));
 
@@ -2913,7 +2932,7 @@ var $;
     }
     function $mol_lights(next) {
         const arg = parse(this.$mol_state_arg.value('mol_lights'));
-        const base = false;
+        const base = this.$mol_media.match('(prefers-color-scheme: light)');
         if (next === undefined) {
             return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
         }
@@ -6096,6 +6115,9 @@ var $;
 			const obj = new this.$.$mol_theme_auto();
 			return obj;
 		}
+		external_theme_auto(){
+			return null;
+		}
 		dir_light(){
 			return null;
 		}
@@ -6398,12 +6420,15 @@ var $;
 			const obj = new this.$.$mol_lights_toggle();
 			return obj;
 		}
+		lights_toggle(){
+			return [(this?.Lights())];
+		}
 		Tools(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this?.Fullscreen()), 
 				(this?.Zoom_section()), 
-				(this?.Lights())
+				...(this.lights_toggle())
 			]);
 			return obj;
 		}
@@ -6490,6 +6515,7 @@ var $;
 		}
 		auto(){
 			return [
+				(this?.external_theme_auto()), 
 				(this?.dir_light()), 
 				(this?.ambient_light()), 
 				...(this.atom_boxes()), 
@@ -7751,8 +7777,14 @@ var $;
         const TWEEN = $optimade_cifplayer_lib_tween.TWEEN;
         const phonon_amp = 6;
         class $optimade_cifplayer_player extends $.$optimade_cifplayer_player {
-            theme() {
-                return '$mol_theme_' + (this.externals()?.theme || 'dark');
+            external_theme_auto() {
+                const external = this.externals()?.theme;
+                if (!external)
+                    return;
+                this.$.$mol_lights(external == 'light' ? true : false);
+            }
+            lights_toggle() {
+                return this.externals()?.theme ? [] : super.lights_toggle();
             }
             available_overlays() {
                 try {
@@ -8129,6 +8161,12 @@ var $;
                 return Math.floor(this.spread_cells_limit() / (a * b));
             }
         }
+        __decorate([
+            $mol_mem
+        ], $optimade_cifplayer_player.prototype, "external_theme_auto", null);
+        __decorate([
+            $mol_mem
+        ], $optimade_cifplayer_player.prototype, "lights_toggle", null);
         __decorate([
             $mol_mem
         ], $optimade_cifplayer_player.prototype, "available_overlays", null);
@@ -12053,16 +12091,18 @@ var $;
 		}
 		Param_name(id){
 			const obj = new this.$.$mol_paragraph();
-			(obj.minimal_height) = () => (24);
 			(obj.title) = () => ((this?.param_name(id)));
 			return obj;
+		}
+		param_min_height(){
+			return 24;
 		}
 		param_symbol(id){
 			return "";
 		}
-		Param_symbol_html(id){
+		Param_symbol(id){
 			const obj = new this.$.$mol_html_view();
-			(obj.minimal_height) = () => (24);
+			(obj.minimal_height) = () => ((this?.param_min_height()));
 			(obj.html) = () => ((this?.param_symbol(id)));
 			return obj;
 		}
@@ -12074,7 +12114,7 @@ var $;
 		}
 		Param_unit(id){
 			const obj = new this.$.$mol_html_view();
-			(obj.minimal_height) = () => (24);
+			(obj.minimal_height) = () => ((this?.param_min_height()));
 			(obj.html) = () => ((this?.param_unit(id)));
 			return obj;
 		}
@@ -12083,7 +12123,7 @@ var $;
 		}
 		Param_mae_unit(id){
 			const obj = new this.$.$mol_html_view();
-			(obj.minimal_height) = () => (24);
+			(obj.minimal_height) = () => ((this?.param_min_height()));
 			(obj.html) = () => ((this?.param_unit(id)));
 			return obj;
 		}
@@ -12099,7 +12139,6 @@ var $;
 		}
 		Param_value(id){
 			const obj = new this.$.$mol_view();
-			(obj.minimal_height) = () => (24);
 			(obj.sub) = () => ([
 				(this?.param_value(id)), 
 				(this?.Param_unit(id)), 
@@ -12111,7 +12150,7 @@ var $;
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this?.Param_name(id)), 
-				(this?.Param_symbol_html(id)), 
+				(this?.Param_symbol(id)), 
 				"=", 
 				(this?.Param_value(id))
 			]);
@@ -12234,7 +12273,7 @@ var $;
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_card"));
 	($mol_mem(($.$optimade_tmdne_app.prototype), "Head_space"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_name"));
-	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_symbol_html"));
+	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_symbol"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_unit"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_mae_unit"));
 	($mol_mem_key(($.$optimade_tmdne_app.prototype), "Param_mae"));
@@ -12534,7 +12573,7 @@ var $;
                     weight: 700,
                 },
             },
-            Param_symbol_html: {
+            Param_symbol: {
                 flex: {
                     direction: 'row',
                 },
