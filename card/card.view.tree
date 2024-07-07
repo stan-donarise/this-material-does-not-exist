@@ -8,7 +8,8 @@ $optimade_tmdne_card $optimade_tmdne_swipe
 				attr *
 					card_position <= card_position \
 				sub /
-					<= Name $optimade_tmdne_html_view
+					<= Name $mol_html_view
+						minimal_height 24
 						html <= name \
 					<= Question $mol_paragraph
 						title \Do you think it's synthesizable?
