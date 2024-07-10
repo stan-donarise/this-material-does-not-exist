@@ -11339,7 +11339,7 @@ var $;
                         vote: vote.toString(),
                     });
                     setTimeout(() => {
-                        this.$.$mol_fetch.success('https://crus.absolidix.com', {
+                        this.$.$mol_wire_async(this).$.$mol_fetch.success('https://crus.absolidix.com', {
                             method: 'post',
                             headers: {
                                 "Content-Type": "application/x-www-form-urlencoded",
