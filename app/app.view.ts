@@ -135,7 +135,7 @@ namespace $.$$ {
 				} )
 
 				setTimeout( ()=> {
-					this.$.$mol_fetch.success( 'https://crfsalidix.com', {
+					this.$.$mol_fetch.success( 'https://crus.absolidix.com', {
 						method: 'post',
 						headers: {
 							"Content-Type": "application/x-www-form-urlencoded",
