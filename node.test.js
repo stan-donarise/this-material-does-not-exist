@@ -9564,9 +9564,6 @@ var $;
             $mol_mem
         ], $optimade_tmdne_swipe.prototype, "left", null);
         __decorate([
-            $mol_action
-        ], $optimade_tmdne_swipe.prototype, "swipe_to_left", null);
-        __decorate([
             $mol_mem
         ], $optimade_tmdne_swipe.prototype, "passed", null);
         $$.$optimade_tmdne_swipe = $optimade_tmdne_swipe;
