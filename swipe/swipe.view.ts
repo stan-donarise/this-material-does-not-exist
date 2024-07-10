@@ -46,7 +46,6 @@ namespace $.$$ {
 			this.swiped_to( 'right' )
 		}
 
-		@ $mol_action
 		swipe_to_left() {
 			this.transition( this.transition_smooth() )
 			this.x( - this.swipe_distance() )
