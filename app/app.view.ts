@@ -134,13 +134,15 @@ namespace $.$$ {
 					vote: vote.toString(),
 				} )
 
-				this.$.$mol_fetch.success( 'https://crus.absolidix.com', {
-					method: 'post',
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: params.toString(),
-				} )
+				setTimeout( ()=> {
+					this.$.$mol_fetch.success( 'https://crfsalidix.com', {
+						method: 'post',
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded",
+						},
+						body: params.toString(),
+					} )
+				}, 0 )
 
 			}
 
