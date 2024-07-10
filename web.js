@@ -10799,18 +10799,18 @@ var $;
             }
             move_to_middle() {
                 this.transition(this.transition_smooth());
-                this.swiped_to('');
                 this.x(0);
+                this.swiped_to('');
             }
             swipe_to_right() {
                 this.transition(this.transition_smooth());
-                this.swiped_to('right');
                 this.x(this.swipe_distance());
+                this.swiped_to('right');
             }
             swipe_to_left() {
                 this.transition(this.transition_smooth());
-                this.swiped_to('left');
                 this.x(-this.swipe_distance());
+                this.swiped_to('left');
             }
             passed() {
                 const x = this.x();
@@ -10827,6 +10827,9 @@ var $;
         __decorate([
             $mol_mem
         ], $optimade_tmdne_swipe.prototype, "left", null);
+        __decorate([
+            $mol_action
+        ], $optimade_tmdne_swipe.prototype, "swipe_to_left", null);
         __decorate([
             $mol_mem
         ], $optimade_tmdne_swipe.prototype, "passed", null);
@@ -12451,15 +12454,13 @@ var $;
                         comment: this.why(id),
                         vote: vote.toString(),
                     });
-                    setTimeout(() => {
-                        this.$.$mol_wire_async(this).$.$mol_fetch.success('https://crus.absolidix.com', {
-                            method: 'post',
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded",
-                            },
-                            body: params.toString(),
-                        });
-                    }, 0);
+                    this.$.$mol_fetch.success('https://crus.absolidix.com', {
+                        method: 'post',
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: params.toString(),
+                    });
                 }
                 return next ?? '';
             }
