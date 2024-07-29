@@ -11305,19 +11305,19 @@ var $;
                     this.Card(this.number()),
                 ];
             }
-            random_number() {
+            random_sample() {
                 return random_int(1, 384937);
             }
             number(next) {
-                return next ?? this.random_number();
+                return next ?? this.random_sample();
             }
             number_prefetch(next) {
-                return next ?? this.random_number();
+                return next ?? this.random_sample();
             }
             update() {
                 this.number_swiped(this.number());
                 this.number(this.number_prefetch());
-                const prefetch = this.random_number();
+                const prefetch = this.random_sample();
                 this.number_prefetch(prefetch);
                 $mol_wire_async(this).predict_by_number(prefetch);
             }
@@ -11392,7 +11392,7 @@ var $;
         ], $optimade_tmdne_app.prototype, "card_loaded", null);
         __decorate([
             $mol_action
-        ], $optimade_tmdne_app.prototype, "random_number", null);
+        ], $optimade_tmdne_app.prototype, "random_sample", null);
         __decorate([
             $mol_mem
         ], $optimade_tmdne_app.prototype, "number", null);
